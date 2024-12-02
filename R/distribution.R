@@ -2,7 +2,9 @@ distribution <- S7::new_class(
   name = "distribution",
   properties = list(
     name = S7::class_character,
-    support = real | int
+    support = real | int,
+    parameters = S7::class_list,
+    transformed_parameters = S7::class_list
   ),
   abstract = TRUE
 )
@@ -25,7 +27,6 @@ distribution_continuous <- S7::new_class(
   ),
   abstract = TRUE
 )
-
 
 
 # methods ----

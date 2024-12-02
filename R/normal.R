@@ -1,33 +1,28 @@
-normal_parameters <- parameters(
-  parameters = list(
-    mu = parameter(label="mu", value=0, support=real(), fixed=FALSE),
-    sigma = parameter(label="sigma", value=5, support=real(0), fixed=FALSE)
+normal_definition <- pars(
+  list(
+    par(key = "mu",    label = "\\mu",    value = 0, support = real()),
+    par(key = "sigma", label = "\\sigma", value = 1, support = real(0))
   ),
-  transformed_parameters = list(
-    sigma2 = transformed_parameter(
-      label="sigma2", transform = expression(sigma^2)
-    )
+  list(
+    tpar(key = "sigma2", label = "\\sigma^2", transform = expression(sigma^2)),
+    tpar(key = "tau",    label = "\\tau",     transform = expression(1 / sigma^2)),
+    tpar(key = "kappa",  label = "\\kappa",   transform = expression(1/sigma))
   )
 )
-
-normal_properties <- as.property(normal_parameters)
-normal_properties[['parameters']] <- parameters
 
 normal <- S7::new_class(
   "normal",
   parent = distribution_continuous,
-  properties = normal_properties,
+  properties = normal_definition[["properties"]],
   constructor = function(mu=0, sigma=1) {
-    pars <- normal_parameters
-    pars@parameters[["mu"]]@value <- mu
-    pars@parameters[["sigma"]]@value <- sigma
     S7::new_object(
       S7::S7_object(),
       name = "Normal",
       support = real(),
-      parameters = pars,
+      parameters = normal_definition[["pars"]],
+      transformed_parameters = normal_definition[["tpars"]],
       mu=mu, sigma=sigma
-      )
+    )
   })
 
 n <- normal(sigma=5)
@@ -44,3 +39,4 @@ S7::method(pdf, normal) <- function(distribution, x, log = FALSE) {
 #
 #   return(result)
 # }
+
