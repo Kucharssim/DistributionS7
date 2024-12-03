@@ -7,7 +7,7 @@ par <- S7::new_class(
       class = S7::class_numeric,
       setter = function(self, value) {
         if (length(value) != 1) rlang::abort("value must be of value 1")
-        if (outside(self@support, value)) rlang::abort("value is outside of the parameter support")
+        if (outside(self@support, value) && !is.na(value)) rlang::abort("value is outside of the parameter support")
         self@value <- value
         self
       }
@@ -27,7 +27,7 @@ par <- S7::new_class(
     support = support,
     fixed = S7::class_logical
   ),
-  constructor = function(key="", label=key, value, support, fixed=FALSE) {
+  constructor = function(key="", label=key, value=NA_real_, support, fixed=FALSE) {
     S7::new_object(S7::S7_object(), key=key, label=label, value=value, support=support, fixed=fixed)
   }
 )
@@ -37,15 +37,16 @@ tpar <- S7::new_class(
   properties = list(
     key = S7::class_character,
     label = S7::class_character,
-    transform = S7::class_expression
+    value = S7::class_expression,
+    update = S7::class_list
   ),
-  constructor = function(key="", label=key, transform) {
-    S7::new_object(S7::S7_object(), key=key, label=label, transform=transform)
+  constructor = function(key="", label=key, value, update = list()) {
+    S7::new_object(S7::S7_object(), key=key, label=label, value=value, update=update)
   }
 )
 
 
-pars <- function(pars=list(), tpars=list()) {
+pars <- function(pars=list(), tpars=list(), rargs=list()) {
   par_keys <- vapply(pars, \(par) par@key, character(1))
   names(pars) <- par_keys
 
@@ -56,7 +57,7 @@ pars <- function(pars=list(), tpars=list()) {
 
   properties <- c(properties, lapply(tpars, as.property))
 
-  return(list(pars = pars, tpars = tpars, properties = properties))
+  return(list(pars = pars, tpars = tpars, properties = properties, rargs=rargs))
 }
 
 # methods -----
@@ -92,9 +93,14 @@ S7::method(as.property, tpar) <- function(x, ...) {
     class = S7::class_numeric,
     getter = function(self) {
       env <- value(self@parameters, simplify=FALSE) |> list2env()
-      eval(x@transform, env)
+      eval(x@value, env)
     },
     setter = function(self, value) {
+      env <- value(self@parameters, simplify=FALSE) |> list2env()
+      env[[x@key]] <- value
+      for (par in names(x@update)) {
+        self@parameters[[par]]@value <- eval(x@update[[par]], env)
+      }
       return(self)
     }
   )

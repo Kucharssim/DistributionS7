@@ -4,7 +4,8 @@ distribution <- S7::new_class(
     name = S7::class_character,
     support = real | int,
     parameters = S7::class_list,
-    transformed_parameters = S7::class_list
+    transformed_parameters = S7::class_list,
+    rargs = S7::class_list
   ),
   abstract = TRUE
 )
@@ -82,8 +83,16 @@ S7::method(mle, distribution) <- function(distribution, x, ...) {
   )
 
   if(inherits(result, "try-error")) {
-    rlang::abort("The optimization failed with the following error message")
-    result
+    rlang::abort("Optimization failed")
   }
+
+  return(result)
 }
 
+
+rargs <- S7::new_generic("rargs", "distribution")
+
+S7::method(rargs, distribution) <- function(distribution, ...) {
+  env <- value(nb@parameters, simplify=FALSE) |> list2env()
+  sapply(distribution@rargs, eval, envir=env, ...)
+}
