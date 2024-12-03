@@ -4,7 +4,6 @@ distribution <- S7::new_class(
     name = S7::class_character,
     support = real | int,
     parameters = S7::class_list,
-    transformed_parameters = S7::class_list,
     rargs = S7::class_list
   ),
   abstract = TRUE
@@ -32,10 +31,31 @@ distribution_continuous <- S7::new_class(
 
 # methods ----
 
+pdf_inner <- S7::new_generic("pdf_inner", "distribution")
+
+S7::method(pdf_inner, distribution) <- function(distribution) {
+  rlang::abort(message = "Probability density function not implemented for this distribution")
+}
+
 pdf <- S7::new_generic("pdf", "distribution")
 
 S7::method(pdf, distribution) <- function(distribution, x, log = FALSE, ...) {
-  rlang::abort(message = "Probability density function not implemented for this distribution")
+  supported <- inside(distribution@support, x)
+  missing <- is.na(x)
+
+  out <- vector(mode = "numeric", length = length(x))
+  out[!supported] <- if(log) -Inf else 0
+  out[missing] <- NA_real_
+
+  pdf_fn <- pdf_inner(distribution)
+  args <- rargs(distribution)
+  args <- c(args, rlang::dots_list(...))
+  args[["log"]] <- log
+  args[["x"]] <- x[supported & !missing]
+
+  out[supported & !missing] <- do.call(pdf_fn, args)
+
+  return(out)
 }
 
 cdf <- S7::new_generic("pdf", "distribution")
@@ -95,4 +115,13 @@ rargs <- S7::new_generic("rargs", "distribution")
 S7::method(rargs, distribution) <- function(distribution, ...) {
   env <- value(nb@parameters, simplify=FALSE) |> list2env()
   sapply(distribution@rargs, eval, envir=env, ...)
+}
+
+
+free_parameters <- S7::new_generic("free_parameters", "distribution")
+
+S7::method(free_parameters, distribution) <- function(distribution) {
+  free <- vapply(distribution@parameters, \(p) p@fixed, logical(1))
+
+  return(value(distribution@parameters, simplify=FALSE)[free])
 }
