@@ -85,8 +85,7 @@ S7::method(constrain, real) <- function(x, ...) {
 
   return(\(value) {
     p <- 1 / (1 + exp(-value))
-    p <- (value - x@min) / (x@max - x@min)
-
     return(x@min + (x@max - x@min) * p)
   })
 }
+

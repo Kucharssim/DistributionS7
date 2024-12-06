@@ -9,3 +9,9 @@ Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Collate:
+  'support.R'
+  'parameter.R'
+  'distribution.R'
+  'negative_binomial.R'
+RoxygenNote: 7.3.2
