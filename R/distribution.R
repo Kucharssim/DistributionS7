@@ -56,11 +56,24 @@ S7::method(pdf, distribution) <- function(distribution, x, log = FALSE, ...) {
   return(out)
 }
 
-cdf <- S7::new_generic("pdf", "distribution")
+cdf_fn <- S7::new_generic("cdf_fn", "distribution")
 
-S7::method(cdf, distribution) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE) {
+S7::method(cdf_fn, distribution) <- function(distribution) {
   rlang::abort(message = "Cumulative distribution function not implemented for this distribution")
+}
 
+cdf <- S7::new_generic("cdf", "distribution")
+
+S7::method(cdf, distribution) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE, ...) {
+  args <- rargs(distribution)
+  args <- c(args, rlang::dots_list(...))
+  args[["q"]] <- q
+  args[["lower.tail"]] <- lower.tail
+  args[["log.p"]] <- log.p
+
+  out <- do.call(cdf_fn(distribution), args)
+
+  return(out)
 }
 
 qf <- S7::new_generic("qf", "distribution")
@@ -87,10 +100,13 @@ S7::method(rng, distribution) <- function(distribution, n, ...) {
   return(x)
 }
 
-S7::method(logLik, distribution) <- function(object, x, factor=1, ...) {
-  loglik <- pdf(object, x, log=TRUE)
+likelihood <- S7::new_generic("likelihood", "distribution")
 
-  return(factor*sum(loglik))
+S7::method(likelihood, distribution) <- function(distribution, x, log=TRUE, factor=1, ...) {
+  loglik <- factor*sum(pdf(distribution, x, log=TRUE))
+  if (log) return(loglik)
+
+  return(exp(loglik))
 }
 
 mle <- S7::new_generic("mle", "distribution")
@@ -104,7 +120,7 @@ S7::method(mle, distribution) <- function(distribution, x, ...) {
 
   objective <- function(par, d, x) {
     uvalue(d) <- par
-    logLik(d, x, factor=-2)
+    likelihood(d, x, log=TRUE, factor=-2)
   }
 
   result <- try(
@@ -234,3 +250,4 @@ S7::method(summary, distribution) <- function(distribution, ciLevel=0.95) {
 
   return(data.frame(parameter = key, estimate = estimate, sd = sd, lower=lower, upper=upper))
 }
+
