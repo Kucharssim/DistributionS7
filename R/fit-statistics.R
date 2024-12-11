@@ -51,7 +51,7 @@ ad_test <- S7::new_generic("ad_test", "distribution")
 
 S7::method(ad_test, distribution_continuous) <- function(distribution, x, estimated=FALSE) {
   if(!estimated && !is.null(distribution@parameters@estimates))
-    rlang::warn("`estimated` was set to FALSE but the distribution appears to be fitted to data.")
+    rlang::warn("ad_test: `estimated` was set to FALSE but the distribution appears to be fitted to data.")
 
   fn <- function(x) cdf(distribution, x)
 

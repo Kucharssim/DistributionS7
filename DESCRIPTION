@@ -16,7 +16,11 @@ Collate:
   'negative_binomial.R'
   'normal.R'
   'fit-statistics.R'
+  'plots.R'
 RoxygenNote: 7.3.2
 Imports:
   rlang,
-  goftest
+  goftest,
+  ggplot2,
+  jaspGraphs,
+  patchwork

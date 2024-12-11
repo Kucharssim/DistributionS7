@@ -76,12 +76,25 @@ S7::method(cdf, distribution) <- function(distribution, q, lower.tail = TRUE, lo
   return(out)
 }
 
-qf <- S7::new_generic("qf", "distribution")
+qf_fn <- S7::new_generic("qf_fn", "distribution")
 
-S7::method(qf, distribution) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE) {
+S7::method(qf_fn, distribution) <- function(distribution, p, lower.tail = TRUE, log.p = FALSE) {
   rlang::abort(message = "Quantile function not implemented for this distribution")
 }
 
+qf <- S7::new_generic("qf", "distribution")
+
+S7::method(qf, distribution) <- function(distribution, p, lower.tail = TRUE, log.p = FALSE, ...) {
+  args <- rargs(distribution)
+  args <- c(args, rlang::dots_list(...))
+  args[["p"]] <- p
+  args[["lower.tail"]] <- lower.tail
+  args[["log.p"]] <- log.p
+
+  out <- do.call(qf_fn(distribution), args)
+
+  return(out)
+}
 rng_fn <- S7::new_generic("rng_fn", "distribution")
 
 S7::method(rng_fn, distribution) <- function(distribution) {

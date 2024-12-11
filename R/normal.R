@@ -33,5 +33,7 @@ S7::method(pdf_fn, normal) <- function(distribution) stats::dnorm
 
 S7::method(cdf_fn, normal) <- function(distribution) stats::pnorm
 
+S7::method(qf_fn, normal)  <- function(distribution) stats::qnorm
+
 S7::method(rng_fn, normal) <- function(distribution) stats::rnorm
 
