@@ -1,5 +1,5 @@
-par <- S7::new_class(
-  "par",
+parameter <- S7::new_class(
+  "parameter",
   properties = list(
     key = S7::class_character,
     label = S7::class_character,
@@ -35,90 +35,18 @@ par <- S7::new_class(
   }
 )
 
-tpar <- S7::new_class(
-  "tpar",
-  properties = list(
-    key = S7::class_character,
-    label = S7::class_character,
-    value = S7::class_expression,
-    update = S7::class_list
-  ),
-  constructor = function(key="", label=key, value, update = list()) {
-    S7::new_object(S7::S7_object(), key=key, label=label, value=value, update=update)
-  }
-)
-
-estimates <- S7::new_class(
-  "estimates",
-  properties = list(
-    mean = S7::class_numeric,
-    vcov = S7::class_numeric
-  )
-)
-
-
-pars <- S7::new_class(
-  "pars",
-  properties = list(
-    main = S7::class_list,
-    transformed = S7::class_list,
-    rargs = S7::class_list,
-    estimates = NULL | estimates
-  ),
-  constructor = function(..., rargs = list()) {
-    pars <- rlang::dots_list(...)
-    par_keys <- vapply(pars, \(par) par@key, character(1))
-    names(pars) <- par_keys
-
-    is_par <- vapply(pars, is.par, logical(1))
-
-    S7::new_object(S7::S7_object(), main = pars[is_par], transformed = pars[!is_par], rargs = rargs)
-  }
-)
 
 
 
 # methods -----
-## make properties out of parameters ----
 
-parameter_property <- function(key) {
-  S7::new_property(
-    class = S7::class_numeric,
-    getter = function(self) {
-      par <- self@parameters@main[[key]]
-
-      if (!is.null(par))
-        return(par@value)
-
-      return(parameters(self)[[key]])
-    },
-    setter = function(self, value) {
-      par <- self@parameters@main[[key]]
-
-      if (!is.null(par)) {
-        self@parameters@main[[key]]@value <- value
-        return(self)
-      }
-
-      par <- self@parameters@transformed[[key]]
-
-      if (is.null(par)) rlang::abort(sprintf("Parameter %s not found", key))
-
-      env <- parameters(self, as_env=TRUE)
-      env[[key]] <- value
-      for (p in names(par@update)) {
-        self@parameters@main[[p]]@value <- eval(par@update[[p]], env)
-      }
-
-      return(self)
-    }
-  )
+## from support.R
+S7::method(unconstrain, parameter) <- function(x, ...) {
+  unconstrain(x@support)
 }
 
-parameter_properties <- function(keys) {
-  out <- lapply(keys, parameter_property)
-  names(out) <- keys
-  return(out)
+S7::method(constrain, parameter) <- function(x, ...) {
+  constrain(x@support)
 }
 
 ## free/fixed parameters convenience ----
@@ -133,12 +61,8 @@ is.fixed <- function(x) {
 }
 
 
-is.par <- function(x) {
-  inherits(x, "par") || inherits(x, "distributions7::par")
-}
-
-is.tpar <- function(x) {
-  inherits(x, "tpar") || inherits(x, "distributions7::tpar")
+is.parameter <- function(x) {
+  inherits(x, "parameter") || inherits(x, "DistributionS7::parameter")
 }
 
 
@@ -146,22 +70,14 @@ is.tpar <- function(x) {
 
 derivative <- S7::new_generic("derivative", "object")
 
-S7::method(derivative, par) <- function(object, ...) {
+S7::method(derivative, parameter) <- function(object, ...) {
   d_fn <- derivative(object@support)
   d_fn(object@uvalue)
 }
 
-S7::method(derivative, tpar) <- function(object, names, values, ...) {
-  d_fn <- deriv(object@value, names)
-
-  res = eval(d_fn, list2env(as.list(values)))
-
-  return(attr(res, "gradient"))
-}
-
 S7::method(derivative, real) <- function(object, ...) {
   if (is.infinite(object@min) && is.infinite(object@max))
-    return(identity)
+    return(\(x, ..) return(1))
 
   if (is.infinite(object@max))
     return(exp)

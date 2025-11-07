@@ -69,7 +69,6 @@ S7::method(unconstrain, real) <- function(x, ...) {
 
 S7::method(unconstrain, int) <- function(x, ...) identity
 
-
 ## constrain ----
 constrain <- S7::new_generic("constrain", "x")
 

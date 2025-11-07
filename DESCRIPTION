@@ -19,7 +19,7 @@ Collate:
   'arithmetic.R'
   'geoms.R'
   'plots.R'
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports:
   rlang,
   goftest,

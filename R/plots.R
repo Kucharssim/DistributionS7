@@ -2,6 +2,9 @@
 
 
 S7::new_generic("plot", "x")
+plot_pdf <- S7::new_generic("plot_pdf", "distribution")
+plot_cdf <- S7::new_generic("plot_cdf", "distribution")
+plot_qf  <- S7::new_generic("plot_qf",  "distribution")
 
 S7::method(plot, distribution) <- function(x, type=c("all", "pdf", "cdf", "qf"), ...) {
   type <- rlang::arg_match(type, multiple=FALSE)
@@ -27,94 +30,44 @@ S7::method(plot, distribution) <- function(x, type=c("all", "pdf", "cdf", "qf"),
   return(plot)
 }
 
-plot_distribution <- S7::new_class(
-  name = "plot_distribution",
-  properties = list(
-    layers = S7::class_list,
-    xlab = S7::class_character,
-    ylab = S7::class_character,
-    x_range= S7::class_numeric | NULL
-  ),
-  abstract = TRUE
-)
+S7::method(plot_pdf, distribution_continuous) <- function(distribution, xlim, points=NULL, intervals=list(), ...) {
 
-S7::method(print, plot_distribution) <- function(x, ...) {
-  plot <- plot_assemble(x, ...)
-  print(plot)
-}
+  plot <- ggplot2::ggplot() +
+    ggplot2::xlim(x_range(distribution, xlim))
 
-
-plot_pdf <- S7::new_class(
-  name = "plot_pdf",
-  parent = plot_distribution,
-  constructor = function(x_range=NULL) {
-    S7::new_object(
-      S7::S7_object(),
-      layers = list(),
-      xlab = "X",
-      ylab = "Density",
-      x_range = x_range
-    )
+  for (interval in intervals) {
+    plot <- plot +
+      stat_pdf(n, geom="ribbon", fill="steelblue", xlim=interval) +
+      stat_cdf_interval(n, xlim=interval, mapping=ggplot2::aes(label = ggplot2::after_stat(area)))
   }
-)
 
-plot_assemble <- S7::new_generic("plot_assemble", "plot")
 
-S7::method(plot_assemble, plot_pdf) <- function(plot, ...) {
-  ggplot2::ggplot() +
-    plot@layers +
-    ggplot2::xlab(plot@xlab) +
-    ggplot2::ylab(plot@ylab) +
-    jaspGraphs::geom_rangeframe() +
-    jaspGraphs::themeJaspRaw()
-}
+  plot <- plot +
+    stat_pdf(distribution, geom="line", linewidth=1.5)
 
-draw_function <- S7::new_generic("draw_function", c("plot", "distribution"))
+  if (!is.null(points))
+    plot <- plot +
+      stat_pdf(distribution, data=data.frame(x=points), mapping = ggplot2::aes(x=x),
+               size = 3, shape = 21, colour = "black", fill = "grey", alpha = NA, stroke = 0.5)
 
-S7::method(draw_function, list(plot_pdf, distribution_continuous)) <- function(
-    plot, distribution,
-    range=qf(distribution, p=c(0.01, 0.99)), length=101,
-    ...
-    ) {
-  x = seq(range[1], range[2], length.out = length)
-  y = pdf(distribution, x)
-  df <- data.frame(x=x,y=y)
-
-  l <- length(plot@layers)
-  plot@layers[[l+1]] <- ggplot2::geom_line(
-    mapping = ggplot2::aes(x=x,y=y),
-    data = df, ...)
 
   return(plot)
 }
 
-draw_density <- S7::new_generic("draw_density", c("plot", "distribution"))
 
-S7::method(draw_density, list(plot_pdf, distribution_continuous)) <- function(
-    plot, distribution, x,
-    point_args=list(), segment_args=list()) {
+x_range <- S7::new_generic("x_range", "distribution")
 
-  segment_args[["data"]] <- data.frame(x=x, xend=x, y=0, yend=pdf(distribution, x))
-  segment_args[["mapping"]] <- ggplot2::aes(x=x,y=y, xend=xend, yend=yend)
-  l <- length(plot@layers)
-  plot@layers[[l+1]] <-
-    do.call(ggplot2::geom_segment, segment_args)
+S7::method(x_range, distribution_continuous) <- function(distribution, xlim, coverage=0.99) {
+  if(missing(xlim)) {
+    tail <- (1-coverage) / 2
+    xlim <- qf(distribution, c(tail, 1-tail))
+  }
 
-
-  point_args[["data"]] <- data.frame(x=x, y=pdf(distribution, x))
-  point_args[["mapping"]] <- ggplot2::aes(x=x,y=y)
-  l <- length(plot@layers)
-  plot@layers[[l+1]] <-
-    do.call(jaspGraphs::geom_point, point_args)
-  return(plot)
+  return(xlim)
 }
 
-draw_probability <- S7::new_generic("draw_probability", c("plot", "distribution"))
 
-S7::method(draw_probability, list(plot_pdf, distribution_continuous)) <- function(
-    plot, distribution, x) {
 
-}
 
 
 

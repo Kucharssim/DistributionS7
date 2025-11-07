@@ -3,7 +3,8 @@ distribution <- S7::new_class(
   properties = list(
     name = S7::class_character,
     support = real | int,
-    parameters = pars
+    parameters = S7::class_list,
+    rargs = S7::class_list
   ),
   abstract = TRUE
 )
@@ -122,145 +123,81 @@ S7::method(likelihood, distribution) <- function(distribution, x, log=TRUE, fact
   return(exp(loglik))
 }
 
-mle <- S7::new_generic("mle", "distribution")
-
-S7::method(mle, distribution) <- function(distribution, x, ...) {
-  rlang::inform(message = "Analytic MLE is not available/implemented, using numerical optimization...")
-
-  x <- na.omit(x)
-
-  start <- uvalue(distribution)
-
-  objective <- function(par, d, x) {
-    uvalue(d) <- par
-    likelihood(d, x, log=TRUE, factor=-2)
-  }
-
-  result <- try(
-    optim(par=start, fn=objective, d=distribution, x=x, hessian=TRUE, ...),
-    silent=TRUE
-  )
-
-  if (inherits(result, "try-error")) {
-    rlang::warn("Optimization failed")
-    return(result)
-  }
-
-  vcov <- try(solve(result[["hessian"]]))
-
-  if (inherits(vcov, "try-error")) {
-    rlang::warn("Variance covariance matrix could not be computed")
-    vcov <- NULL
-  }
-
-
-  uvalue(distribution) <- result$par
-  distribution@parameters@estimates <- estimates(mean = result$par, vcov = vcov)
-
-  return(distribution)
-}
-
 
 rargs <- S7::new_generic("rargs", "x")
 
-S7::method(rargs, distribution) <- function(x, ...) rargs(x@parameters, ...)
+S7::method(rargs, distribution) <- function(x, ...) {
+  env <- parameter_values(x, as_env=TRUE)
 
-S7::method(rargs, pars) <- function(x, ...) {
-  env <- parameters(x, transformed=TRUE, as_env=TRUE)
-
-  sapply(x@rargs, eval, envir=env, ...)
+  lapply(x@rargs, eval, envir=env, ...)
 }
 
-parameters <- S7::new_generic("parameters", "x")
+# parameter properties ----
+parameter_properties <- S7::new_generic("parameter_properties", "x")
 
-S7::method(parameters, distribution) <- function(x, ...) parameters(x@parameters, ...)
+S7::method(parameter_properties, distribution) <- function(
+    x, property = c("key", "label", "value", "uvalue", "support", "fixed"),
+    as_env=FALSE, which = c("all", "free", "fixed"), ...) {
+  property <- match.arg(property)
+  which <- match.arg(which)
 
-S7::method(parameters, pars) <- function(x, transformed=TRUE, as_env=FALSE, ...) {
-  env <- rlang::env()
+  output <- switch(
+    property,
+    key     = lapply(x@parameters, \(p) p@key    ),
+    label   = lapply(x@parameters, \(p) p@label  ),
+    value   = lapply(x@parameters, \(p) p@value  ),
+    uvalue  = lapply(x@parameters, \(p) p@uvalue ),
+    support = lapply(x@parameters, \(p) p@support),
+    fixed   = lapply(x@parameters, \(p) p@fixed  )
+  )
 
-  for (p in names(x@main)) env[[p]] <- x@main[[p]]@value
+  if (which != "all") {
+    fixed <- sapply(x@parameters, slot, "fixed")
 
-  if (transformed)
-    for (p in names(x@transformed)) env[[p]] <- eval(x@transformed[[p]]@value, envir=env)
-
-  if (!as_env) env <- as.list(env)
-  return(env)
-}
-
-
-free_parameters <- S7::new_generic("free_parameters", "x")
-
-S7::method(free_parameters, distribution) <- function(x) free_parameters(x@parameters)
-
-S7::method(free_parameters, pars) <- function(x) {
-  f = vapply(x@main, \(p) !p@fixed, logical(1))
-  return(names(f)[f])
-}
-
-uvalue <- S7::new_generic("uvalue", "x")
-
-S7::method(uvalue, distribution) <- function(x, ...) uvalue(x@parameters)
-
-S7::method(uvalue, pars) <- function(x, fixed=FALSE,...) {
-  par_names <- if(fixed) names(x@main) else free_parameters(x)
-  pars <- x@main[par_names]
-
-  vapply(pars, \(p) p@uvalue, numeric(1), ...)
-}
-
-`uvalue<-` <- S7::new_generic("uvalue<-", "x")
-
-S7::method(`uvalue<-`, distribution) <- function(x, values) {
-  uvalue(x@parameters) <- values
-  x
-}
-
-S7::method(`uvalue<-`, pars) <- function(x, values) {
-  for (p in free_parameters(x)) {
-    if (is.null(x@main[[p]])) rlang::warn(sprintf("Parameter %s was not found", p))
-    v <- values[[p]]
-    if (is.null(v)) next
-    x@main[[p]]@uvalue <- v
-  }
-  x
-}
-
-# summary after fitting ---
-
-S7::method(summary, distribution) <- function(distribution, ciLevel=0.95) {
-  if (is.null(distribution@parameters@estimates)) {
-    rlang::inform("The distribution has not been fitted to data")
-    return(invisible())
-  }
-  npar <- length(distribution@parameters@estimates@mean)
-
-  estimate <- unlist(parameters(distribution))
-  key <- names(estimate)
-  sd <- setNames(vector(length=length(key)), key)
-
-  est_names <- names(distribution@parameters@estimates@mean)
-  dxdy <- setNames(vector(length=length(est_names)), est_names)
-  for (k in names(distribution@parameters@estimates@mean)) {
-    par <- distribution@parameters@main[[k]]
-    dxdy[k] <- derivative(par)
-  }
-  jac <- if (npar == 1) matrix(dxdy) else diag(dxdy)
-  vcov <- jac %*% distribution@parameters@estimates@vcov %*% jac
-
-  sd[est_names] <- sqrt(diag(vcov))
-
-  for (k in names(distribution@parameters@transformed)) {
-    par = distribution@parameters@transformed[[k]]
-    dxdy <- derivative(par, est_names, estimate)
-    var <- dxdy %*% vcov %*% t(dxdy)
-    sd[k] <- sqrt(var)
+    output <- if (which == "fixed") output[fixed] else output[!fixed]
   }
 
-  alpha = 1-ciLevel
-  lower <- qnorm(  alpha/2, estimate, sd)
-  upper <- qnorm(1-alpha/2, estimate, sd)
+  if (as_env) output <- rlang::new_environment(data = output, parent = rlang::current_env())
 
-
-  return(data.frame(parameter = key, estimate = estimate, sd = sd, lower=lower, upper=upper))
+  return(output)
 }
 
+parameter_values <- S7::new_generic("parameter_values", "x")
+
+S7::method(parameter_values, distribution) <- function(x, as_env=FALSE, which = c("all", "free", "fixed"), ...) {
+  parameter_properties(x, property="value", as_env=as_env, which=which, ...)
+}
+
+`parameter_values<-` <- S7::new_generic("parameter_values<-", "x")
+
+S7::method(`parameter_values<-`, distribution) <- function(x, values) {
+  for (key in names(values)) {
+    if (is.null(x@parameters[[key]])) {
+      rlang::warn(sprintf("Parameter `%s` was not found", key))
+      next
+    }
+    x@parameters[[key]]@value <- values[[key]]
+  }
+
+  return(x)
+}
+
+parameter_uvalues <- S7::new_generic("parameter_uvalues", "x")
+
+S7::method(parameter_uvalues, distribution) <- function(x, as_env=FALSE, which = c("all", "free", "fixed"), ...) {
+  parameter_properties(x, property="uvalue", as_env=as_env, which=which, ...)
+}
+
+`parameter_uvalues<-` <- S7::new_generic("parameter_uvalues<-", "x")
+
+S7::method(`parameter_uvalues<-`, distribution) <- function(x, values) {
+  for (key in names(values)) {
+    if (is.null(x@parameters[[key]])) {
+      rlang::warn(sprintf("Parameter `%s` was not found", key))
+      next
+    }
+    x@parameters[[key]]@uvalue <- values[[key]]
+  }
+
+  return(x)
+}
