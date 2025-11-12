@@ -2,9 +2,8 @@ distribution <- S7::new_class(
   name = "distribution",
   properties = list(
     name = S7::class_character,
-    support = real | int,
-    parameters = S7::class_list,
-    rargs = S7::class_list
+    support = real | int
+    #parameters = S7::class_list
   ),
   abstract = TRUE
 )
@@ -27,7 +26,6 @@ distribution_continuous <- S7::new_class(
   ),
   abstract = TRUE
 )
-
 
 # methods ----
 
@@ -124,80 +122,93 @@ S7::method(likelihood, distribution) <- function(distribution, x, log=TRUE, fact
 }
 
 
-rargs <- S7::new_generic("rargs", "x")
+rargs <- S7::new_generic("rargs", "distribution")
 
-S7::method(rargs, distribution) <- function(x, ...) {
-  env <- parameter_values(x, as_env=TRUE)
 
-  lapply(x@rargs, eval, envir=env, ...)
-}
 
 # parameter properties ----
-parameter_properties <- S7::new_generic("parameter_properties", "x")
+
+parameters <- S7::new_generic("parameters", "distribution")
+
+S7::method(parameters, distribution) <- function(distribution, which = c("all", "free", "fixed"), ...) {
+  which <- match.arg(which)
+  props <- S7::props(distribution)
+  is_par <- vapply(props, is.parameter, logical(1))
+
+  all_pars <- props[is_par]
+
+  if (which == "all") return(all_pars)
+
+  fixed <- vapply(all_pars, S7::prop, logical(1), "fixed")
+
+  pars <- if (which == "fixed") all_pars[fixed] else all_pars[!fixed]
+
+  return(pars)
+}
+
+parameter_properties <- S7::new_generic("parameter_properties", "distribution")
 
 S7::method(parameter_properties, distribution) <- function(
-    x, property = c("key", "label", "value", "uvalue", "support", "fixed"),
-    as_env=FALSE, which = c("all", "free", "fixed"), ...) {
+    distribution,
+    property = c("key", "label", "value", "uvalue", "support", "fixed"),
+    which = "all", ...) {
   property <- match.arg(property)
-  which <- match.arg(which)
+
+  pars <- parameters(distribution, which=which)
 
   output <- switch(
     property,
-    key     = lapply(x@parameters, \(p) p@key    ),
-    label   = lapply(x@parameters, \(p) p@label  ),
-    value   = lapply(x@parameters, \(p) p@value  ),
-    uvalue  = lapply(x@parameters, \(p) p@uvalue ),
-    support = lapply(x@parameters, \(p) p@support),
-    fixed   = lapply(x@parameters, \(p) p@fixed  )
+    key     = lapply(pars, \(p) p@key    ),
+    label   = lapply(pars, \(p) p@label  ),
+    value   = lapply(pars, \(p) p@value  ),
+    uvalue  = lapply(pars, \(p) p@uvalue ),
+    support = lapply(pars, \(p) p@support),
+    fixed   = lapply(pars, \(p) p@fixed  )
   )
-
-  if (which != "all") {
-    fixed <- sapply(x@parameters, slot, "fixed")
-
-    output <- if (which == "fixed") output[fixed] else output[!fixed]
-  }
-
-  if (as_env) output <- rlang::new_environment(data = output, parent = rlang::current_env())
 
   return(output)
 }
 
-parameter_values <- S7::new_generic("parameter_values", "x")
+parameter_values <- S7::new_generic("parameter_values", "distribution")
 
-S7::method(parameter_values, distribution) <- function(x, as_env=FALSE, which = c("all", "free", "fixed"), ...) {
-  parameter_properties(x, property="value", as_env=as_env, which=which, ...)
+S7::method(parameter_values, distribution) <- function(distribution, which = "all", ...) {
+  parameter_properties(distribution, property="value", which=which, ...)
 }
 
-`parameter_values<-` <- S7::new_generic("parameter_values<-", "x")
+`parameter_values<-` <- S7::new_generic("parameter_values<-", "distribution")
 
-S7::method(`parameter_values<-`, distribution) <- function(x, values) {
+S7::method(`parameter_values<-`, distribution) <- function(distribution, values) {
   for (key in names(values)) {
-    if (is.null(x@parameters[[key]])) {
+    if(!S7::prop_exists(distribution, key) || !(S7::prop(distribution, key) |> is.parameter())) {
       rlang::warn(sprintf("Parameter `%s` was not found", key))
       next
     }
-    x@parameters[[key]]@value <- values[[key]]
+    par <- S7::prop(distribution, key)
+    par@value <- values[[key]]
+    S7::prop(distribution, key) <- par
   }
 
-  return(x)
+  return(distribution)
 }
 
-parameter_uvalues <- S7::new_generic("parameter_uvalues", "x")
+parameter_uvalues <- S7::new_generic("parameter_uvalues", "distribution")
 
-S7::method(parameter_uvalues, distribution) <- function(x, as_env=FALSE, which = c("all", "free", "fixed"), ...) {
-  parameter_properties(x, property="uvalue", as_env=as_env, which=which, ...)
+S7::method(parameter_uvalues, distribution) <- function(distribution, which = "all", ...) {
+  parameter_properties(x, property="uvalue", which=which, ...)
 }
 
-`parameter_uvalues<-` <- S7::new_generic("parameter_uvalues<-", "x")
+`parameter_uvalues<-` <- S7::new_generic("parameter_uvalues<-", "distribution")
 
-S7::method(`parameter_uvalues<-`, distribution) <- function(x, values) {
+S7::method(`parameter_uvalues<-`, distribution) <- function(distribution, values) {
   for (key in names(values)) {
-    if (is.null(x@parameters[[key]])) {
+    if(!S7::prop_exists(distribution, key) || !(S7::prop(distribution, key) |> is.parameter())) {
       rlang::warn(sprintf("Parameter `%s` was not found", key))
       next
     }
-    x@parameters[[key]]@uvalue <- values[[key]]
+    par <- S7::prop(distribution, key)
+    par@uvalue <- values[[key]]
+    S7::prop(distribution, key) <- par
   }
 
-  return(x)
+  return(distribution)
 }

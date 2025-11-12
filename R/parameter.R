@@ -2,6 +2,7 @@ parameter <- S7::new_class(
   "parameter",
   properties = list(
     key = S7::class_character,
+    name = S7::class_character,
     label = S7::class_character,
     value = S7::new_property(
       class = S7::class_numeric,
@@ -27,18 +28,19 @@ parameter <- S7::new_class(
     support = support,
     fixed = S7::class_logical
   ),
-  constructor = function(key="", label=key, value, support, fixed) {
+  constructor = function(key="", name=key, label=name, value, support, fixed) {
     if(missing(fixed)) fixed <- is.fixed(value)
     attr(value, "fixed") <- NULL
 
-    S7::new_object(S7::S7_object(), key=key, label=label, value=value, support=support, fixed=fixed)
+    S7::new_object(S7::S7_object(), key=key, name=name, label=label, value=value, support=support, fixed=fixed)
   }
 )
 
 
 
-
 # methods -----
+
+
 
 ## from support.R
 S7::method(unconstrain, parameter) <- function(x, ...) {
@@ -64,7 +66,6 @@ is.fixed <- function(x) {
 is.parameter <- function(x) {
   inherits(x, "parameter") || inherits(x, "DistributionS7::parameter")
 }
-
 
 ### derivatives of support transformations ----
 

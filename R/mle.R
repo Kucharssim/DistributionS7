@@ -1,3 +1,5 @@
+sufficient_statistics <- S7::new_generic("sufficient_statistics", "distribution")
+
 mle <- S7::new_generic("mle", "distribution")
 
 S7::method(mle, distribution) <- function(distribution, x, ...) {
@@ -68,10 +70,10 @@ S7::method(mle_optim, distribution) <- function(distribution, x, constrained=FAL
 normal_theory_uncertainty <- S7::new_generic("parameter_uvalues", "distribution")
 
 S7::method(normal_theory_uncertainty, distribution) <- function(
-    distribution, estimates, hessian, constrained=FALSE, ciLevel=0.95, symmetric=TRUE
+    distribution, estimates, hessian, constrained=FALSE, ci_level=0.95, symmetric=TRUE
   ) {
   estimates <- unlist(estimates)
-  alpha <- 1-ciLevel
+  alpha <- 1-ci_level
   npar <- length(estimates)
   keys <- names(estimates)
 

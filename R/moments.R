@@ -15,11 +15,11 @@ S7::method(moment, distribution_continuous) <- function(distribution, moment, ty
   if (type == "raw") {
     integrand <- \(x) x^moment * pdf(distribution, x)
   } else if (type == "central") {
-    mean <- expectation(distribution, x, value_only=TRUE, ...)
+    mean <- expectation(distribution, value_only=TRUE, ...)
     integrand <- \(x) (x-mean)^moment * pdf(distribution, x)
   } else {
-    mean <- expectation(distribution, x, value_only=TRUE, ...)
-    sd <- standard_deviation(distribution, x, value_only=TRUE, ...)
+    mean <- expectation(distribution, value_only=TRUE, ...)
+    sd <- std_dev(distribution, value_only=TRUE, ...)
     integrand <- \(x) ((x-mean)/sd)^moment * pdf(distribution, x)
   }
 
@@ -97,7 +97,7 @@ coef_variation <- S7::new_generic("coef_variation", "distribution")
 
 S7::method(coef_variation, distribution) <- function(distribution, ...) {
   return(
-    standard_devitation(distribution, ...) / expectation(distribution, ...)
+    std_dev(distribution, ...) / expectation(distribution, ...)
   )
 }
 
