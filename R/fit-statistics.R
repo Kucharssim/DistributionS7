@@ -1,4 +1,4 @@
-S7::method(logLik, distribution) <- function(object, x, ...) {
+S7::method(logLik, Distribution) <- function(object, x, ...) {
   supported <- inside(object@support, x)
   missing <- is.na(x)
   x <- x[supported & !missing]
@@ -11,14 +11,14 @@ S7::method(logLik, distribution) <- function(object, x, ...) {
   return(result)
 }
 
-S7::method(AIC, distribution) <- function(object, x, ...) AIC(logLik(object, x=x), ...)
+S7::method(AIC, Distribution) <- function(object, x, ...) AIC(logLik(object, x=x), ...)
 
-S7::method(BIC, distribution) <- function(object, x, ...) BIC(logLik(object, x=x), ...)
+S7::method(BIC, Distribution) <- function(object, x, ...) BIC(logLik(object, x=x), ...)
 
 
 ks_test <- S7::new_generic("ks_test", "distribution")
 
-S7::method(ks_test, distribution_continuous) <- function(distribution, x, ...) {
+S7::method(ks_test, DistributionContinuous) <- function(distribution, x, ...) {
   result <- ks.test(x, cdf, distribution=distribution)
 
   result[["test"]] <- "ks_test"
@@ -26,13 +26,13 @@ S7::method(ks_test, distribution_continuous) <- function(distribution, x, ...) {
   return(result)
 }
 
-S7::method(ks_test, distribution_discrete) <- function(distribution, ...)
+S7::method(ks_test, DistributionDiscrete) <- function(distribution, ...)
   rlang::inform("Kolmogorov-Smirnov test is available only for continuous distributions")
 
 
 cvm_test <- S7::new_generic("cvm_test", "distribution")
 
-S7::method(cvm_test, distribution_continuous) <- function(distribution, x, estimated=FALSE) {
+S7::method(cvm_test, DistributionContinuous) <- function(distribution, x, estimated=FALSE) {
   if(!estimated && !is.null(distribution@parameters@estimates))
     rlang::warn("`estimated` was set to FALSE but the distribution appears to be fitted to data.")
 
@@ -44,12 +44,12 @@ S7::method(cvm_test, distribution_continuous) <- function(distribution, x, estim
   return(result)
 }
 
-S7::method(cvm_test, distribution_discrete) <- function(distribution, ...)
+S7::method(cvm_test, DistributionDiscrete) <- function(distribution, ...)
   rlang::inform("Cramer-von Mises test is available only for continuous distributions")
 
 ad_test <- S7::new_generic("ad_test", "distribution")
 
-S7::method(ad_test, distribution_continuous) <- function(distribution, x, estimated=FALSE) {
+S7::method(ad_test, DistributionContinuous) <- function(distribution, x, estimated=FALSE) {
   if(!estimated && !is.null(distribution@parameters@estimates))
     rlang::warn("ad_test: `estimated` was set to FALSE but the distribution appears to be fitted to data.")
 
@@ -61,14 +61,14 @@ S7::method(ad_test, distribution_continuous) <- function(distribution, x, estima
   return(result)
 }
 
-S7::method(ad_test, distribution_discrete) <- function(distribution, ...)
+S7::method(ad_test, DistributionDiscrete) <- function(distribution, ...)
   rlang::inform("Anderson-Darling test is available only for continuous distributions")
 
 
 
 fit_statistics <- S7::new_generic("fit_statistics", "distribution")
 
-S7::method(fit_statistics, distribution_continuous) <- function(distribution, x, estimated) {
+S7::method(fit_statistics, DistributionContinuous) <- function(distribution, x, estimated) {
   if (missing(estimated)) {
     estimated <- !is.null(distribution@parameters@estimates)
     if (estimated)

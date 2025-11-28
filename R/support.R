@@ -1,5 +1,5 @@
-support <- S7::new_class(
-  name = "support",
+Support <- S7::new_class(
+  name = "Support",
   properties = list(
     min = S7::new_property(
       class = S7::class_numeric,
@@ -17,14 +17,14 @@ support <- S7::new_class(
   }
 )
 
-real <- S7::new_class(
-  name = "real",
-  parent = support
+Real <- S7::new_class(
+  name = "Real",
+  parent = Support
 )
 
-int <- S7::new_class(
-  name = "int",
-  parent = support
+Int <- S7::new_class(
+  name = "Int",
+  parent = Support
 )
 
 
@@ -32,9 +32,9 @@ int <- S7::new_class(
 
 inside <- S7::new_generic("inside", "support")
 
-S7::method(inside, support) <- function(support, x, ...) support@min <= x & x <= support@max
+S7::method(inside, Real) <- function(support, x, ...) support@min <= x & x <= support@max
 
-S7::method(inside, int) <- function(support, x, ...) {
+S7::method(inside, Int) <- function(support, x, ...) {
   if (rlang::is_integerish(x))
     return(support@min <= x & x <= support@max)
 
@@ -44,13 +44,13 @@ S7::method(inside, int) <- function(support, x, ...) {
 
 outside <- S7::new_generic("outside", "support")
 
-S7::method(outside, support) <- function(support, x, ...) !inside(support, x, ...)
+S7::method(outside, Support) <- function(support, x, ...) !inside(support, x, ...)
 
 
 ## unconstrain ----
 unconstrain <- S7::new_generic("unconstrain", "x")
 
-S7::method(unconstrain, real) <- function(x, ...) {
+S7::method(unconstrain, Real) <- function(x, ...) {
   if (is.infinite(x@min) && is.infinite(x@max))
     return(identity)
 
@@ -67,12 +67,12 @@ S7::method(unconstrain, real) <- function(x, ...) {
   })
 }
 
-S7::method(unconstrain, int) <- function(x, ...) identity
+S7::method(unconstrain, Int) <- function(x, ...) identity
 
 ## constrain ----
 constrain <- S7::new_generic("constrain", "x")
 
-S7::method(constrain, real) <- function(x, ...) {
+S7::method(constrain, Real) <- function(x, ...) {
   if (is.infinite(x@min) && is.infinite(x@max))
     return(identity)
 

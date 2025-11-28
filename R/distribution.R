@@ -1,28 +1,28 @@
-distribution <- S7::new_class(
-  name = "distribution",
+Distribution <- S7::new_class(
+  name = "Distribution",
   properties = list(
     name = S7::class_character,
-    support = real | int
+    support = Real | Int
     #parameters = S7::class_list
   ),
   abstract = TRUE
 )
 
-distribution_discrete <- S7::new_class(
-  name = "distribution_discrete",
-  parent = distribution,
+DistributionDiscrete <- S7::new_class(
+  name = "DistributionDiscrete",
+  parent = Distribution,
   properties = list(
-    support = int
+    support = Int
   ),
   abstract = TRUE
 )
 
 
-distribution_continuous <- S7::new_class(
-  name = "distribution_continuous",
-  parent = distribution,
+DistributionContinuous <- S7::new_class(
+  name = "DistributionContinuous",
+  parent = Distribution,
   properties = list(
-    support = real
+    support = Real
   ),
   abstract = TRUE
 )
@@ -31,13 +31,13 @@ distribution_continuous <- S7::new_class(
 
 pdf_fn <- S7::new_generic("pdf_fn", "distribution")
 
-S7::method(pdf_fn, distribution) <- function(distribution) {
+S7::method(pdf_fn, Distribution) <- function(distribution) {
   rlang::abort(message = "Probability density function not implemented for this distribution")
 }
 
 pdf <- S7::new_generic("pdf", "distribution")
 
-S7::method(pdf, distribution) <- function(distribution, x, log = FALSE, ...) {
+S7::method(pdf, Distribution) <- function(distribution, x, log = FALSE, ...) {
   supported <- inside(distribution@support, x)
   missing <- is.na(x)
 
@@ -57,13 +57,13 @@ S7::method(pdf, distribution) <- function(distribution, x, log = FALSE, ...) {
 
 cdf_fn <- S7::new_generic("cdf_fn", "distribution")
 
-S7::method(cdf_fn, distribution) <- function(distribution) {
+S7::method(cdf_fn, Distribution) <- function(distribution) {
   rlang::abort(message = "Cumulative distribution function not implemented for this distribution")
 }
 
 cdf <- S7::new_generic("cdf", "distribution")
 
-S7::method(cdf, distribution) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE, ...) {
+S7::method(cdf, Distribution) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE, ...) {
   args <- rargs(distribution)
   args <- c(args, rlang::dots_list(...))
   args[["q"]] <- q
@@ -77,13 +77,13 @@ S7::method(cdf, distribution) <- function(distribution, q, lower.tail = TRUE, lo
 
 qf_fn <- S7::new_generic("qf_fn", "distribution")
 
-S7::method(qf_fn, distribution) <- function(distribution, p, lower.tail = TRUE, log.p = FALSE) {
+S7::method(qf_fn, Distribution) <- function(distribution, p, lower.tail = TRUE, log.p = FALSE) {
   rlang::abort(message = "Quantile function not implemented for this distribution")
 }
 
 qf <- S7::new_generic("qf", "distribution")
 
-S7::method(qf, distribution) <- function(distribution, p, lower.tail = TRUE, log.p = FALSE, ...) {
+S7::method(qf, Distribution) <- function(distribution, p, lower.tail = TRUE, log.p = FALSE, ...) {
   args <- rargs(distribution)
   args <- c(args, rlang::dots_list(...))
   args[["p"]] <- p
@@ -96,13 +96,13 @@ S7::method(qf, distribution) <- function(distribution, p, lower.tail = TRUE, log
 }
 rng_fn <- S7::new_generic("rng_fn", "distribution")
 
-S7::method(rng_fn, distribution) <- function(distribution) {
+S7::method(rng_fn, Distribution) <- function(distribution) {
   rlang::abort(message = "Random number generation not implemented for this distribution")
 }
 
 rng <- S7::new_generic("rng", "distribution")
 
-S7::method(rng, distribution) <- function(distribution, n, ...) {
+S7::method(rng, Distribution) <- function(distribution, n, ...) {
   args <- rargs(distribution)
   args <- c(args, rlang::dots_list(...))
   args[["n"]] <- n
@@ -114,7 +114,7 @@ S7::method(rng, distribution) <- function(distribution, n, ...) {
 
 likelihood <- S7::new_generic("likelihood", "distribution")
 
-S7::method(likelihood, distribution) <- function(distribution, x, log=TRUE, factor=1, ...) {
+S7::method(likelihood, Distribution) <- function(distribution, x, log=TRUE, factor=1, ...) {
   loglik <- factor*sum(pdf(distribution, x, log=TRUE))
   if (log) return(loglik)
 
@@ -130,7 +130,7 @@ rargs <- S7::new_generic("rargs", "distribution")
 
 parameters <- S7::new_generic("parameters", "distribution")
 
-S7::method(parameters, distribution) <- function(distribution, which = c("all", "free", "fixed"), ...) {
+S7::method(parameters, Distribution) <- function(distribution, which = c("all", "free", "fixed"), ...) {
   which <- match.arg(which)
   props <- S7::props(distribution)
   is_par <- vapply(props, is.parameter, logical(1))
@@ -148,7 +148,7 @@ S7::method(parameters, distribution) <- function(distribution, which = c("all", 
 
 parameter_properties <- S7::new_generic("parameter_properties", "distribution")
 
-S7::method(parameter_properties, distribution) <- function(
+S7::method(parameter_properties, Distribution) <- function(
     distribution,
     property = c("key", "label", "value", "uvalue", "support", "fixed"),
     which = "all", ...) {
@@ -171,13 +171,13 @@ S7::method(parameter_properties, distribution) <- function(
 
 parameter_values <- S7::new_generic("parameter_values", "distribution")
 
-S7::method(parameter_values, distribution) <- function(distribution, which = "all", ...) {
+S7::method(parameter_values, Distribution) <- function(distribution, which = "all", ...) {
   parameter_properties(distribution, property="value", which=which, ...)
 }
 
 `parameter_values<-` <- S7::new_generic("parameter_values<-", "distribution")
 
-S7::method(`parameter_values<-`, distribution) <- function(distribution, values) {
+S7::method(`parameter_values<-`, Distribution) <- function(distribution, values) {
   for (key in names(values)) {
     if(!S7::prop_exists(distribution, key) || !(S7::prop(distribution, key) |> is.parameter())) {
       rlang::warn(sprintf("Parameter `%s` was not found", key))
@@ -193,13 +193,13 @@ S7::method(`parameter_values<-`, distribution) <- function(distribution, values)
 
 parameter_uvalues <- S7::new_generic("parameter_uvalues", "distribution")
 
-S7::method(parameter_uvalues, distribution) <- function(distribution, which = "all", ...) {
-  parameter_properties(x, property="uvalue", which=which, ...)
+S7::method(parameter_uvalues, Distribution) <- function(distribution, which = "all", ...) {
+  parameter_properties(distribution, property="uvalue", which=which, ...)
 }
 
 `parameter_uvalues<-` <- S7::new_generic("parameter_uvalues<-", "distribution")
 
-S7::method(`parameter_uvalues<-`, distribution) <- function(distribution, values) {
+S7::method(`parameter_uvalues<-`, Distribution) <- function(distribution, values) {
   for (key in names(values)) {
     if(!S7::prop_exists(distribution, key) || !(S7::prop(distribution, key) |> is.parameter())) {
       rlang::warn(sprintf("Parameter `%s` was not found", key))

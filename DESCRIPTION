@@ -14,13 +14,12 @@ Collate:
   'parameter.R'
   'distribution.R'
   'moments.R'
+  'estimates.R'
   'fit-statistics.R'
   'geoms.R'
   'plots.R'
-  'mle.R'
   'normal.R'
   'negative_binomial.R'
-  'arithmetic.R'
 RoxygenNote: 7.3.3
 Imports:
   rlang,

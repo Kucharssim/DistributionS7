@@ -1,136 +1,134 @@
-normal <- S7::new_class(
-  "normal",
-  parent = distribution_continuous,
+Normal <- S7::new_class(
+  "Normal",
+  parent = DistributionContinuous,
   properties = list(
-    mu = parameter
+    mu = Parameter
   ),
   abstract = TRUE
 )
 
-normal_sigma <- S7::new_class(
-  "normal_sigma",
-  parent = normal,
+NormalSigma <- S7::new_class(
+  "NormalSigma",
+  parent = Normal,
   properties = list(
-    mu = parameter,
-    sigma = parameter
+    sigma = Parameter
   ),
   constructor = function(mu, sigma) {
     S7::new_object(
       S7::S7_object(),
       name = "Normal",
-      support = real(),
-      mu = parameter("mu", "mean", "\\mu", mu, real()),
-      sigma = parameter("sigma", "std.deviation", "\\sigma", sigma, real(0))
+      support = Real(),
+      mu = Parameter("mu", "mean", "\\mu", mu, Real()),
+      sigma = Parameter("sigma", "std.deviation", "\\sigma", sigma, Real(0))
     )
   }
 )
 
-normal_sigma2 <- S7::new_class(
-  "normal_sigma2",
-  parent = normal,
+NormalSigma2 <- S7::new_class(
+  "NormalSigma2",
+  parent = Normal,
   properties = list(
-    mu = parameter,
-    sigma2 = parameter
+    sigma2 = Parameter
   ),
   constructor = function(mu, sigma2) {
     S7::new_object(
       S7::S7_object(),
       name = "Normal",
-      support = real(),
-      mu = parameter("mu", "mean", "\\mu", mu, real()),
-      sigma2 = parameter("sigma2", "variance", "\\sigma^2", sigma2, real(0))
+      support = Real(),
+      mu = Parameter("mu", "mean", "\\mu", mu, Real()),
+      sigma2 = Parameter("sigma2", "variance", "\\sigma^2", sigma2, Real(0))
     )
   }
 )
 
-normal_tau <- S7::new_class(
-  "normal_tau",
-  parent = normal,
+NormalTau <- S7::new_class(
+  "NormalTau",
+  parent = Normal,
   properties = list(
-    mu = parameter,
-    tau = parameter
+    mu = Parameter,
+    tau = Parameter
   ),
   constructor = function(mu, tau) {
     S7::new_object(
       S7::S7_object(),
       name = "Normal",
-      support = real(),
-      mu = parameter("mu", "mean", "\\mu", mu, real()),
-      tau = parameter("tau", "precision", "\\tau", tau, real(0))
+      support = Real(),
+      mu = Parameter("mu", "mean", "\\mu", mu, Real()),
+      tau = Parameter("tau", "precision", "\\tau", tau, Real(0))
     )
   }
 )
 
-normal_kappa <- S7::new_class(
-  "normal_kappa",
-  parent = normal,
+NormalKappa <- S7::new_class(
+  "NormalKappa",
+  parent = Normal,
   properties = list(
-    mu = parameter,
-    kappa = parameter
+    mu = Parameter,
+    kappa = Parameter
   ),
   constructor = function(mu, kappa) {
     S7::new_object(
       S7::S7_object(),
       name = "Normal",
-      support = real(),
-      mu = parameter("mu", "mean", "\\mu", mu, real()),
-      kappa = parameter("kappa", "inverse of std.deviation", "\\kappa", kappa, real(0))
+      support = Real(),
+      mu = Parameter("mu", "mean", "\\mu", mu, Real()),
+      kappa = Parameter("kappa", "inverse of std.deviation", "\\kappa", kappa, Real(0))
     )
   }
 )
 
-Normal <- function(mu, sigma, sigma2, tau, kappa) {
+normal <- function(mu, sigma, sigma2, tau, kappa) {
   parametrization <- rlang::check_exclusive(sigma, sigma2, tau, kappa)
   distribution <- switch(
     parametrization,
-    sigma = normal_sigma(mu=mu, sigma=sigma),
-    sigma2 = normal_sigma2(mu=mu, sigma2=sigma2),
-    tau = normal_tau(mu=mu, tau=tau),
-    kappa = normal_kappa(mu=mu, kappa=kappa)
+    sigma = NormalSigma(mu=mu, sigma=sigma),
+    sigma2 = NormalSigma2(mu=mu, sigma2=sigma2),
+    tau = NormalTau(mu=mu, tau=tau),
+    kappa = NormalKappa(mu=mu, kappa=kappa)
     )
 
   return(distribution)
 }
 
 
-S7::method(pdf_fn, normal) <- function(distribution) stats::dnorm
+S7::method(pdf_fn, Normal) <- function(distribution) stats::dnorm
 
-S7::method(cdf_fn, normal) <- function(distribution) stats::pnorm
+S7::method(cdf_fn, Normal) <- function(distribution) stats::pnorm
 
-S7::method(qf_fn, normal)  <- function(distribution) stats::qnorm
+S7::method(qf_fn, Normal)  <- function(distribution) stats::qnorm
 
-S7::method(rng_fn, normal) <- function(distribution) stats::rnorm
-
-
-S7::method(expectation, normal) <- function(distribution, ...) distribution@mu@value
+S7::method(rng_fn, Normal) <- function(distribution) stats::rnorm
 
 
-S7::method(variance, normal_sigma)  <- function(distribution, ...) distribution@sigma@value^2
-
-S7::method(variance, normal_sigma2) <- function(distribution, ...) distribution@sigma2@value
-
-S7::method(variance, normal_tau)    <- function(distribution, ...) 1 / distribution@tau@value
-
-S7::method(variance, normal_kappa)  <- function(distribution, ...) 1 / distribution@kappa@value^2
+S7::method(expectation, Normal) <- function(distribution, ...) distribution@mu@value
 
 
-S7::method(std_dev, normal_sigma)  <- function(distribution, ...) distribution@sigma@value
+S7::method(variance, NormalSigma)  <- function(distribution, ...) distribution@sigma@value^2
 
-S7::method(std_dev, normal_sigma2) <- function(distribution, ...) sqrt(distribution@sigma2@value)
+S7::method(variance, NormalSigma2) <- function(distribution, ...) distribution@sigma2@value
 
-S7::method(std_dev, normal_tau)    <- function(distribution, ...) sqrt(1/distribution@tau@value)
+S7::method(variance, NormalTau)    <- function(distribution, ...) 1 / distribution@tau@value
 
-S7::method(std_dev, normal_kappa)  <- function(distribution, ...) distribution@kappa@value
-
-
-S7::method(skewness, normal) <- function(distribution, ...) 0
-
-S7::method(kurtosis, normal) <- function(distribution, ...) 3
-
-S7::method(excess_kurtosis, normal) <- function(distribution, ...) 0
+S7::method(variance, NormalKappa)  <- function(distribution, ...) 1 / distribution@kappa@value^2
 
 
-S7::method(rargs, normal) <- function(distribution, ...) {
+S7::method(std_dev, NormalSigma)  <- function(distribution, ...) distribution@sigma@value
+
+S7::method(std_dev, NormalSigma2) <- function(distribution, ...) sqrt(distribution@sigma2@value)
+
+S7::method(std_dev, NormalTau)    <- function(distribution, ...) sqrt(1/distribution@tau@value)
+
+S7::method(std_dev, NormalKappa)  <- function(distribution, ...) distribution@kappa@value
+
+
+S7::method(skewness, Normal) <- function(distribution, ...) 0
+
+S7::method(kurtosis, Normal) <- function(distribution, ...) 3
+
+S7::method(excess_kurtosis, Normal) <- function(distribution, ...) 0
+
+
+S7::method(rargs, Normal) <- function(distribution, ...) {
   return(
     list(
       mean = expectation(distribution),
@@ -139,18 +137,88 @@ S7::method(rargs, normal) <- function(distribution, ...) {
   )
 }
 
-S7::method(sufficient_statistics, normal) <- function(distribution, x, ...) {
-  x <- na.omit(x)
-  n <- length(x)
-  mean <- mean(x)
-  ss <- sum((x - mean)^2) # sum of squares
-  return(list(n=n, mean=mean, ss=ss))
+
+S7::method(point_estimates, NormalSigma) <- function(distribution, data, bessels_correction=TRUE, ...) {
+  estimates <- numeric()
+  df <- length(data)
+
+  if (!is.fixed(distribution@mu)) {
+    if (bessels_correction) df <- length(data) - 1
+    mu <- mean(data)
+    estimates[["mu"]] <- mu
+  } else{
+    mu <- distribution@mu@value
+  }
+
+  if (!is.fixed(distribution@sigma)) {
+    estimates[["sigma"]] <- sqrt(sum(data-mu)^2 / df)
+  }
+
+  return(Estimates(values=estimates))
 }
 
+S7::method(parameter_inference_default, NormalSigma) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
+  estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
+  keys <- names(estimates@values)
+  alpha <- 1-ci_level
+  n <- length(data)
 
-S7::method(mle, normal_sigma) <- function(distribution, x, ci_level=0.95, ...) {
+  fixed <- parameter_properties(distribution, "fixed") |> unlist()
 
+  if (all(fixed)) {
+    return(NULL)
+  } else if (any(fixed)) {
+    d <- S7::super(distribution, Distribution)
+    return(parameter_inference_default(d, data, ..., ci_level=ci_level, bessels_correction=bessels_correction))
+  } else {
+    estimate <- numeric()
+    se       <- numeric()
+    lower    <- numeric()
+    upper    <- numeric()
+
+  }
+
+  return(data.frame(key=character(), estimate=estimate, se=se, lower=lower, upper=upper))
 }
+
+# S7::method(parameter_inference_default, list(distribution, estimates)) <- function(distribution, estimates, data=NULL, ..., ci_level=0.95, bessels_correction=TRUE) {
+#   estimates <- estimates@values
+#   keys <- names(estimates)
+#   alpha <- 1-ci_level
+#   p_ci <- c(lower=alpha/2, upper=1-alpha/2)
+#   n <- length(data)
+#
+#   df <- n - 1
+#   m <- mean(x)
+#   s2 <- var(x)
+#   chiSq <- qchisq(p_ci, df)
+#
+#   se <- numeric()
+#   lower <- numeric()
+#   upper <- numeric()
+#
+#   if (is.fixed(distribution@mu) && is.fixed(distribution@sigma)) {
+#     output <- NULL
+#   } else if (is.fixed(distribution@sigma)) {
+#
+#
+#   } else if (is.fixed(distribution@mu)) {
+#
+#   } else {
+#     df <- n - 1
+#     se[["mu"]] <- sqrt(s2) / sqrt(n)
+#     lower[["mu"]] <- estimates[["mu"]] + se[["mu"]] * qt(p_ci[["lower"]], df=df)
+#     upper[["mu"]] <- estimates[["mu"]] + se[["mu"]] * qt(p_ci[["upper"]], df=df)
+#
+#     if(bessels_correction) {
+#       se[["sigma"]] <-
+#
+#     }
+#
+#   }
+#
+# }
+
 
 
 # S7::method(mle, normal) <- function(distribution, x, bessels_correction=FALSE, ci_level=0.95, ...) {

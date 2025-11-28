@@ -1,5 +1,5 @@
-parameter <- S7::new_class(
-  "parameter",
+Parameter <- S7::new_class(
+  "Parameter",
   properties = list(
     key = S7::class_character,
     name = S7::class_character,
@@ -25,7 +25,7 @@ parameter <- S7::new_class(
         return(self)
       }
     ),
-    support = support,
+    support = Support,
     fixed = S7::class_logical
   ),
   constructor = function(key="", name=key, label=name, value, support, fixed) {
@@ -43,11 +43,11 @@ parameter <- S7::new_class(
 
 
 ## from support.R
-S7::method(unconstrain, parameter) <- function(x, ...) {
+S7::method(unconstrain, Parameter) <- function(x, ...) {
   unconstrain(x@support)
 }
 
-S7::method(constrain, parameter) <- function(x, ...) {
+S7::method(constrain, Parameter) <- function(x, ...) {
   constrain(x@support)
 }
 
@@ -64,19 +64,19 @@ is.fixed <- function(x) {
 
 
 is.parameter <- function(x) {
-  inherits(x, "parameter") || inherits(x, "DistributionS7::parameter")
+  inherits(x, "Parameter") || inherits(x, "DistributionS7::Parameter")
 }
 
 ### derivatives of support transformations ----
 
 derivative <- S7::new_generic("derivative", "object")
 
-S7::method(derivative, parameter) <- function(object, ...) {
+S7::method(derivative, Parameter) <- function(object, ...) {
   d_fn <- derivative(object@support)
   d_fn(object@uvalue)
 }
 
-S7::method(derivative, real) <- function(object, ...) {
+S7::method(derivative, Real) <- function(object, ...) {
   if (is.infinite(object@min) && is.infinite(object@max))
     return(\(x, ..) return(1))
 
@@ -93,4 +93,4 @@ S7::method(derivative, real) <- function(object, ...) {
   )
 }
 
-S7::method(derivative, int) <- function(object, ...) return(identity)
+S7::method(derivative, Int) <- function(object, ...) return(identity)
