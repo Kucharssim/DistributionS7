@@ -53,7 +53,7 @@ stat_pdf <- function(dist, mapping = NULL, data = NULL, geom = "point",
 
 StatCdf <- ggplot2::ggproto(
   "StatCdf", ggplot2::Stat,
-  default_aes = ggplot2::aes(xmin=NULL, xmax=NULL, y=ggplot2::after_scale(y)),
+  default_aes = ggplot2::aes(xmin=NULL, xmax=NULL, y=ggplot2::after_stat(probability)),
   compute_group = function(data, scales, dist, log.p=FALSE, n=101, xlim=NULL, coverage=0.99) {
     if ("x" %in% colnames(data)) {
       x_vals <- data$x
@@ -67,8 +67,8 @@ StatCdf <- ggplot2::ggproto(
       xlim <- qf(dist, c(tail, 1-tail))
       x_vals <- seq(xlim[1], xlim[2], length.out = n)
     }
-    y_vals = cdf(dist, x_vals, lower.tail=lower.tail, log.p=log.p)
-    data.frame(x=x_vals, y=y_vals)
+    probability = cdf(dist, x_vals, log.p=log.p)
+    data.frame(x=x_vals, probability=probability)
   }
 )
 
