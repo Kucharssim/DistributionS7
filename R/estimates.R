@@ -74,9 +74,6 @@ estimates_with_hessian <- function(object, ..., distribution, data, constrained=
   return(estimates)
 }
 
-sufficient_statistics <- S7::new_generic("sufficient_statistics", "distribution")
-
-
 point_estimates <- S7::new_generic("point_estimates", "distribution", function(distribution, data, ...) {
   data <- na.omit(data)
   S7::S7_dispatch()
@@ -128,6 +125,27 @@ S7::method(point_estimates, Distribution) <- function(distribution, data, constr
   )
 
   return(estimates)
+}
+
+fit_distribution <- S7::new_generic("fit_distribution", "distribution")
+
+S7::method(fit_distribution, Distribution) <- function(distribution, data, ...) {
+  parameters <- point_estimates(distribution, data, ...)
+  distribution <- set_parameters(distribution, parameters)
+  return(distribution)
+}
+
+set_parameters <- S7::new_generic("set_parameters", c("distribution", "parameters"),  function(distribution, parameters) {
+  S7::S7_dispatch()
+})
+
+S7::method(set_parameters, list(Distribution, Estimates)) <- function(distribution, parameters) {
+  if(parameters@constrained) {
+    parameter_values(distribution) <- parameters@values
+  } else {
+    parameter_uvalues(distribution) <- parameters@values
+  }
+  return(distribution)
 }
 
 parameter_inference <- S7::new_generic(
