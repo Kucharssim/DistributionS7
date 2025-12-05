@@ -282,3 +282,44 @@ S7::method(parameter_inference_default, NormalTau) <- function(distribution, dat
 
   return(data.frame(key=keys, estimate=estimate, se=se, lower=lower, upper=upper))
 }
+
+
+S7::method(fit_statistics_absolute, Normal) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
+  if(!estimated && bootstrap==0L) {
+    results = list(
+      ks_test  = ks_test (distribution, data),
+      cvm_test = cvm_test(distribution, data),
+      ad_test  = ad_test (distribution, data)
+    )
+    results <- do.call(rbind, results)
+  } else if (estimated && bootstrap==0L) { # analytic normality tests
+    results <- try(list(
+      lillie_test          = nortest::lillie.test(data),
+      cvm_test             = nortest::cvm.test(data),
+      ad_test              = nortest::ad.test(data),
+      shapiro_wilk_test    = shapiro.test(data),
+      shapiro_francia_test = nortest::sf.test(data)
+    ))
+    if (inherits(results, "try-error")) rlang::abort("Could not compute exact p-values for absolute fit statistics. Try bootstrap.")
+
+    statistic <- vapply(results, "[[", numeric(1), "statistic")
+    p_value <- vapply(results, "[[", numeric(1), "p.value")
+
+    results <- data.frame(test = names(results), statistic = statistic, p_value = p_value)
+  } else {
+    results <- fit_statistics_absolute(distribution, data, estimated=FALSE, bootstrap=0L)
+    boot_fn <- function(distribution, data, estimated, ...) {
+      n <- length(data)
+      data_boot <- rng(distribution, n)
+      if (estimated) dist <- fit_distribution(distribution, data_boot, ...) else dist <- distribution
+      res <- fit_statistics_absolute(dist, data_boot, estimated=FALSE, bootstrap=0L)
+      return(res[["statistic"]])
+    }
+
+    statistics <- replicate(bootstrap, boot_fn(distribution=distribution, data=data, estimated=estimated, ...))
+    # compare to observed to get boostrapped p-vals
+    results[["p_value"]] <- sweep(statistics, 1, results[["statistic"]], ">") |> rowMeans()
+  }
+
+  return(results)
+}

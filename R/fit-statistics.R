@@ -104,12 +104,13 @@ S7::method(fit_statistics_absolute, DistributionContinuous) <- function(distribu
       n <- length(data)
       data_boot <- rng(distribution, n)
       if (estimated) dist <- fit_distribution(distribution, data_boot, ...) else dist <- distribution
-      res <- fit_statistics_absolute(distribution, data_boot, estimated=FALSE, bootstrap=0)
+      res <- fit_statistics_absolute(dist, data_boot, estimated=FALSE, bootstrap=0)
       return(res[["statistic"]])
     }
 
     statistics <- replicate(bootstrap, boot_fn(distribution=distribution, data=data, estimated=estimated, ...))
-    results[["p_value"]] <- mean(statistics >= results[["statistic"]])
+    # compare to observed to get boostrapped p-vals
+    results[["p_value"]] <- sweep(statistics, 1, results[["statistic"]], ">") |> rowMeans()
   } else if (estimated) {
     rlang::warn("Absolute fit tests are invalid if the distribution is fitted to the data. Use bootstrap to estimate corrected p-values")
   }
