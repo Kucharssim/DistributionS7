@@ -18,12 +18,17 @@ Collate:
   'fit-statistics.R'
   'geoms.R'
   'plots.R'
+  'plots-empirical.R'
   'normal.R'
   'negative_binomial.R'
+  'uniform.R'
 RoxygenNote: 7.3.3
 Imports:
   rlang,
   goftest,
+  nortest,
   ggplot2,
   jaspGraphs,
   patchwork
+Remotes:
+  jasp-stats/jaspGraphs
