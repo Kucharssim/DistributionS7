@@ -18,7 +18,6 @@ S7::method(plot, Distribution) <- function(x, type=c("all", "pdf", "cdf", "qf"),
       jaspGraphs::themeJaspRaw() +
       jaspGraphs::geom_rangeframe()
   } else {
-    plot <- lapply(plot, \(p) p + jaspGraphs::themeJaspRaw() + jaspGraphs::geom_rangeframe())
     plot[[4]] <- plot[[3]]
     plot[[3]] <- patchwork::plot_spacer()
     plot[[1]] <- plot[[1]] + ggplot2::ggtitle(gettext("Probability Density Plot"))
@@ -69,7 +68,7 @@ S7::method(plot_pdf, DistributionContinuous) <- function(distribution, ..., xlim
   plot <- plot + ggplot2::ylab(gettext("Density")) + ggplot2::xlab(gettext("X"))
 
 
-  return(plot)
+  return(plot + jaspGraphs::themeJaspRaw() + jaspGraphs::geom_rangeframe())
 }
 
 S7::method(plot_cdf, DistributionContinuous) <- function(distribution, ..., xlim, density=NULL, probability=NULL) {
@@ -105,14 +104,14 @@ S7::method(plot_cdf, DistributionContinuous) <- function(distribution, ..., xlim
 
   plot <- plot + ggplot2::ylab(gettext("Cumulative probability")) + ggplot2::xlab(gettext("X"))
 
-  return(plot)
+  return(plot + jaspGraphs::themeJaspRaw() + jaspGraphs::geom_rangeframe())
 }
 
 S7::method(plot_qf, DistributionContinuous) <- function(distribution, ..., xlim) {
   plot <- plot_cdf(distribution, xlim=xlim, ...)
   plot <- plot + ggplot2::coord_flip()
 
-  return(plot)
+  return(plot + jaspGraphs::themeJaspRaw() + jaspGraphs::geom_rangeframe())
 }
 
 
