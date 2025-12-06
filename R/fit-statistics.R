@@ -1,8 +1,3 @@
-#' @importFrom stats logLik
-#' @importFrom S7 method methods_register
-NULL
-
-
 S7::method(logLik, Distribution) <- function(object, x, ...) {
   x <- na.omit(x)
   result <- likelihood(object, x=x, log=TRUE)
