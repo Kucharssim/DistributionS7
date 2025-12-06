@@ -28,6 +28,7 @@ Imports:
   goftest,
   nortest,
   ggplot2,
+  ggrepel,
   jaspGraphs,
   patchwork
 Remotes:
