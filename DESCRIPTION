@@ -22,6 +22,7 @@ Collate:
   'normal.R'
   'negative_binomial.R'
   'uniform.R'
+  'zzz.R'
 RoxygenNote: 7.3.3
 Imports:
   assertthat,
