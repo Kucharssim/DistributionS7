@@ -24,6 +24,7 @@ Collate:
   'uniform.R'
 RoxygenNote: 7.3.3
 Imports:
+  assertthat,
   rlang,
   goftest,
   nortest,
