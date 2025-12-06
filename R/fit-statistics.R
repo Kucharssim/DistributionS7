@@ -125,20 +125,6 @@ S7::method(fit_statistics_absolute, DistributionDiscrete) <- function(distributi
   return(results)
 }
 
-fit_statistics_absolute_bootstrap <- function(distribution, data, estimated, bootstrap) {
-  if (boostrap > 0L) {
-    boot_fn <- function(estimated, ...) {
-      n <- length(data)
-      data_boot <- rng(distribution, n)
-      if (estimated) dist <- fit_distribution(distribution, data_boot, ...) else dist <- distribution
-      ks <- fit_statistics_absolute(distribution, data, estimated=FALSE, bootstrap=0)
-      return(ks[["statistic"]])
-    }
-  } else {
-    rlang::warn("KS test is invalid if the distribution is fitted to the data. Use bootstrap to estimate corrected p-values")
-  }
-}
-
 fit_statistics_relative <- S7::new_generic("fit_statistics_relative", "distribution", function(distribution, data) {
   data <- na.omit(data)
   S7::S7_dispatch()
