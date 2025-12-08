@@ -1,19 +1,38 @@
-S7::method(logLik, Distribution) <- function(object, x, ...) {
-  x <- na.omit(x)
-  result <- likelihood(object, x=x, log=TRUE)
+log_lik <- S7::new_generic("log_lik", "distribution", function(distribution, data) {
+  data <- na.omit(data)
+  S7::S7_dispatch()
+})
 
-  fixed <- parameter_properties(object, "fixed") |> unlist()
+S7::method(log_lik, Distribution) <- function(distribution, data) {
+  result <- likelihood(distribution, x=x, log=TRUE)
+
+  fixed <- parameter_properties(distribution, "fixed") |> unlist()
   attr(result, "df") <- sum(!fixed)
   attr(result, "nobs") <- length(x)
-  class(result) <- "logLik"
+  class(result) <- c("log_lik", "logLik")
 
   return(result)
 }
 
-S7::method(AIC, Distribution) <- function(object, x, ...) AIC(logLik(object, x=x), ...)
+aic <- S7::new_generic("aic", "distribution", function(distribution, data) {
+  data <- na.omit(data)
+  S7::S7_dispatch()
+})
 
-S7::method(BIC, Distribution) <- function(object, x, ...) BIC(logLik(object, x=x), ...)
+S7::method(aic, Distribution) <- function(distribution, data) {
+  ll <- log_lik(distribution, data)
+  AIC(ll)
+}
 
+bic <- S7::new_generic("bic", "distribution", function(distribution, data) {
+  data <- na.omit(data)
+  S7::S7_dispatch()
+})
+
+S7::method(bic, Distribution) <- function(distribution, data) {
+  ll <- log_lik(distribution, data)
+  BIC(ll)
+}
 
 ks_test <- S7::new_generic("ks_test", "distribution")
 
@@ -131,7 +150,7 @@ fit_statistics_relative <- S7::new_generic("fit_statistics_relative", "distribut
 })
 
 S7::method(fit_statistics_relative, Distribution) <- function(distribution, data) {
-  log_lik <- logLik(distribution, data)
+  log_lik <- log_lik(distribution, data)
   ll <- log_lik
   attributes(ll) <- NULL
   results = data.frame(
