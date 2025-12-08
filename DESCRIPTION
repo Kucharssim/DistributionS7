@@ -25,6 +25,7 @@ Collate:
   'zzz.R'
 RoxygenNote: 7.3.3
 Imports:
+  S7,
   assertthat,
   rlang,
   goftest,
