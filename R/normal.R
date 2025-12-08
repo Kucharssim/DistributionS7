@@ -187,7 +187,7 @@ S7::method(parameter_inference_default, NormalSigma) <- function(distribution, d
 
   if (all(!fixed)) {
     df <- n-1
-    se[["mu"]] <- sd(x) / sqrt(n)
+    se[["mu"]] <- sd(data) / sqrt(n)
     lower[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(  alpha/2, df=df)
     upper[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(1-alpha/2, df=df)
 
@@ -224,7 +224,7 @@ S7::method(parameter_inference_default, NormalSigma2) <- function(distribution, 
 
   if (all(!fixed)) {
     df <- n-1
-    se[["mu"]] <- sd(x) / sqrt(n)
+    se[["mu"]] <- sd(data) / sqrt(n)
     lower[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(  alpha/2, df=df)
     upper[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(1-alpha/2, df=df)
 
@@ -261,7 +261,7 @@ S7::method(parameter_inference_default, NormalTau) <- function(distribution, dat
 
   if (all(!fixed)) {
     df <- n-1
-    se[["mu"]] <- sd(x) / sqrt(n)
+    se[["mu"]] <- sd(data) / sqrt(n)
     lower[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(  alpha/2, df=df)
     upper[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(1-alpha/2, df=df)
 
