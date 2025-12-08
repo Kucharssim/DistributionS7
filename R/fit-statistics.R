@@ -4,11 +4,11 @@ log_lik <- S7::new_generic("log_lik", "distribution", function(distribution, dat
 })
 
 S7::method(log_lik, Distribution) <- function(distribution, data) {
-  result <- likelihood(distribution, x=x, log=TRUE)
+  result <- likelihood(distribution, x=data, log=TRUE)
 
   fixed <- parameter_properties(distribution, "fixed") |> unlist()
   attr(result, "df") <- sum(!fixed)
-  attr(result, "nobs") <- length(x)
+  attr(result, "nobs") <- length(data)
   class(result) <- c("log_lik", "logLik")
 
   return(result)
