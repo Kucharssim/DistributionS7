@@ -29,14 +29,17 @@ EstimatesHessian <- S7::new_class(
   }
 )
 
-S7::method(vcov, EstimatesHessian) <- function(object,...) {
-  vcov <- try(solve(object@hessian,...))
-  if (inherits(vcov, "try-error")) rlang::abort("Variance covariance matrix of the parameters could not be computed")
-  return(vcov)
+S7::method(coef, Estimates) <- function(object, ..., distribution, constrained) {
+  if (object@constrained) {
+    parameter_values(distribution) <- object@values
+  } else {
+    parameter_uvalues(distribution) <- object@values
+  }
+  values <- if(constrained) parameter_values(distribution, which="free") else parameter_uvalues(distribution, which="free")
+  return(unlist(values))
 }
 
-estimates_with_hessian <- function(object, ..., distribution, data, constrained=FALSE) {
-  if (S7::prop_exists(object, "hessian")) return(object)
+S7::method(vcov, Estimates) <- function(object, ..., distribution, data, constrained=FALSE) {
   if (object@constrained) {
     parameter_values(distribution) <- object@values
   } else {
@@ -71,7 +74,13 @@ estimates_with_hessian <- function(object, ..., distribution, data, constrained=
     constrained = constrained
   )
 
-  return(estimates)
+  return(vcov(estimates))
+}
+
+S7::method(vcov, EstimatesHessian) <- function(object,...) {
+  vcov <- try(solve(object@hessian,...))
+  if (inherits(vcov, "try-error")) rlang::abort("Variance covariance matrix of the parameters could not be computed")
+  return(vcov)
 }
 
 point_estimates <- S7::new_generic("point_estimates", "distribution", function(distribution, data, ...) {
@@ -79,7 +88,7 @@ point_estimates <- S7::new_generic("point_estimates", "distribution", function(d
   S7::S7_dispatch()
 })
 
-S7::method(point_estimates, Distribution) <- function(distribution, data, constrained=FALSE, method="L-BFGS-B", ...) {
+S7::method(point_estimates, Distribution) <- function(distribution, data, constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", ...) {
   rlang::inform(message = "Analytic parameter estimates are not available/implemented, using numerical optimization...")
 
   if (constrained) {
@@ -131,29 +140,26 @@ fit_distribution <- S7::new_generic("fit_distribution", "distribution")
 
 S7::method(fit_distribution, Distribution) <- function(distribution, data, ...) {
   parameters <- point_estimates(distribution, data, ...)
-  distribution <- set_parameters(distribution, parameters)
-  return(distribution)
-}
-
-set_parameters <- S7::new_generic("set_parameters", c("distribution", "parameters"),  function(distribution, parameters) {
-  S7::S7_dispatch()
-})
-
-S7::method(set_parameters, list(Distribution, Estimates)) <- function(distribution, parameters) {
   if(parameters@constrained) {
     parameter_values(distribution) <- parameters@values
   } else {
     parameter_uvalues(distribution) <- parameters@values
   }
+  # make a new dist object - this ensures all properties are valid
+  dist_class <- S7::S7_class(distribution)
+  pars <- parameter_values(distribution)
+  is_fixed <- parameter_properties(distribution, property="fixed")
+  for (name in names(pars)) {
+    if (is_fixed[[name]]) pars[[name]] <- fixed(pars[[name]])
+  }
+  distribution <- do.call(dist_class, pars)
   return(distribution)
 }
 
 parameter_inference <- S7::new_generic(
   "parameter_inference", "distribution",
-  function(distribution, data, ...,
-           method=c("default", "profile", "bootstrap"), ci_level=0.95) {
+  function(distribution, data, ..., ci_level=0.95) {
     data <- na.omit(data)
-    method <- rlang::arg_match(method)
     assertthat::assert_that(
       rlang::is_scalar_double(ci_level),
       ci_level > 0,
@@ -163,37 +169,30 @@ parameter_inference <- S7::new_generic(
   })
 
 S7::method(parameter_inference, Distribution) <- function(
-    distribution, data, ...,
-    method=c("default", "profile", "bootstrap"), ci_level=0.95
+    distribution, data, ..., ci_level=0.95
     ) {
-
-  result <- switch (method,
-    default = parameter_inference_default(distribution=distribution, data=data, ci_level=ci_level, ...)
-  )
+  rlang::inform("Normal theory SE and CIs")
+  result <- normal_theory_inference(distribution, data, ci_level=ci_level, ...)
   return(result)
 }
 
-parameter_inference_default <- S7::new_generic(
-  "parameter_inference_default", "distribution",
-  function(distribution, data, ..., ci_level=0.95){
+normal_theory_inference <- S7::new_generic(
+  "normal_theory_inference", "distribution",
+  function(distribution, data, ..., ci_level=0.95, symmetric=FALSE, constrained=FALSE){
+    data <- na.omit(data)
+    assertthat::assert_that(
+      rlang::is_scalar_double(ci_level),
+      ci_level > 0,
+      ci_level < 1
+    )
     S7::S7_dispatch()
   })
 
-S7::method(parameter_inference_default, Distribution) <- function(distribution, data, ..., ci_level=0.95) {
-  estimates <- point_estimates(distribution, data=data, ...)
-  estimates <- estimates_with_hessian(estimates, distribution=distribution, data=data, ...)
+S7::method(normal_theory_inference, Distribution) <- function(distribution, data, ..., ci_level=0.95, symmetric=FALSE, constrained=FALSE) {
+  estimates <- point_estimates(distribution, data=data, constrained=constrained, ...)
+  vcov <- vcov(estimates, distribution=distribution, data=data, constrained=constrained, ...)
+  estimates <- coef(estimates, distribution=distribution, constrained=constrained)
 
-  parameter_inference_normal(distribution=distribution, estimates=estimates@values, vcov=vcov(estimates), ci_level=ci_level, ...)
-}
-
-parameter_inference_normal <- S7::new_generic(
-  "parameter_inference_normal", "distribution",
-  function(distribution, estimates, vcov, ..., ci_level=0.95, symmetric=FALSE, constrained=FALSE){
-    S7::S7_dispatch()
-  })
-
-S7::method(parameter_inference_normal, Distribution) <- function(distribution, estimates, vcov, ..., ci_level=0.95, symmetric=FALSE, constrained=FALSE) {
-  rlang::inform("Normal theory SE and CIs")
   alpha <- 1-ci_level
   npar <- length(estimates)
   keys <- names(estimates)
@@ -204,7 +203,7 @@ S7::method(parameter_inference_normal, Distribution) <- function(distribution, e
     se <- sqrt(diag(vcov))
     lower <- qnorm(  alpha/2, estimates, se)
     upper <- qnorm(1-alpha/2, estimates, se)
-    return(data.frame(key = keys, estimate = estimates, se = se, lower=lower, upper=upper))
+    return(data.frame(key=keys, estimate=estimates, se=se, lower=lower, upper=upper))
   }
 
   # compute Jacobian of the inverse transform
@@ -250,3 +249,68 @@ S7::method(parameter_inference_normal, Distribution) <- function(distribution, e
   return(data.frame(key=keys, estimate=estimates, se=se, lower=lower, upper=upper))
 }
 
+#
+# parameter_inference_bootstrap_nonparametric <- S7::new_generic(
+#   "parameter_inference_bootstrap_nonparametric", "distribution",
+#   function(distribution, data, ..., ci_level=0.95, ci_type="bca", bootstrap_samples=1000){
+#     S7::S7_dispatch()
+#   })
+#
+# S7::method(parameter_inference_bootstrap_nonparametric, Distribution) <- function(distribution, data, ..., ci_level=0.95, ci_type=c("norm","basic", "stud", "perc", "bca"), bootstrap_samples=1000) {
+#   distribution <- fit_distribution(distribution, data=data, ...)
+#   estimates <- point_estimates(distribution, data=new_data, ...)
+#
+#   samples <- boot::boot(
+#     data = data,
+#     statistic = function(data, idx) {
+#       new_data <- data[idx]
+#       estimates <- point_estimates(distribution, data=new_data, ...)
+#       coef(estimates)
+#     },
+#     type = rlang::arg_match(ci_type),
+#     R=bootstrap_samples
+#   )
+#
+#   hinv <- function(x) {
+#     fn <- constrain(distribution, which="free")
+#     out <- x
+#     for (i in seq_along(x)) {
+#       out[i] <- fn[[i]](x)
+#     }
+#     return(out)
+#   }
+#
+#   if (estimates@constrained) {
+#     h <- function(x) {
+#       fn <- unconstrain(distribution, which="free")
+#       out <- x
+#       for (i in seq_along(x)) {
+#         out[i] <- fn[[i]](x)
+#       }
+#       return(out)
+#     }
+#     hdot <- function(x) {
+#       fn <- derivative(distribution, which="free")
+#       out <- x
+#       for (i in seq_along(x)) {
+#         out[i] <- fn[[i]](x)
+#       }
+#       return(out)
+#     }
+#     ci <- boot::boot.ci(
+#       samples,
+#       type=ci_type,
+#       h = h,
+#       hdot = hdot,
+#       hinv = hinv
+#       )
+#   } else {
+#     ci <- boot::boot.ci(
+#       samples,
+#       type = ci_type,
+#       hinv = hinv
+#     )
+#   }
+#
+#   return(ci)
+# }

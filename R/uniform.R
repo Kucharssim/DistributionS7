@@ -44,7 +44,6 @@ S7::method(kurtosis, Uniform) <- function(distribution, ...) 3-6/5
 
 S7::method(excess_kurtosis, Uniform) <- function(distribution, ...) -6/5
 
-
 S7::method(point_estimates, Uniform) <- function(distribution, data, unbiased=TRUE, ...) {
   fixed <- parameter_properties(distribution, "fixed") |> unlist()
 
@@ -64,7 +63,7 @@ S7::method(point_estimates, Uniform) <- function(distribution, data, unbiased=TR
   return(Estimates(values=estimates))
 }
 
-S7::method(parameter_inference_default, Uniform) <- function(distribution, data, ..., ci_level=0.95, unbiased=TRUE) {
+S7::method(parameter_inference, Uniform) <- function(distribution, data, ..., ci_level=0.95, unbiased=TRUE) {
   estimates <- point_estimates(distribution, data, unbiased=unbiased, ...)
   keys <- names(estimates@values)
 

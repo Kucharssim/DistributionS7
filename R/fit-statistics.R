@@ -99,18 +99,18 @@ fit_statistics <- S7::new_generic("fit_statistics", "distribution", function(dis
 
 S7::method(fit_statistics, Distribution) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
   results <- list(
-    absolute = fit_statistics_absolute(distribution, data, estimated=estimated, bootstrap=bootstrap, ...),
-    relative = fit_statistics_relative(distribution, data)
+    absolute = gof_test(distribution, data, estimated=estimated, bootstrap=bootstrap, ...),
+    relative = information_criteria(distribution, data)
   )
   return(results)
 }
 
-fit_statistics_absolute <- S7::new_generic("fit_statistics_absolute", "distribution", function(distribution, data, ...) {
+gof_test <- S7::new_generic("gof_test", "distribution", function(distribution, data, ...) {
   data <- na.omit(data)
   S7::S7_dispatch()
 })
 
-S7::method(fit_statistics_absolute, DistributionContinuous) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
+S7::method(gof_test, DistributionContinuous) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
   results = list(
     ks_test  = ks_test (distribution, data),
     cvm_test = cvm_test(distribution, data),
@@ -123,33 +123,33 @@ S7::method(fit_statistics_absolute, DistributionContinuous) <- function(distribu
       n <- length(data)
       data_boot <- rng(distribution, n)
       if (estimated) dist <- fit_distribution(distribution, data_boot, ...) else dist <- distribution
-      res <- fit_statistics_absolute(dist, data_boot, estimated=FALSE, bootstrap=0)
+      res <- gof_test(dist, data_boot, estimated=FALSE, bootstrap=0)
       return(res[["statistic"]])
     }
 
     statistics <- replicate(bootstrap, boot_fn(distribution=distribution, data=data, estimated=estimated, ...))
     # compare to observed to get boostrapped p-vals
     results[["p_value"]] <- sweep(statistics, 1, results[["statistic"]], ">") |> rowMeans()
-  } else if (estimated) {
+  } else if (estimated & any(!(parameter_properties(distribution, "fixed") |> unlist()))) {
     rlang::warn("Absolute fit tests are invalid if the distribution is fitted to the data. Use bootstrap to estimate corrected p-values")
   }
 
   return(results)
 }
 
-S7::method(fit_statistics_absolute, DistributionDiscrete) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
+S7::method(gof_test, DistributionDiscrete) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
   rlang::inform("Absolute fit statistics not yet implemented")
 
   results <- data.frame(test=character(), statistic=character(), p_value=numeric(), method=numeric())
   return(results)
 }
 
-fit_statistics_relative <- S7::new_generic("fit_statistics_relative", "distribution", function(distribution, data) {
+information_criteria <- S7::new_generic("information_criteria", "distribution", function(distribution, data) {
   data <- na.omit(data)
   S7::S7_dispatch()
 })
 
-S7::method(fit_statistics_relative, Distribution) <- function(distribution, data) {
+S7::method(information_criteria, Distribution) <- function(distribution, data) {
   log_lik <- log_lik(distribution, data)
   ll <- log_lik
   attributes(ll) <- NULL

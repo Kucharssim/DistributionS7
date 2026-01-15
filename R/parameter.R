@@ -69,28 +69,28 @@ is.parameter <- function(x) {
 
 ### derivatives of support transformations ----
 
-derivative <- S7::new_generic("derivative", "object")
+derivative <- S7::new_generic("derivative", "x")
 
-S7::method(derivative, Parameter) <- function(object, ...) {
-  d_fn <- derivative(object@support)
-  d_fn(object@uvalue)
+S7::method(derivative, Parameter) <- function(x, ...) {
+  d_fn <- derivative(x@support)
+  d_fn(x@uvalue)
 }
 
-S7::method(derivative, Real) <- function(object, ...) {
-  if (is.infinite(object@min) && is.infinite(object@max))
+S7::method(derivative, Real) <- function(x, ...) {
+  if (is.infinite(x@min) && is.infinite(x@max))
     return(\(x, ..) return(1))
 
-  if (is.infinite(object@max))
+  if (is.infinite(x@max))
     return(exp)
 
-  if (is.infinite(object@min))
+  if (is.infinite(x@min))
     return(function(x) -exp(x))
 
   return(function(x) {
     p <- 1 / (1 + exp(-x))
-    (object@max-object@min) * p * (1-p)
+    (x@max-x@min) * p * (1-p)
   }
   )
 }
 
-S7::method(derivative, Int) <- function(object, ...) return(identity)
+S7::method(derivative, Int) <- function(x, ...) return(identity)

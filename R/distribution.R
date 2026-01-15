@@ -212,3 +212,22 @@ S7::method(`parameter_uvalues<-`, Distribution) <- function(distribution, values
 
   return(distribution)
 }
+
+# from support.R
+S7::method(unconstrain, Distribution) <- function(x, ..., which="all") {
+  support <- parameter_properties(x, "support", which=which)
+  unconstrain_fn <- lapply(support, unconstrain)
+  return(unconstrain_fn)
+}
+
+S7::method(constrain, Distribution) <- function(x, ..., which="all") {
+  support <- parameter_properties(x, "support", which=which)
+  constrain_fn <- lapply(support, constrain)
+  return(constrain_fn)
+}
+
+S7::method(derivative, Distribution) <- function(x, ..., which="all") {
+  support <- parameter_properties(x, "support", which=which)
+  derivative_fn <- lapply(support, derivative)
+  return(derivative_fn)
+}

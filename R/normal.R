@@ -172,7 +172,7 @@ S7::method(point_estimates, NormalTau) <- function(distribution, data, bessels_c
   return(Estimates(values=estimates))
 }
 
-S7::method(parameter_inference_default, NormalSigma) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
+S7::method(parameter_inference, NormalSigma) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
   estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
   keys <- names(estimates@values)
   alpha <- 1-ci_level
@@ -209,7 +209,7 @@ S7::method(parameter_inference_default, NormalSigma) <- function(distribution, d
   return(data.frame(key=keys, estimate=estimate, se=se, lower=lower, upper=upper))
 }
 
-S7::method(parameter_inference_default, NormalSigma2) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
+S7::method(parameter_inference, NormalSigma2) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
   estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
   keys <- names(estimates@values)
   alpha <- 1-ci_level
@@ -246,7 +246,7 @@ S7::method(parameter_inference_default, NormalSigma2) <- function(distribution, 
   return(data.frame(key=keys, estimate=estimate, se=se, lower=lower, upper=upper))
 }
 
-S7::method(parameter_inference_default, NormalTau) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
+S7::method(parameter_inference, NormalTau) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
   estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
   keys <- names(estimates@values)
   alpha <- 1-ci_level
@@ -284,7 +284,7 @@ S7::method(parameter_inference_default, NormalTau) <- function(distribution, dat
 }
 
 
-S7::method(fit_statistics_absolute, Normal) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
+S7::method(gof_test, Normal) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
   if(!estimated && bootstrap==0L) {
     results = list(
       ks_test  = ks_test (distribution, data),
@@ -307,12 +307,14 @@ S7::method(fit_statistics_absolute, Normal) <- function(distribution, data, ...,
 
     results <- data.frame(test = names(results), statistic = statistic, p_value = p_value)
   } else {
-    results <- fit_statistics_absolute(distribution, data, estimated=FALSE, bootstrap=0L)
+    # get point estimate
+    results <- gof_test(distribution, data, estimated=FALSE, bootstrap=0L)
+    # get bootstrap distribution
     boot_fn <- function(distribution, data, estimated, ...) {
       n <- length(data)
       data_boot <- rng(distribution, n)
       if (estimated) dist <- fit_distribution(distribution, data_boot, ...) else dist <- distribution
-      res <- fit_statistics_absolute(dist, data_boot, estimated=FALSE, bootstrap=0L)
+      res <- gof_test(dist, data_boot, estimated=FALSE, bootstrap=0L)
       return(res[["statistic"]])
     }
 
