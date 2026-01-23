@@ -114,73 +114,42 @@ S7::method(rargs, Normal) <- function(distribution, ...) {
   )
 }
 
-
-S7::method(point_estimates, NormalSigma) <- function(distribution, data, bessels_correction=TRUE, ...) {
+S7::method(parameter_estimates, list(NormalSigma, Mle)) <- function(distribution, estimator, data) {
   estimates <- numeric()
-  df <- length(data)
 
-  if (!is.fixed(distribution@mu)) {
-    if (bessels_correction) df <- length(data) - 1
+  if (is.fixed(distribution@mu)) {
+    mu <- distribution@mu@value
+  } else {
     mu <- mean(data)
     estimates[["mu"]] <- mu
-  } else{
-    mu <- distribution@mu@value
   }
 
-  if (!is.fixed(distribution@sigma)) {
-    estimates[["sigma"]] <- sqrt(sum((data-mu)^2) / df)
-  }
+  if (is.fixed(distribution@sigma)) return(estimates)
 
-  return(Estimates(values=estimates))
+  estimates[["sigma"]] <- sqrt(sum((data-mu)^2) / length(data))
+
+  return(estimates)
 }
 
-S7::method(point_estimates, NormalSigma2) <- function(distribution, data, bessels_correction=TRUE, ...) {
-  estimates <- numeric()
-  df <- length(data)
-
-  if (!is.fixed(distribution@mu)) {
-    if (bessels_correction) df <- length(data) - 1
-    mu <- mean(data)
-    estimates[["mu"]] <- mu
-  } else{
-    mu <- distribution@mu@value
+S7::method(parameter_estimates, list(NormalSigma, BiasCorrected)) <- function(distribution, estimator, data) {
+  estimates <- parameter_estimates(distribution, Mle(), data)
+  if (!is.null(estimates[["sigma"]])) {
+    n <- length(data)
+    df <- n-1
+    sigma2 <- estimates[["sigma"]]^2
+    estimates[["sigma"]] <- sqrt(sigma2 * n / df)
   }
 
-  if (!is.fixed(distribution@sigma2)) {
-    estimates[["sigma2"]] <- sum((data-mu)^2) / df
-  }
-
-  return(Estimates(values=estimates))
+  return(estimates)
 }
 
-S7::method(point_estimates, NormalTau) <- function(distribution, data, bessels_correction=TRUE, ...) {
-  estimates <- numeric()
-  df <- length(data)
-
-  if (!is.fixed(distribution@mu)) {
-    if (bessels_correction) df <- length(data) - 1
-    mu <- mean(data)
-    estimates[["mu"]] <- mu
-  } else{
-    mu <- distribution@mu@value
-  }
-
-  if (!is.fixed(distribution@tau)) {
-    estimates[["tau"]] <- df / sum((data-mu)^2)
-  }
-
-  return(Estimates(values=estimates))
-}
-
-S7::method(parameter_inference, NormalSigma) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
-  estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
-  keys <- names(estimates@values)
-  alpha <- 1-ci_level
+S7::method(parameter_inference, list(NormalSigma, DefaultMethod)) <- function(distribution, inference_method, data) {
+  estimates <- parameter_estimates(distribution, inference_method@estimator, data)
+  keys <- names(estimates)
   n <- length(data)
 
   fixed <- parameter_properties(distribution, "fixed") |> unlist()
 
-  estimate <- estimates@values
   se       <- numeric(length = sum(!fixed)) |> setNames(keys)
   lower    <- numeric(length = sum(!fixed)) |> setNames(keys)
   upper    <- numeric(length = sum(!fixed)) |> setNames(keys)
@@ -188,100 +157,197 @@ S7::method(parameter_inference, NormalSigma) <- function(distribution, data, ...
   if (all(!fixed)) {
     df <- n-1
     se[["mu"]] <- sd(data) / sqrt(n)
-    lower[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(  alpha/2, df=df)
-    upper[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(1-alpha/2, df=df)
+    lower[["mu"]] <- estimates[["mu"]] + se[["mu"]] * qt(inference_method@lower, df=df)
+    upper[["mu"]] <- estimates[["mu"]] + se[["mu"]] * qt(inference_method@upper, df=df)
 
-    scale <- if (bessels_correction) df else n
+    scale <- if (S7::S7_inherits(inference_method@estimator, BiasCorrected)) df else n
 
-    se[["sigma"]] <- estimate[["sigma"]] / sqrt(2*scale)
-    lower[["sigma"]] <- sqrt(scale * estimate[["sigma"]]^2 / qchisq(1-alpha/2, df=df))
-    upper[["sigma"]] <- sqrt(scale * estimate[["sigma"]]^2 / qchisq(  alpha/2, df=df))
-
-  } else if (!fixed["mu"]) {
-    se[["mu"]] <- std_dev(distribution) / sqrt(n)
-    lower[["mu"]] <- qnorm(  alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
-    upper[["mu"]] <- qnorm(1-alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
-  } else {
-    d <- S7::super(distribution, Distribution)
-    return(parameter_inference_default(d, data, ..., ci_level=ci_level, bessels_correction=bessels_correction))
-  }
-
-  return(data.frame(key=keys, estimate=estimate, se=se, lower=lower, upper=upper))
-}
-
-S7::method(parameter_inference, NormalSigma2) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
-  estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
-  keys <- names(estimates@values)
-  alpha <- 1-ci_level
-  n <- length(data)
-
-  fixed <- parameter_properties(distribution, "fixed") |> unlist()
-
-  estimate <- estimates@values
-  se       <- numeric(length = sum(!fixed)) |> setNames(keys)
-  lower    <- numeric(length = sum(!fixed)) |> setNames(keys)
-  upper    <- numeric(length = sum(!fixed)) |> setNames(keys)
-
-  if (all(!fixed)) {
-    df <- n-1
-    se[["mu"]] <- sd(data) / sqrt(n)
-    lower[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(  alpha/2, df=df)
-    upper[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(1-alpha/2, df=df)
-
-    scale <- if (bessels_correction) df else n
-
-    se[["sigma2"]] <- estimate[["sigma2"]] * sqrt(2/scale)
-    lower[["sigma2"]] <- scale * estimate[["sigma2"]] / qchisq(1-alpha/2, df=df)
-    upper[["sigma2"]] <- scale * estimate[["sigma2"]] / qchisq(  alpha/2, df=df)
+    se[["sigma"]] <- estimates[["sigma"]] / sqrt(2*scale)
+    lower[["sigma"]] <- sqrt(scale * estimates[["sigma"]]^2 / qchisq(inference_method@lower, df=df))
+    upper[["sigma"]] <- sqrt(scale * estimates[["sigma"]]^2 / qchisq(inference_method@upper, df=df))
 
   } else if (!fixed["mu"]) {
     se[["mu"]] <- std_dev(distribution) / sqrt(n)
-    lower[["mu"]] <- qnorm(  alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
-    upper[["mu"]] <- qnorm(1-alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
+    lower[["mu"]] <- qnorm(inference_method@lower, mean=estimates[["mu"]], sd=se[["mu"]])
+    upper[["mu"]] <- qnorm(inference_method@upper, mean=estimates[["mu"]], sd=se[["mu"]])
   } else {
-    d <- S7::super(distribution, Distribution)
-    return(parameter_inference_default(d, data, ..., ci_level=ci_level, bessels_correction=bessels_correction))
+    distribution <- S7::super(distribution, Distribution)
+    return(parameter_inference(distribution, inference_method, data))
   }
 
-  return(data.frame(key=keys, estimate=estimate, se=se, lower=lower, upper=upper))
+  return(estimates_table(distribution, estimates=estimates, se=se, lower=lower, upper=upper))
 }
 
-S7::method(parameter_inference, NormalTau) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
-  estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
-  keys <- names(estimates@values)
-  alpha <- 1-ci_level
-  n <- length(data)
 
-  fixed <- parameter_properties(distribution, "fixed") |> unlist()
-
-  estimate <- estimates@values
-  se       <- numeric(length = sum(!fixed)) |> setNames(keys)
-  lower    <- numeric(length = sum(!fixed)) |> setNames(keys)
-  upper    <- numeric(length = sum(!fixed)) |> setNames(keys)
-
-  if (all(!fixed)) {
-    df <- n-1
-    se[["mu"]] <- sd(data) / sqrt(n)
-    lower[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(  alpha/2, df=df)
-    upper[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(1-alpha/2, df=df)
-
-    scale <- if (bessels_correction) df else n
-
-    se[["tau"]] <- estimate[["tau"]] * sqrt(2/scale)
-    lower[["tau"]] <- qchisq(  alpha/2, df=df) * estimate[["tau"]] / scale
-    upper[["tau"]] <- qchisq(1-alpha/2, df=df) * estimate[["tau"]] / scale
-
-  } else if (!fixed["mu"]) {
-    se[["mu"]] <- std_dev(distribution) / sqrt(n)
-    lower[["mu"]] <- qnorm(  alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
-    upper[["mu"]] <- qnorm(1-alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
-  } else {
-    d <- S7::super(distribution, Distribution)
-    return(parameter_inference_default(d, data, ..., ci_level=ci_level, bessels_correction=bessels_correction))
-  }
-
-  return(data.frame(key=keys, estimate=estimate, se=se, lower=lower, upper=upper))
-}
+#
+#
+# S7::method(point_estimates, NormalSigma) <- function(distribution, data, bessels_correction=TRUE, ...) {
+#   estimates <- numeric()
+#   df <- length(data)
+#
+#   if (!is.fixed(distribution@mu)) {
+#     if (bessels_correction) df <- length(data) - 1
+#     mu <- mean(data)
+#     estimates[["mu"]] <- mu
+#   } else{
+#     mu <- distribution@mu@value
+#   }
+#
+#   if (!is.fixed(distribution@sigma)) {
+#     estimates[["sigma"]] <- sqrt(sum((data-mu)^2) / df)
+#   }
+#
+#   return(Estimates(values=estimates))
+# }
+#
+# S7::method(point_estimates, NormalSigma2) <- function(distribution, data, bessels_correction=TRUE, ...) {
+#   estimates <- numeric()
+#   df <- length(data)
+#
+#   if (!is.fixed(distribution@mu)) {
+#     if (bessels_correction) df <- length(data) - 1
+#     mu <- mean(data)
+#     estimates[["mu"]] <- mu
+#   } else{
+#     mu <- distribution@mu@value
+#   }
+#
+#   if (!is.fixed(distribution@sigma2)) {
+#     estimates[["sigma2"]] <- sum((data-mu)^2) / df
+#   }
+#
+#   return(Estimates(values=estimates))
+# }
+#
+# S7::method(point_estimates, NormalTau) <- function(distribution, data, bessels_correction=TRUE, ...) {
+#   estimates <- numeric()
+#   df <- length(data)
+#
+#   if (!is.fixed(distribution@mu)) {
+#     if (bessels_correction) df <- length(data) - 1
+#     mu <- mean(data)
+#     estimates[["mu"]] <- mu
+#   } else{
+#     mu <- distribution@mu@value
+#   }
+#
+#   if (!is.fixed(distribution@tau)) {
+#     estimates[["tau"]] <- df / sum((data-mu)^2)
+#   }
+#
+#   return(Estimates(values=estimates))
+# }
+#
+# S7::method(parameter_inference, NormalSigma) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
+#   estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
+#   keys <- names(estimates@values)
+#   alpha <- 1-ci_level
+#   n <- length(data)
+#
+#   fixed <- parameter_properties(distribution, "fixed") |> unlist()
+#
+#   estimate <- estimates@values
+#   se       <- numeric(length = sum(!fixed)) |> setNames(keys)
+#   lower    <- numeric(length = sum(!fixed)) |> setNames(keys)
+#   upper    <- numeric(length = sum(!fixed)) |> setNames(keys)
+#
+#   if (all(!fixed)) {
+#     df <- n-1
+#     se[["mu"]] <- sd(data) / sqrt(n)
+#     lower[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(  alpha/2, df=df)
+#     upper[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(1-alpha/2, df=df)
+#
+#     scale <- if (bessels_correction) df else n
+#
+#     se[["sigma"]] <- estimate[["sigma"]] / sqrt(2*scale)
+#     lower[["sigma"]] <- sqrt(scale * estimate[["sigma"]]^2 / qchisq(1-alpha/2, df=df))
+#     upper[["sigma"]] <- sqrt(scale * estimate[["sigma"]]^2 / qchisq(  alpha/2, df=df))
+#
+#   } else if (!fixed["mu"]) {
+#     se[["mu"]] <- std_dev(distribution) / sqrt(n)
+#     lower[["mu"]] <- qnorm(  alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
+#     upper[["mu"]] <- qnorm(1-alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
+#   } else {
+#     d <- S7::super(distribution, Distribution)
+#     return(parameter_inference_default(d, data, ..., ci_level=ci_level, bessels_correction=bessels_correction))
+#   }
+#
+#   return(data.frame(key=keys, estimate=estimate, se=se, lower=lower, upper=upper))
+# }
+#
+# S7::method(parameter_inference, NormalSigma2) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
+#   estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
+#   keys <- names(estimates@values)
+#   alpha <- 1-ci_level
+#   n <- length(data)
+#
+#   fixed <- parameter_properties(distribution, "fixed") |> unlist()
+#
+#   estimate <- estimates@values
+#   se       <- numeric(length = sum(!fixed)) |> setNames(keys)
+#   lower    <- numeric(length = sum(!fixed)) |> setNames(keys)
+#   upper    <- numeric(length = sum(!fixed)) |> setNames(keys)
+#
+#   if (all(!fixed)) {
+#     df <- n-1
+#     se[["mu"]] <- sd(data) / sqrt(n)
+#     lower[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(  alpha/2, df=df)
+#     upper[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(1-alpha/2, df=df)
+#
+#     scale <- if (bessels_correction) df else n
+#
+#     se[["sigma2"]] <- estimate[["sigma2"]] * sqrt(2/scale)
+#     lower[["sigma2"]] <- scale * estimate[["sigma2"]] / qchisq(1-alpha/2, df=df)
+#     upper[["sigma2"]] <- scale * estimate[["sigma2"]] / qchisq(  alpha/2, df=df)
+#
+#   } else if (!fixed["mu"]) {
+#     se[["mu"]] <- std_dev(distribution) / sqrt(n)
+#     lower[["mu"]] <- qnorm(  alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
+#     upper[["mu"]] <- qnorm(1-alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
+#   } else {
+#     d <- S7::super(distribution, Distribution)
+#     return(parameter_inference_default(d, data, ..., ci_level=ci_level, bessels_correction=bessels_correction))
+#   }
+#
+#   return(data.frame(key=keys, estimate=estimate, se=se, lower=lower, upper=upper))
+# }
+#
+# S7::method(parameter_inference, NormalTau) <- function(distribution, data, ..., ci_level=0.95, bessels_correction=TRUE) {
+#   estimates <- point_estimates(distribution, data, bessels_correction=bessels_correction)
+#   keys <- names(estimates@values)
+#   alpha <- 1-ci_level
+#   n <- length(data)
+#
+#   fixed <- parameter_properties(distribution, "fixed") |> unlist()
+#
+#   estimate <- estimates@values
+#   se       <- numeric(length = sum(!fixed)) |> setNames(keys)
+#   lower    <- numeric(length = sum(!fixed)) |> setNames(keys)
+#   upper    <- numeric(length = sum(!fixed)) |> setNames(keys)
+#
+#   if (all(!fixed)) {
+#     df <- n-1
+#     se[["mu"]] <- sd(data) / sqrt(n)
+#     lower[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(  alpha/2, df=df)
+#     upper[["mu"]] <- estimate[["mu"]] + se[["mu"]] * qt(1-alpha/2, df=df)
+#
+#     scale <- if (bessels_correction) df else n
+#
+#     se[["tau"]] <- estimate[["tau"]] * sqrt(2/scale)
+#     lower[["tau"]] <- qchisq(  alpha/2, df=df) * estimate[["tau"]] / scale
+#     upper[["tau"]] <- qchisq(1-alpha/2, df=df) * estimate[["tau"]] / scale
+#
+#   } else if (!fixed["mu"]) {
+#     se[["mu"]] <- std_dev(distribution) / sqrt(n)
+#     lower[["mu"]] <- qnorm(  alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
+#     upper[["mu"]] <- qnorm(1-alpha/2, mean=estimate[["mu"]], sd=se[["mu"]])
+#   } else {
+#     d <- S7::super(distribution, Distribution)
+#     return(parameter_inference_default(d, data, ..., ci_level=ci_level, bessels_correction=bessels_correction))
+#   }
+#
+#   return(data.frame(key=keys, estimate=estimate, se=se, lower=lower, upper=upper))
+# }
 
 
 S7::method(gof_test, Normal) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {

@@ -14,7 +14,7 @@ Collate:
   'parameter.R'
   'distribution.R'
   'moments.R'
-  'estimates.R'
+  'fit.R'
   'fit-statistics.R'
   'geoms.R'
   'plots.R'
