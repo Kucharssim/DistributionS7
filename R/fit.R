@@ -6,20 +6,17 @@ Estimator <- S7::new_class(
 
 Mle <- S7::new_class(
   name = "Mle",
-  parent = Estimator
-)
-
-MleOptim <- S7::new_class(
-  name = "MleOptim",
-  parent = Mle,
+  parent = Estimator,
   properties = list(
+    optim = S7::class_logical,
     constrained = S7::class_logical,
     method = S7::class_character,
     control = S7::class_list
   ),
-  constructor = function(constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", control=list()) {
+  constructor = function(optim=FALSE, constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", control=list()) {
     S7::new_object(
       S7::S7_object(),
+      optim=optim,
       constrained=constrained,
       method=method,
       control=control
@@ -36,16 +33,17 @@ BiasCorrected <- S7::new_class(
 ## point estimation generics ----
 parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","estimator"), function(distribution, estimator, data) {
   data <- na.omit(data)
+  # override custom methods if optim requested
+  if (S7::S7_inherits(estimator, Mle) && estimator@optim)
+    distribution <- S7::super(distribution, Distribution)
+
   S7::S7_dispatch()
 })
 
-S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distribution, estimator, data) {
-  rlang::inform(message = "Analytic parameter estimates are not available/implemented, using numerical optimization...")
-  estimator <- MleOptim()
-  parameter_estimates(distribution, estimator, data)
-}
 
-S7::method(parameter_estimates, list(Distribution, MleOptim)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distribution, estimator, data) {
+  rlang::inform(message = "Using numerical optimization to find parameter estimates...")
+
   if (estimator@constrained) {
     start <- parameter_values(distribution, which="free")
 
@@ -104,6 +102,7 @@ S7::method(parameter_estimates, list(Distribution, MleOptim)) <- function(distri
 InferenceMethod <- S7::new_class(
   name = "InferenceMethod",
   properties = list(
+    estimator = S7::new_property(Estimator, default = Mle()),
     ci_level = S7::new_property(
       class = S7::class_double,
       validator = function(value) { assertthat::assert_that(value > 0, value < 1); return(NULL) },
@@ -119,41 +118,32 @@ DefaultMethod <- S7::new_class(
   name = "DefaultMethod",
   parent = InferenceMethod,
   properties = list(
-    estimator = S7::new_property(Estimator, default = Mle())
-  )
-)
-
-NormalTheory <- S7::new_class(
-  name = "NormalTheory",
-  parent = InferenceMethod,
-  properties = list(
+    normal_theory = S7::new_property(S7::class_logical, default=FALSE),
     constrained = S7::new_property(S7::class_logical, default=FALSE),
-    control = S7::new_property(S7::class_list, default=list()),
-    estimator = S7::new_property(Mle, default = Mle())
+    control = S7::new_property(S7::class_list, default=list())
   )
 )
 
 Bootstrap <- S7::new_class(
   name = "Bootstrap",
-  parent = InferenceMethod,
-  properties = list(
-    estimator = S7::new_property(Mle, default = Mle())
-  )
+  parent = InferenceMethod
 )
 
 ## inference generics ----
 parameter_inference <- S7::new_generic("parameter_inference", c("distribution", "inference_method"), function(distribution, inference_method, data){
   data <- na.omit(data)
+  # override custom method if normal theory requested
+  if (S7::S7_inherits(inference_method, DefaultMethod) && inference_method@normal_theory) {
+    # only valid for Mle estimators:
+    S7::check_is_S7(inference_method@estimator, Mle)
+    distribution <- S7::super(distribution, Distribution)
+  }
   S7::S7_dispatch()
 })
 
 S7::method(parameter_inference, list(Distribution, DefaultMethod)) <- function(distribution, inference_method, data) {
-  rlang::inform("Normal theory SE and CIs")
-  inference_method <- NormalTheory()
-  parameter_inference(distribution, inference_method, data)
-}
+  rlang::inform(message = "Computing normal theory SE and CIs...")
 
-S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(distribution, inference_method, data) {
   estimates <- parameter_estimates(distribution, inference_method@estimator, data)
   parameter_values(distribution) <- estimates
   vcov <- vcov(distribution, data, inference_method@constrained, inference_method@control)
