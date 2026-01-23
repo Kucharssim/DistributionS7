@@ -226,8 +226,8 @@ S7::method(constrain, Distribution) <- function(x, ..., which="all") {
   return(constrain_fn)
 }
 
-S7::method(derivative, Distribution) <- function(x, ..., which="all") {
-  support <- parameter_properties(x, "support", which=which)
-  derivative_fn <- lapply(support, derivative)
-  return(derivative_fn)
-}
+# S7::method(derivative, Distribution) <- function(x, ..., which="all") {
+#   support <- parameter_properties(x, "support", which=which)
+#   derivative_fn <- lapply(support, derivative)
+#   return(derivative_fn)
+# }

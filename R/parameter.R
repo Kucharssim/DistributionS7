@@ -64,33 +64,32 @@ is.fixed <- function(x) {
 
 
 is.parameter <- function(x) {
-  inherits(x, "Parameter") || inherits(x, "DistributionS7::Parameter")
+  S7::S7_inherits(x, Parameter)
 }
 
 ### derivatives of support transformations ----
 
-derivative <- S7::new_generic("derivative", "x")
+derivative <- S7::new_generic("derivative", "object")
 
-S7::method(derivative, Parameter) <- function(x, ...) {
-  d_fn <- derivative(x@support)
-  d_fn(x@uvalue)
+S7::method(derivative, Parameter) <- function(object, ...) {
+  derivative(object@support)
 }
 
-S7::method(derivative, Real) <- function(x, ...) {
-  if (is.infinite(x@min) && is.infinite(x@max))
+S7::method(derivative, Real) <- function(object, ...) {
+  if (is.infinite(object@min) && is.infinite(object@max))
     return(\(x, ..) return(1))
 
-  if (is.infinite(x@max))
+  if (is.infinite(object@max))
     return(exp)
 
-  if (is.infinite(x@min))
+  if (is.infinite(object@min))
     return(function(x) -exp(x))
 
   return(function(x) {
     p <- 1 / (1 + exp(-x))
-    (x@max-x@min) * p * (1-p)
+    (object@max-object@min) * p * (1-p)
   }
   )
 }
 
-S7::method(derivative, Int) <- function(x, ...) return(identity)
+S7::method(derivative, Int) <- function(object, ...) return(identity)

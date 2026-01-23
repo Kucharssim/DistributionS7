@@ -42,7 +42,8 @@ parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","
 
 
 S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distribution, estimator, data) {
-  rlang::inform(message = "Using numerical optimization to find parameter estimates...")
+  if (!estimator@optim)
+    rlang::inform(message = "Using numerical optimization to find parameter estimates...")
 
   if (estimator@constrained) {
     start <- parameter_values(distribution, which="free")
@@ -142,7 +143,8 @@ parameter_inference <- S7::new_generic("parameter_inference", c("distribution", 
 })
 
 S7::method(parameter_inference, list(Distribution, DefaultMethod)) <- function(distribution, inference_method, data) {
-  rlang::inform(message = "Computing normal theory SE and CIs...")
+  if (!inference_method@normal_theory)
+    rlang::inform(message = "Computing normal theory SE and CIs...")
 
   estimates <- parameter_estimates(distribution, inference_method@estimator, data)
   parameter_values(distribution) <- estimates
@@ -162,7 +164,7 @@ S7::method(parameter_inference, list(Distribution, DefaultMethod)) <- function(d
   dxdy <- setNames(vector(length=npar), keys)
   for (key in keys) {
     par <- S7::prop(distribution, key)
-    dxdy[key] <- derivative(par)
+    dxdy[key] <- derivative(par)(par@uvalue)
   }
   jac <- if (npar == 1) matrix(dxdy) else diag(dxdy)
 
