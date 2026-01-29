@@ -105,12 +105,7 @@ S7::method(rargs, InverseGammaMean) <- function(distribution, ...) {
 }
 
 S7::method(parameter_estimates, list(InverseGamma, Estimator)) <- function(distribution, estimator, data) {
-  parameters <- parameter_values(distribution)
-  is_fixed <- parameter_properties(distribution, property="fixed")
-
-  for(key in names(parameters))
-    if (is_fixed[[key]]) parameters[[key]] <- fixed(parameters[[key]])
-
+  parameters <- recreate_parameters(distribution)
   distribution <- do.call(gamma, parameters)
   parameter_estimates(distribution, estimator, 1/data)
 }

@@ -213,6 +213,18 @@ S7::method(`parameter_uvalues<-`, Distribution) <- function(distribution, values
   return(distribution)
 }
 
+recreate_parameters <- S7::new_generic("recreate_parameters", "distribution")
+
+S7::method(recreate_parameters, Distribution) <- function(distribution) {
+  parameters <- parameter_values(distribution)
+  is_fixed <- parameter_properties(distribution, property="fixed")
+
+  for(key in names(parameters))
+    if (is_fixed[[key]]) parameters[[key]] <- fixed(parameters[[key]])
+
+  return(parameters)
+}
+
 # from support.R
 S7::method(unconstrain, Distribution) <- function(x, ..., which="all") {
   support <- parameter_properties(x, "support", which=which)
