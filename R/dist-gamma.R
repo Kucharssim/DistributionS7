@@ -69,7 +69,6 @@ gamma <- function(alpha, theta, lambda, mu) {
   return(distribution)
 }
 
-cauchy <- function(mu, sigma) Cauchy(mu, sigma)
 
 S7::method(pdf_fn, Gamma) <- function(distribution) stats::dgamma
 
