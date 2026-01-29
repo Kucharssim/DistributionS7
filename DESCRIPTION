@@ -25,6 +25,7 @@ Collate:
   'dist-triangular.R'
   'dist-beta.R'
   'dist-cauchy.R'
+  'dist-gamma.R'
   'compare.R'
   'zzz.R'
 RoxygenNote: 7.3.3

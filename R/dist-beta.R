@@ -56,11 +56,3 @@ S7::method(parameter_estimates, list(Beta, Mom)) <- function(distribution, estim
 
   return(estimates)
 }
-
-S7::method(parameter_estimates, list(Beta, Mle)) <- function(distribution, estimator, data) {
-  estimates <- try(parameter_estimates(distribution, Mom(), data))
-  if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
-
-  distribution <- S7::super(distribution, Distribution)
-  return(parameter_estimates(distribution, estimator, data))
-}

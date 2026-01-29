@@ -16,14 +16,16 @@ Mle <- S7::new_class(
     optim = S7::class_logical,
     constrained = S7::class_logical,
     method = S7::class_character,
+    start = Estimator | S7::class_list,
     control = S7::class_list
   ),
-  constructor = function(optim=FALSE, constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", control=list()) {
+  constructor = function(optim=FALSE, constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", start=Mom(), control=list()) {
     S7::new_object(
       S7::S7_object(),
       optim=optim,
       constrained=constrained,
       method=method,
+      start=start,
       control=control
     )
   }
@@ -49,6 +51,14 @@ parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","
 S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distribution, estimator, data) {
   if (!estimator@optim)
     rlang::inform(message = "Using numerical optimization to find parameter estimates...")
+
+  # try to set intelligent starting values
+  if (S7::S7_inherits(estimator@start, Estimator)) {
+    estimates <- try(parameter_estimates(distribution, estimator@start, data))
+    if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
+  } else if (is.list(estimator@start)) {
+    parameter_values(distribution) <- estimator@start
+  }
 
   if (estimator@constrained) {
     start <- parameter_values(distribution, which="free")
