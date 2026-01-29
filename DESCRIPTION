@@ -23,6 +23,8 @@ Collate:
   'dist-negative_binomial.R'
   'dist-uniform.R'
   'dist-triangular.R'
+  'dist-beta.R'
+  'dist-cauchy.R'
   'compare.R'
   'zzz.R'
 RoxygenNote: 7.3.3

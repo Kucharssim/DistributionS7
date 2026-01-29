@@ -1,0 +1,48 @@
+Cauchy <- S7::new_class(
+  "Cauchy",
+  parent = DistributionContinuous,
+  properties = list(
+    mu = Parameter,
+    sigma = Parameter
+  ),
+  constructor = function(mu, sigma) {
+    S7::new_object(
+      S7::S7_object(),
+      name = "Cauchy",
+      support = Real(),
+      mu = Parameter("mu", "location", "\\mu", mu, Real()),
+      sigma = Parameter("sigma", "scale", "\\sigma", sigma, Real(min=0))
+    )
+  }
+)
+
+cauchy <- function(mu, sigma) Cauchy(mu, sigma)
+
+S7::method(pdf_fn, Cauchy) <- function(distribution) stats::dcauchy
+
+S7::method(cdf_fn, Cauchy) <- function(distribution) stats::pcauchy
+
+S7::method(qf_fn, Cauchy)  <- function(distribution) stats::qcauchy
+
+S7::method(rng_fn, Cauchy) <- function(distribution) stats::rcauchy
+
+S7::method(rargs, Cauchy) <- function(distribution, ...) {
+  return(list(location=distribution@mu@value, scale=distribution@sigma@value))
+}
+
+S7::method(parameter_estimates, list(Cauchy, Mom)) <- function(distribution, estimator, data) {
+  estimates <- list()
+
+  if (!is.fixed(distribution@mu)) estimates[["mu"]] <- median(data)
+  if (!is.fixed(distribution@sigma)) estimates[["sigma"]] <- stats::IQR(data, type = 8)/2
+
+  return(estimates)
+}
+
+S7::method(parameter_estimates, list(Cauchy, Mle)) <- function(distribution, estimator, data) {
+  estimates <- try(parameter_estimates(distribution, Mom(), data))
+  if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
+
+  distribution <- S7::super(distribution, Distribution)
+  return(parameter_estimates(distribution, estimator, data))
+}

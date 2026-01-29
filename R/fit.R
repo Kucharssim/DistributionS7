@@ -98,7 +98,7 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
     parameter_uvalues(distribution) <- result[["par"]]
   }
 
-  estimates <- parameter_values(distribution)
+  estimates <- parameter_values(distribution, which="free")
 
   return(unlist(estimates))
 }
