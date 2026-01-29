@@ -119,10 +119,23 @@ DefaultMethod <- S7::new_class(
   name = "DefaultMethod",
   parent = InferenceMethod,
   properties = list(
-    normal_theory = S7::new_property(S7::class_logical, default=FALSE),
+    args = S7::new_property(S7::class_list, default=list())
+  )
+)
+
+NormalTheory <- S7::new_class(
+  name = "NormalTheory",
+  parent = InferenceMethod,
+  properties = list(
+    estimator = S7::new_property(Mle, default = Mle()),
     constrained = S7::new_property(S7::class_logical, default=FALSE),
     control = S7::new_property(S7::class_list, default=list())
   )
+)
+
+ProfileLikelihood <- S7::new_class(
+  name = "Profile",
+  parent = InferenceMethod
 )
 
 Bootstrap <- S7::new_class(
@@ -133,19 +146,16 @@ Bootstrap <- S7::new_class(
 ## inference generics ----
 parameter_inference <- S7::new_generic("parameter_inference", c("distribution", "inference_method"), function(distribution, inference_method, data){
   data <- na.omit(data)
-  # override custom method if normal theory requested
-  if (S7::S7_inherits(inference_method, DefaultMethod) && inference_method@normal_theory) {
-    # only valid for Mle estimators:
-    S7::check_is_S7(inference_method@estimator, Mle)
-    distribution <- S7::super(distribution, Distribution)
-  }
   S7::S7_dispatch()
 })
 
 S7::method(parameter_inference, list(Distribution, DefaultMethod)) <- function(distribution, inference_method, data) {
-  if (!inference_method@normal_theory)
-    rlang::inform(message = "Computing normal theory SE and CIs...")
+  rlang::inform(message = "Computing normal theory SE and CIs...")
+  inference_method <- do.call(NormalTheory, inference_method@args)
+  parameter_inference(distribution, inference_method, data)
+}
 
+S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(distribution, inference_method, data) {
   estimates <- parameter_estimates(distribution, inference_method@estimator, data)
   parameter_values(distribution) <- estimates
   vcov <- vcov(distribution, data, inference_method@constrained, inference_method@control)
