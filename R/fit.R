@@ -4,6 +4,11 @@ Estimator <- S7::new_class(
   abstract = TRUE
 )
 
+Mom <- S7::new_class(
+  name = "Mom",
+  parent = Estimator
+)
+
 Mle <- S7::new_class(
   name = "Mle",
   parent = Estimator,

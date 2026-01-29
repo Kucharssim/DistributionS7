@@ -19,9 +19,10 @@ Collate:
   'geoms.R'
   'plots.R'
   'plots-empirical.R'
-  'normal.R'
-  'negative_binomial.R'
-  'uniform.R'
+  'dist-normal.R'
+  'dist-negative_binomial.R'
+  'dist-uniform.R'
+  'dist-triangular.R'
   'compare.R'
   'zzz.R'
 RoxygenNote: 7.3.3
