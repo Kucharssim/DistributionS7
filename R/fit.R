@@ -39,6 +39,11 @@ BiasCorrected <- S7::new_class(
 
 ## point estimation generics ----
 parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","estimator"), function(distribution, estimator, data) {
+  if (all(unlist(parameter_properties(distribution, property="fixed")))) {
+    rlang::inform("All parameters are fixed, nothing to estimate")
+    return(list())
+  }
+
   data <- na.omit(data)
   # override custom methods if optim requested
   if (S7::S7_inherits(estimator, Mle) && estimator@optim)

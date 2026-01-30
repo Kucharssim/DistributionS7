@@ -30,8 +30,6 @@ S7::method(rargs, Logistic) <- function(distribution) {
 S7::method(parameter_estimates, list(Logistic, Mom)) <- function(distribution, estimator, data) {
   is_fixed <- unlist(parameter_properties(distribution, property="fixed"))
 
-  if (all(is_fixed)) return(list())
-
   estimates <- list()
 
   if (all(!is_fixed)) {

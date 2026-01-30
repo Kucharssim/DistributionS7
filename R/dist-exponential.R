@@ -62,14 +62,10 @@ S7::method(rargs, ExponentialScale) <- function(distribution) {
 }
 
 S7::method(parameter_estimates, list(ExponentialRate, Mom)) <- function(distribution, estimator, data) {
-  if (distribution@lambda@fixed) return(list())
-
   return(list(lambda = 1 / mean(data)))
 }
 
 S7::method(parameter_estimates, list(ExponentialScale, Mom)) <- function(distribution, estimator, data) {
-  if (distribution@beta@fixed) return(list())
-
   return(list(beta = mean(data)))
 }
 
@@ -78,7 +74,6 @@ S7::method(parameter_estimates, list(Exponential, Mle)) <- function(distribution
 }
 
 S7::method(parameter_estimates, list(ExponentialRate, BiasCorrected)) <- function(distribution, estimator, data) {
-  if (distribution@lambda@fixed) return(list())
   n <- length(data)
   assertthat::assert_that(n > 2, msg = "Sample size must be greater than 2.")
 

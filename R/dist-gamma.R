@@ -92,7 +92,6 @@ S7::method(rargs, GammaMean) <- function(distribution, ...) {
 
 S7::method(parameter_estimates, list(GammaScale, Mom)) <- function(distribution, estimator, data) {
   fixed <- unlist(parameter_properties(distribution, "fixed"))
-  if (all(fixed)) return(list())
 
   m <- mean(data)
 
@@ -114,7 +113,6 @@ S7::method(parameter_estimates, list(GammaScale, Mom)) <- function(distribution,
 
 S7::method(parameter_estimates, list(GammaRate, Mom)) <- function(distribution, estimator, data) {
   fixed <- unlist(parameter_properties(distribution, "fixed"))
-  if (all(fixed)) return(list())
 
   m <- mean(data)
 
@@ -136,7 +134,6 @@ S7::method(parameter_estimates, list(GammaRate, Mom)) <- function(distribution, 
 
 S7::method(parameter_estimates, list(GammaMean, Mom)) <- function(distribution, estimator, data) {
   fixed <- unlist(parameter_properties(distribution, property="fixed"))
-  if (all(fixed)) return(list())
 
   m <- mean(data)
 
