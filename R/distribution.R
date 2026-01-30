@@ -63,8 +63,9 @@ S7::method(cdf_fn, Distribution) <- function(distribution) {
 cdf <- S7::new_generic("cdf", "distribution")
 
 S7::method(cdf, Distribution) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE, ...) {
-  lower <- q < distribution@support@min
-  upper <- q > distribution@support@max
+  support <- support(distribution)
+  lower <- q < support@min
+  upper <- q > support@max
   missing <- is.na(q)
   valid <- !lower & !upper & !missing
 

@@ -13,7 +13,7 @@ Frechet <- S7::new_class(
       support = Real(min=expression(theta)),
       alpha = Parameter("alpha", "shape",    "\\alpha", alpha, Real(min=0)),
       sigma = Parameter("sigma", "scale",    "\\sigma", sigma, Real(min=0)),
-      theta = Parameter("theta", "location", "\\theta", theta, Real(), fixed=TRUE)
+      theta = Parameter("theta", "location", "\\theta", theta, Real())
     )
   }
 )
@@ -49,7 +49,7 @@ S7::method(qf_fn, Frechet) <- function(distribution) function(p, alpha, sigma, t
   return(q)
 }
 
-S7::method(rng_fn, Frechet) <- function(distribution) function(n, mu, beta) {
+S7::method(rng_fn, Frechet) <- function(distribution) function(n, alpha, sigma, theta) {
   p <- runif(n, 0, 1)
   x <- qf(distribution, p)
   return(x)
@@ -59,8 +59,10 @@ S7::method(rargs, Frechet) <- function(distribution) parameter_values(distributi
 
 S7::method(parameter_estimates, list(Frechet, Mle)) <- function(distribution, estimator, data) {
   if (!distribution@theta@fixed) {
-    rlang::warn("Estimates for parameter `theta` are known to be unstable, consider fixing the parameter.")
-    distribution@theta@value <- min(data)-1
+    rlang::warn("Estimates of parameter `theta` is known to be unstable, consider fixing the parameter.")
+    m <- min(data)
+    distribution@theta@value <- m-1
+    distribution@theta@support@max <- m
   }
 
   distribution <- S7::super(distribution, Distribution)
