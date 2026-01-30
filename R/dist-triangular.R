@@ -11,7 +11,7 @@ Triangular <- S7::new_class(
     S7::new_object(
       S7::S7_object(),
       name = "Triangular",
-      support = Real(min=a, max=b),
+      support = Real(min=expression(a), max=expression(b)),
       a = Parameter("a", "minimum", "a", a, Real()),
       b = Parameter("b", "maximum", "b", b, Real(min = a)),
       c = Parameter("c", "mode",    "c", c, Real(min = a, max = b)),

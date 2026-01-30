@@ -4,15 +4,7 @@ Parameter <- S7::new_class(
     key = S7::class_character,
     name = S7::class_character,
     label = S7::class_character,
-    value = S7::new_property(
-      class = S7::class_numeric,
-      setter = function(self, value) {
-        if (length(value) != 1) rlang::abort("value must be of value 1")
-        if (outside(self@support, value) && !is.na(value)) rlang::abort("value is outside of the parameter support")
-        self@value <- value
-        self
-      }
-    ),
+    value = S7::class_numeric,
     uvalue = S7::new_property(
       class = S7::class_numeric,
       getter = function(self) {
@@ -29,11 +21,20 @@ Parameter <- S7::new_class(
     fixed = S7::class_logical
   ),
   constructor = function(key="", name=key, label=name, value, support, fixed) {
-    if(missing(fixed)) fixed <- is.fixed(value)
+    if(missing(fixed)) {
+      fixed <- is.fixed(value)
+    } else if(fixed && !is.fixed(value)) {
+      rlang::inform(rlang::englue("Parameter `{key}` was fixed by default. Set `distribution@{key}@fixed <- FALSE` if you are sure you want to estimate it, and you know what you are doing."))
+    }
     attr(value, "fixed") <- NULL
 
     S7::new_object(S7::S7_object(), key=key, name=name, label=label, value=value, support=support, fixed=fixed)
-  }
+  },
+  validator = function(self) {
+    if (length(self@value) != 1) rlang::abort("Parameter value must be of length 1")
+    if (self@support@min > self@value) rlang::abort("Parameter value is smaller than the minimum of the parameter support")
+    if (self@support@max < self@value) rlang::abort("Parameter value is larger than the maximum of the parameter support")
+  },
 )
 
 

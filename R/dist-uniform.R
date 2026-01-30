@@ -9,7 +9,7 @@ Uniform <- S7::new_class(
     S7::new_object(
       S7::S7_object(),
       name = "Uniform",
-      support = Real(min=min, max=max),
+      support = Real(min=expression(min), max=expression(max)),
       min = Parameter("min", "lower bound", "a", min, Real()),
       max = Parameter("max", "upper bound", "b", max, Real())
     )

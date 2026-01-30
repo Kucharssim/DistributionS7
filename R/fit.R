@@ -59,7 +59,7 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
 
   # try to set intelligent starting values
   if (S7::S7_inherits(estimator@start, Estimator)) {
-    estimates <- try(parameter_estimates(distribution, estimator@start, data))
+    estimates <- try(parameter_estimates(distribution, estimator@start, data), silent = TRUE)
     if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
   } else if (is.list(estimator@start)) {
     parameter_values(distribution) <- estimator@start

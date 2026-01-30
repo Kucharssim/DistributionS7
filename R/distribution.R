@@ -3,7 +3,6 @@ Distribution <- S7::new_class(
   properties = list(
     name = S7::class_character,
     support = Real | Int
-    #parameters = S7::class_list
   ),
   abstract = TRUE
 )
@@ -38,7 +37,7 @@ S7::method(pdf_fn, Distribution) <- function(distribution) {
 pdf <- S7::new_generic("pdf", "distribution")
 
 S7::method(pdf, Distribution) <- function(distribution, x, log = FALSE, ...) {
-  supported <- inside(distribution@support, x)
+  supported <- inside(distribution, x)
   missing <- is.na(x)
 
   out <- vector(mode = "numeric", length = length(x))
@@ -241,6 +240,20 @@ S7::method(recreate_parameters, Distribution) <- function(distribution) {
 }
 
 # from support.R
+S7::method(support, Distribution) <- function(object) {
+  pars <- parameter_values(object)
+  if (is.expression(object@support@min))
+    object@support@min <- eval(object@support@min, pars)
+  if (is.expression(object@support@max))
+    object@support@max <- eval(object@support@max, pars)
+  return(object@support)
+}
+
+S7::method(inside, Distribution) <- function(object, x, ...) {
+  inside(support(object), x, ...)
+}
+
+
 S7::method(unconstrain, Distribution) <- function(x, ..., which="all") {
   support <- parameter_properties(x, "support", which=which)
   unconstrain_fn <- lapply(support, unconstrain)

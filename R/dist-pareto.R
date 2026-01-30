@@ -9,7 +9,7 @@ Pareto <- S7::new_class(
     S7::new_object(
       S7::S7_object(),
       name = "Pareto",
-      support = Real(min=beta),
+      support = Real(min=expression(beta)),
       alpha = Parameter("alpha", "shape", "\\alpha", alpha, Real(min=0)),
       beta  = Parameter("beta",  "scale", "\\beta",  beta,  Real(min=0))
     )

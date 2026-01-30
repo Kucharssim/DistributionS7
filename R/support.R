@@ -2,18 +2,19 @@ Support <- S7::new_class(
   name = "Support",
   properties = list(
     min = S7::new_property(
-      class = S7::class_numeric,
+      class = S7::class_numeric | S7::class_expression,
       validator = function(value) if (length(value) != 1) "must be of length 1",
       default = -Inf
     ),
     max = S7::new_property(
-      class = S7::class_numeric,
+      class = S7::class_numeric | S7::class_expression,
       validator = function(value) if (length(value) != 1) "must be of length 1",
       default = Inf
     )
   ),
   validator = function(self) {
-    stopifnot(self@min <= self@max)
+    if (!is.expression(self@min) && !is.expression(self@max))
+      stopifnot(self@min <= self@max)
   }
 )
 
@@ -28,24 +29,23 @@ Int <- S7::new_class(
 )
 
 
+
 # Methods -----
 
-inside <- S7::new_generic("inside", "support")
+support <- S7::new_generic("support", "object")
 
-S7::method(inside, Real) <- function(support, x, ...) support@min <= x & x <= support@max
+S7::method(support, Support) <- function(object) object
 
-S7::method(inside, Int) <- function(support, x, ...) {
+inside <- S7::new_generic("inside", "object")
+
+S7::method(inside, Real) <- function(object, x, ...) object@min <= x & x <= object@max
+
+S7::method(inside, Int) <- function(object, x, ...) {
   if (rlang::is_integerish(x))
-    return(support@min <= x & x <= support@max)
+    return(object@min <= x & x <= object@max)
 
   return(FALSE)
 }
-
-
-outside <- S7::new_generic("outside", "support")
-
-S7::method(outside, Support) <- function(support, x, ...) !inside(support, x, ...)
-
 
 ## unconstrain ----
 unconstrain <- S7::new_generic("unconstrain", "x")
