@@ -64,13 +64,28 @@ S7::method(cdf_fn, Distribution) <- function(distribution) {
 cdf <- S7::new_generic("cdf", "distribution")
 
 S7::method(cdf, Distribution) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE, ...) {
+  lower <- q < distribution@support@min
+  upper <- q > distribution@support@max
+  missing <- is.na(q)
+  valid <- !lower & !upper & !missing
+
+  out <- vector(mode = "numeric", length = length(q))
+  if (lower.tail) {
+    out[lower] <- if(log.p) -Inf else 0
+    out[upper] <- if(log.p) 0 else 1
+  } else {
+    out[lower] <- if(log.p) 0 else 1
+    out[upper] <- if(log.p) -Inf else 0
+  }
+  out[missing] <- NA_real_
+
   args <- rargs(distribution)
   args <- c(args, rlang::dots_list(...))
-  args[["q"]] <- q
+  args[["q"]] <- q[valid]
   args[["lower.tail"]] <- lower.tail
   args[["log.p"]] <- log.p
 
-  out <- do.call(cdf_fn(distribution), args)
+  out[valid] <- do.call(cdf_fn(distribution), args)
 
   return(out)
 }
