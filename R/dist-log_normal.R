@@ -9,7 +9,7 @@ LogNormal <- S7::new_class(
     S7::new_object(
       S7::S7_object(),
       name = "LogNormal",
-      support = Real(),
+      support = Real(min=0),
       mu = Parameter("mu", "log mean", "\\mu", mu, Real()),
       sigma = Parameter("sigma", "log std.deviation", "\\sigma", sigma, Real(0))
     )
