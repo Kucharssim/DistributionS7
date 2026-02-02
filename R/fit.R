@@ -16,10 +16,10 @@ Mle <- S7::new_class(
     optim = S7::class_logical,
     constrained = S7::class_logical,
     method = S7::class_character,
-    start = Estimator | S7::class_list,
+    start = Estimator | S7::class_function | S7::class_list,
     control = S7::class_list
   ),
-  constructor = function(optim=FALSE, constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", start=Mom(), control=list()) {
+  constructor = function(optim=FALSE, constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", start=parameter_start, control=list()) {
     S7::new_object(
       S7::S7_object(),
       optim=optim,
@@ -36,6 +36,16 @@ BiasCorrected <- S7::new_class(
   parent = Estimator
 )
 
+
+parameter_start <- S7::new_generic("parameter_start", "distribution", function(distribution, data) {
+  S7::S7_dispatch()
+})
+
+S7::method(parameter_start, Distribution) <- function(distribution, data) {
+  estimates <- try(parameter_estimates(distribution, Mom(), data))
+  if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
+  return(distribution)
+}
 
 ## point estimation generics ----
 parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","estimator"), function(distribution, estimator, data) {
@@ -61,6 +71,8 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
   if (S7::S7_inherits(estimator@start, Estimator)) {
     estimates <- try(parameter_estimates(distribution, estimator@start, data), silent = TRUE)
     if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
+  } else if (is.function(estimator@start)) {
+    distribution <- estimator@start(distribution, data)
   } else if (is.list(estimator@start)) {
     parameter_values(distribution) <- estimator@start
   }
