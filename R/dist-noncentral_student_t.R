@@ -49,7 +49,7 @@ S7::method(rng_fn, NoncentralStudentT) <- function(distribution) function(n, nu,
 S7::method(rargs, NoncentralStudentT) <- function(distribution) parameter_values(distribution)
 
 S7::method(parameter_estimates, list(NoncentralStudentT, Mom)) <- function(distribution, estimator, data) {
-  rlang::info("Moments matching for t-distribution is extremely crude; further, parameters `nu` and `kappa` are not estimated.")
+  rlang::inform("Moments matching for t-distribution is extremely crude; further, parameters `nu` and `kappa` are not estimated.")
 
   estimates <- list()
   if(!distribution@nu@fixed)    estimates[["nu"]]    <- distribution@nu@value
