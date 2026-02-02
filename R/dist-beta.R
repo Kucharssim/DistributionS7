@@ -35,9 +35,9 @@ S7::method(parameter_estimates, list(Beta, Mom)) <- function(distribution, estim
   estimates <- list()
 
   if (all(!fixed)) {
-    x_bar <- mean(x)
+    x_bar <- mean(data)
     xm_bar <- 1-x_bar
-    v <- var(x)
+    v <- var(data)
 
     assertthat::assert_that(
       v < x_bar * xm_bar,
@@ -47,10 +47,10 @@ S7::method(parameter_estimates, list(Beta, Mom)) <- function(distribution, estim
     estimates[["alpha"]] <- x_bar * (x_bar * xm_bar / v - 1)
     estimates[["beta"]] <- xm_bar * (x_bar * xm_bar / v - 1)
   } else if (!fixed[["alpha"]]) {
-    x_bar <- mean(x)
+    x_bar <- mean(data)
     estimates[["alpha"]] <- x_bar * distribution@beta@value / (1-x_bar)
   } else if (!fixed[["beta"]]) {
-    x_bar <- 1-mean(x)
+    x_bar <- 1-mean(data)
     estimates[["beta"]] <- x_bar * distribution@alpha@value / (1-x_bar)
   }
 
