@@ -42,7 +42,7 @@ parameter_start <- S7::new_generic("parameter_start", "distribution", function(d
 })
 
 S7::method(parameter_start, Distribution) <- function(distribution, data) {
-  estimates <- try(parameter_estimates(distribution, Mom(), data))
+  estimates <- try(parameter_estimates(distribution, Mom(), data), silent=TRUE)
   if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
   return(distribution)
 }
