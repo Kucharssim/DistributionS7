@@ -29,10 +29,8 @@ S7::method(rargs,  SymmetricGeneralizedNormal) <- function(distribution) paramet
 S7::method(parameter_start, SymmetricGeneralizedNormal) <- function(distribution, data) {
   start <- list()
   if (!distribution@beta@fixed) {
-    m1 <- mean(abs(data))
-    m2 <- mean(data^2)
-    beta <- m1 / sqrt(m2)
-    start[["beta"]] <- beta
+    beta <- 2
+    start[["beta"]] <- beta # start at normal
   } else {
     beta <- distribution@beta@value
   }
