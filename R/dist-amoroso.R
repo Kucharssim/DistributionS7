@@ -23,6 +23,8 @@ Amoroso <- S7::new_class(
   }
 )
 
+amoroso <- function(a, theta, alpha, beta) Amoroso(a, theta, alpha, beta)
+
 S7::method(pdf_fn, Amoroso) <- function(distribution) function(x, a, theta, alpha, beta, log = FALSE) {
   terms <- list()
   xi <- (x-a)/theta

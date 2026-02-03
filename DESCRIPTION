@@ -47,6 +47,7 @@ Imports:
   jaspGraphs,
   patchwork,
   sn,
-  gnorm
+  gnorm,
+  sgt
 Remotes:
   jasp-stats/jaspGraphs
