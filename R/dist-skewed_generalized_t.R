@@ -53,12 +53,3 @@ S7::method(parameter_start, SkewedGeneralizedT) <- function(distribution, data) 
   parameter_values(distribution) <- start
   return(distribution)
 }
-
-parameter_estimates(
-  skewed_generalized_t(0, 1, 0.5, fixed(5), fixed(5)),
-  Mle(),
-  rng(
-    skewed_generalized_t(4, 2, -0.5, 5, 5),
-    1000
-  )
-)
