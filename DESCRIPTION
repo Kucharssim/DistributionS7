@@ -45,6 +45,8 @@ Imports:
   ggplot2,
   ggrepel,
   jaspGraphs,
-  patchwork
+  patchwork,
+  sn,
+  gnorm
 Remotes:
   jasp-stats/jaspGraphs
