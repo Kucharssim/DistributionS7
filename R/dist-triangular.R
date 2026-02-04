@@ -108,11 +108,11 @@ S7::method(parameter_start, Triangular) <- function(distribution, data) {
     distribution@b@value <- M + distribution@epsilon
     distribution@b@support@min <- M
   } else {
-    m <- distribution@b@value
+    M <- distribution@b@value
   }
 
   if (!distribution@c@fixed) {
-    distribution@c@value <- mean(data)/3 - m - M
+    distribution@c@value <- 3*mean(data) - m - M
     distribution@c@support@min <- m
     distribution@c@support@max <- M
   }

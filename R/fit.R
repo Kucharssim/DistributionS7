@@ -189,6 +189,8 @@ S7::method(parameter_inference, list(Distribution, DefaultMethod)) <- function(d
 
 S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(distribution, inference_method, data) {
   estimates <- parameter_estimates(distribution, inference_method@estimator, data)
+  # in case we want to dynamically change support of pars
+  distribution <- parameter_start(distribution, data)
   parameter_values(distribution) <- estimates
   vcov <- vcov(distribution, data, inference_method@constrained, inference_method@control)
 
@@ -222,6 +224,11 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
     fn <- constrain(par)
     lower[[key]] <- fn(lower[[key]])
     upper[[key]] <- fn(upper[[key]])
+    if (lower[[key]] > upper[[key]]) {
+      tmp <- upper[[key]]
+      upper[[key]] <- lower[[key]]
+      lower[[key]] <- tmp
+    }
   }
 
   # compute SE on the constrained space using delta method
@@ -241,14 +248,11 @@ S7::method(fit_distribution, list(Distribution, Estimator)) <- function(distribu
   estimates <- parameter_estimates(distribution, estimator, data)
   parameter_values(distribution) <- estimates
 
+
   # make a new dist object - this ensures all properties are valid
   dist_class <- S7::S7_class(distribution)
-  pars <- parameter_values(distribution)
-  is_fixed <- parameter_properties(distribution, property="fixed")
-  for (name in names(pars)) {
-    if (is_fixed[[name]]) pars[[name]] <- fixed(pars[[name]])
-  }
-  distribution <- do.call(dist_class, pars)
+  parameters <- recreate_parameters(distribution)
+  distribution <- do.call(dist_class, parameters)
   return(distribution)
 }
 
