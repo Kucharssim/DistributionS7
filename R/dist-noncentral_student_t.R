@@ -48,14 +48,11 @@ S7::method(rng_fn, NoncentralStudentT) <- function(distribution) function(n, nu,
 
 S7::method(rargs, NoncentralStudentT) <- function(distribution) parameter_values(distribution)
 
-S7::method(parameter_estimates, list(NoncentralStudentT, Mom)) <- function(distribution, estimator, data) {
-  rlang::inform("Moments matching for t-distribution is extremely crude; further, parameters `nu` and `kappa` are not estimated.")
+S7::method(parameter_start, NoncentralStudentT) <- function(distribution,data) {
+  if(!distribution@mu@fixed)    distribution@mu@value    <- median(data)
+  if(!distribution@sigma@fixed) distribution@sigma@value <- stats::IQR(data, type = 8)/2
 
-  estimates <- list()
-  if(!distribution@nu@fixed)    estimates[["nu"]]    <- distribution@nu@value
-  if(!distribution@kappa@fixed) estimates[["kappa"]] <- distribution@kappa@value
-  if(!distribution@mu@fixed)    estimates[["mu"]]    <- median(data)
-  if(!distribution@sigma@fixed) estimates[["sigma"]] <- stats::IQR(data, type = 8)/2
-
-  return(estimates)
+  return(distribution)
 }
+
+

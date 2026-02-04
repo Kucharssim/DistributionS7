@@ -38,14 +38,12 @@ S7::method(rng_fn, Weibull) <- function(distribution) function(n, k, lambda, the
 
 S7::method(rargs, Weibull) <- function(distribution) parameter_values(distribution)
 
-S7::method(parameter_estimates, list(Weibull, Mle)) <- function(distribution, estimator, data) {
+S7::method(parameter_start, Weibull) <- function(distribution, data) {
   if (!distribution@theta@fixed) {
     rlang::warn("Estimates of parameter `theta` is known to be unstable, consider fixing the parameter.")
     m <- min(data)
     distribution@theta@value <- m-1
     distribution@theta@support@max <- m
   }
-
-  distribution <- S7::super(distribution, Distribution)
-  return(parameter_estimates(distribution, estimator, data))
+  return(distribution)
 }

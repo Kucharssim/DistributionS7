@@ -57,7 +57,7 @@ S7::method(rng_fn, Frechet) <- function(distribution) function(n, alpha, sigma, 
 
 S7::method(rargs, Frechet) <- function(distribution) parameter_values(distribution)
 
-S7::method(parameter_estimates, list(Frechet, Mle)) <- function(distribution, estimator, data) {
+S7::method(parameter_start, Frechet) <- function(distribution, data) {
   if (!distribution@theta@fixed) {
     rlang::warn("Estimates of parameter `theta` is known to be unstable, consider fixing the parameter.")
     m <- min(data)
@@ -65,6 +65,5 @@ S7::method(parameter_estimates, list(Frechet, Mle)) <- function(distribution, es
     distribution@theta@support@max <- m
   }
 
-  distribution <- S7::super(distribution, Distribution)
-  return(parameter_estimates(distribution, estimator, data))
+  return(distribution)
 }

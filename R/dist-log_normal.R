@@ -20,7 +20,7 @@ log_normal <- function(mu, sigma) LogNormal(mu, sigma)
 
 S7::method(pdf_fn, LogNormal) <- function(distribution) stats::dlnorm
 S7::method(cdf_fn, LogNormal) <- function(distribution) stats::plnorm
-S7::method(qf_fn, LogNormal)  <- function(distribution) stats::qlnorm
+S7::method(qf_fn,  LogNormal) <- function(distribution) stats::qlnorm
 S7::method(rng_fn, LogNormal) <- function(distribution) stats::rlnorm
 
 S7::method(rargs, LogNormal) <- function(distribution) {

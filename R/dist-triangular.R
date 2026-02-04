@@ -5,7 +5,7 @@ Triangular <- S7::new_class(
     a = Parameter,
     b = Parameter,
     c = Parameter,
-    error = S7::class_numeric
+    epsilon = S7::class_numeric
   ),
   constructor = function(a, b, c) {
     S7::new_object(
@@ -13,9 +13,9 @@ Triangular <- S7::new_class(
       name = "Triangular",
       support = Real(min=expression(a), max=expression(b)),
       a = Parameter("a", "minimum", "a", a, Real()),
-      b = Parameter("b", "maximum", "b", b, Real(min = a)),
-      c = Parameter("c", "mode",    "c", c, Real(min = a, max = b)),
-      error = 1e-3
+      b = Parameter("b", "maximum", "b", b, Real()),
+      c = Parameter("c", "mode",    "c", c, Real()),
+      epsilon = 1e-2
     )
   }
 )
@@ -94,43 +94,28 @@ S7::method(variance, Triangular)  <- function(distribution, ...) {
   )
 }
 
-S7::method(parameter_estimates, list(Triangular, Mle)) <- function(distribution, estimator, data) {
-  estimates <- numeric()
-
-  if (is.fixed(distribution@a)) {
-    a <- distribution@a@value
+S7::method(parameter_start, Triangular) <- function(distribution, data) {
+  if (!distribution@a@fixed) {
+    m <- min(data)
+    distribution@a@value <- m - distribution@epsilon
+    distribution@a@support@max <- m
   } else {
-    a <- min(data) - distribution@error
-    estimates[["a"]] <- a
+    m <- distribution@a@value
   }
 
-  if (is.fixed(distribution@b)) {
-    b <- distribution@a@value
+  if (!distribution@b@fixed) {
+    M <- max(data)
+    distribution@b@value <- M + distribution@epsilon
+    distribution@b@support@min <- M
   } else {
-    b <- max(data) + distribution@error
-    estimates[["b"]] <- b
+    m <- distribution@b@value
   }
 
-  if (is.fixed(distribution@c)) {
-    # validate values
-    d <- triangular(a=a, b=c, c=distribution@c@value)
-  } else {
-    if (estimator@optim) { # try default optim method
-      d <- triangular(a=fixed(a), b=fixed(b), c=(a+b)/2)
-      d <- S7::super(d, Distribution)
-      estimates[["c"]] <- parameter_estimates(d, estimator, data)[["c"]]
-    } else {
-      objective <- function(x) {
-        d <- triangular(a=fixed(a), b=fixed(b), c=x)
-        likelihood(d, data, log=TRUE)
-      }
-      result <- try(
-        optimize(objective, lower=a + distribution@error, upper = b - distribution@error, maximum=TRUE)
-      )
-      if (inherits(result, "try-error")) rlang::abort("Optimization failed")
-      estimates[["c"]] <- result[["maximum"]]
-    }
+  if (!distribution@c@fixed) {
+    distribution@c@value <- mean(data)/3 - m - M
+    distribution@c@support@min <- m
+    distribution@c@support@max <- M
   }
 
-  return(estimates)
+  return(distribution)
 }

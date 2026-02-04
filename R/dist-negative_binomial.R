@@ -106,33 +106,31 @@ S7::method(excess_kurtosis, NegativeBinomialProb) <- function(distribution, ...)
   with(pars, 6 / k + p^2 / ((1-p)*k) )
 }
 
-
-S7::method(parameter_estimates, list(NegativeBinomialMean, Mle)) <- function(distribution, estimator, data) {
-  fixed <- parameter_properties(distribution, "fixed") |> unlist()
-
-  # starting points using method of moments...
-  if (any(!fixed)) {
-    m <- mean(data)
+S7::method(parameter_estimates, list(NegativeBinomialMean, Mom)) <- function(distribution, estimator, data) {
+  estimates <- list()
+  if (!distribution@mu@fixed) {
+    mu <- mean(data)
     v <- var(data)
-    if (!fixed[["mu"]]) distribution@mu@value <- m
-    if (!fixed[["phi"]]) distribution@phi@value <- m^2 / (v-m)
+    estimates[["mu"]] <- mu
+  } else {
+    mu <- distribution@mu@value
+    v <- mean((data-mu)^2)
   }
 
-  distribution <- S7::super(distribution, DistributionDiscrete)
-  parameter_estimates(distribution, estimator, data)
+  if (!distribution@phi@fixed) estimates[["phi"]] <- mu^2 / (v-mu)
+
+  return(estimates)
 }
 
-S7::method(parameter_estimates, list(NegativeBinomialProb, Mle)) <- function(distribution, estimator, data) {
-  fixed <- parameter_properties(distribution, "fixed") |> unlist()
 
-  # starting points using method of moments...
-  if (any(!fixed)) {
-    m <- mean(data)
-    v <- var(data)
-    if (!fixed[["p"]]) distribution@p@value <- m / v
-    if (!fixed[["k"]]) distribution@k@value <- m^2 / (v-m)
-  }
+S7::method(parameter_estimates, list(NegativeBinomialProb, Mom)) <- function(distribution, estimator, data) {
+  m <- mean(data)
+  v <- var(data)
 
-  distribution <- S7::super(distribution, DistributionDiscrete)
-  parameter_estimates(distribution, estimator, data)
+  estimates <- list()
+
+  if (!distribution@p@fixed) estimates[["p"]] <- m / v
+  if (!distribution@k@fixed) estimates[["k"]] <- m^2 / (v-m)
+
+  return(estimates)
 }
