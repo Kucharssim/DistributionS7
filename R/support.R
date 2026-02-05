@@ -10,11 +10,14 @@ Support <- S7::new_class(
       class = S7::class_numeric | S7::class_expression,
       validator = function(value) if (length(value) != 1) "must be of length 1",
       default = Inf
+    ),
+    numeric = S7::new_property(
+      class = S7::class_logical,
+      getter = function(self) { !is.expression(self@min) && !is.expression(self@max) }
     )
   ),
   validator = function(self) {
-    if (!is.expression(self@min) && !is.expression(self@max))
-      stopifnot(self@min <= self@max)
+    if (self@numeric) stopifnot(self@min <= self@max)
   }
 )
 
@@ -27,8 +30,6 @@ Int <- S7::new_class(
   name = "Int",
   parent = Support
 )
-
-
 
 # Methods -----
 
@@ -48,43 +49,55 @@ S7::method(inside, Int) <- function(object, x, ...) {
 }
 
 ## unconstrain ----
-unconstrain <- S7::new_generic("unconstrain", "x")
+unconstrain <- S7::new_generic("unconstrain", c("object", "x"))
 
-S7::method(unconstrain, Real) <- function(x, ...) {
-  if (is.infinite(x@min) && is.infinite(x@max))
-    return(identity)
+S7::method(unconstrain, list(Real, S7::class_numeric)) <- function(object, x) {
+  if (is.infinite(object@min) && is.infinite(object@max)) return(x)
 
-  if (is.infinite(x@max))
-    return(\(value) log(value - x@min))
+  if (is.finite(object@min) && is.finite(object@max)) {
+    p <- (x - object@min) / (object@max - object@min)
+    return(log(p) - log1p(-p))
+  }
 
-  if (is.infinite(x@min))
-    return(\(value) log(x@max - value))
-
-  return(\(value) {
-    p <- (value - x@min) / (x@max - x@min)
-
-    log(p) - log1p(-p)
-  })
+  if (is.finite(object@min)) return(log(x - object@min))
+  if (is.finite(object@max)) return(log(object@max - x))
 }
 
-S7::method(unconstrain, Int) <- function(x, ...) identity
+S7::method(unconstrain, list(Int, S7::class_numeric)) <- function(object, x) return(x)
+
 
 ## constrain ----
-constrain <- S7::new_generic("constrain", "x")
+constrain <- S7::new_generic("constrain", c("object", "x"))
 
-S7::method(constrain, Real) <- function(x, ...) {
-  if (is.infinite(x@min) && is.infinite(x@max))
-    return(identity)
+S7::method(constrain, list(Real, S7::class_numeric)) <- function(object, x) {
+  if (is.infinite(object@min) && is.infinite(object@max)) return(x)
 
-  if (is.infinite(x@max))
-    return(\(value) exp(value) + x@min)
+  if (is.finite(object@min) && is.finite(object@max)) {
+    p <- 1 / (1 + exp(-x))
+    return(object@min + (object@max - object@min) * p)
+  }
 
-  if (is.infinite(x@min))
-    return(\(value) x@max - exp(value))
-
-  return(\(value) {
-    p <- 1 / (1 + exp(-value))
-    return(x@min + (x@max - x@min) * p)
-  })
+  if (is.finite(object@min)) return(exp(x) + object@min)
+  if (is.finite(object@max)) return(object@max - exp(x))
 }
+
+S7::method(constrain, list(Int, S7::class_numeric)) <- function(object, x) return(x)
+
+
+## derivatives of the constrain transform---
+derivative <- S7::new_generic("derivative", c("object", "x"))
+
+S7::method(derivative, list(Real, S7::class_numeric)) <- function(object, x) {
+  if (is.infinite(object@min) && is.infinite(object@max)) return(1)
+
+  if (is.finite(object@min) && is.finite(object@max)) {
+    p <- 1 / (1 + exp(-x))
+    return( (object@max-object@min) * p * (1-p))
+  }
+
+  if (is.finite(object@min)) return(exp(x))
+  if (is.finite(object@max)) return(exp(x))
+}
+
+S7::method(derivative, list(Int, S7::class_numeric)) <- function(object, x) return(NaN)
 

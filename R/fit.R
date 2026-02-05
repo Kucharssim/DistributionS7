@@ -204,14 +204,6 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
     return(estimates_table(distribution, estimates=estimates, se=se, lower=lower, upper=upper))
   }
 
-  # compute Jacobian of the inverse transform
-  dxdy <- setNames(vector(length=npar), keys)
-  for (key in keys) {
-    par <- S7::prop(distribution, key)
-    dxdy[key] <- derivative(par)(par@uvalue)
-  }
-  jac <- if (npar == 1) matrix(dxdy) else diag(dxdy)
-
   # compute limits on the unconstrained space
   uestimates <- unlist(parameter_uvalues(distribution, which="free"))
   se <- sqrt(diag(vcov))
@@ -221,9 +213,9 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
   # convert to constrained space
   for (key in keys) {
     par <- S7::prop(distribution, key)
-    fn <- constrain(par)
-    lower[[key]] <- fn(lower[[key]])
-    upper[[key]] <- fn(upper[[key]])
+    lower[[key]] <- constrain(par, lower[[key]])
+    upper[[key]] <- constrain(par, upper[[key]])
+    # reverse limits when they are fliped (due to max-exp(uvalue) transform)
     if (lower[[key]] > upper[[key]]) {
       tmp <- upper[[key]]
       upper[[key]] <- lower[[key]]
@@ -231,6 +223,9 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
     }
   }
 
+  # compute Jacobian of the inverse transform
+  derivatives <- parameter_properties(distribution, property="derivative", which="free")
+  jac <- if (npar == 1) matrix(derivatives) else diag(derivatives)
   # compute SE on the constrained space using delta method
   vcov <- jac %*% vcov %*% jac
   se <- sqrt(diag(vcov))

@@ -165,7 +165,7 @@ parameter_properties <- S7::new_generic("parameter_properties", "distribution")
 
 S7::method(parameter_properties, Distribution) <- function(
     distribution,
-    property = c("key", "label", "value", "uvalue", "support", "fixed"),
+    property = c("key", "label", "value", "uvalue", "derivative", "support", "fixed"),
     which = "all", ...) {
   property <- match.arg(property)
 
@@ -173,12 +173,13 @@ S7::method(parameter_properties, Distribution) <- function(
 
   output <- switch(
     property,
-    key     = lapply(pars, \(p) p@key    ),
-    label   = lapply(pars, \(p) p@label  ),
-    value   = lapply(pars, \(p) p@value  ),
-    uvalue  = lapply(pars, \(p) p@uvalue ),
-    support = lapply(pars, \(p) p@support),
-    fixed   = lapply(pars, \(p) p@fixed  )
+    key        = lapply(pars, \(p) p@key    ),
+    label      = lapply(pars, \(p) p@label  ),
+    value      = lapply(pars, \(p) p@value  ),
+    uvalue     = lapply(pars, \(p) p@uvalue ),
+    derivative = lapply(pars, \(p) p@derivative),
+    support    = lapply(pars, \(p) p@support),
+    fixed      = lapply(pars, \(p) p@fixed  )
   )
 
   return(output)
@@ -253,22 +254,3 @@ S7::method(support, Distribution) <- function(object) {
 S7::method(inside, Distribution) <- function(object, x, ...) {
   inside(support(object), x, ...)
 }
-
-
-S7::method(unconstrain, Distribution) <- function(x, ..., which="all") {
-  support <- parameter_properties(x, "support", which=which)
-  unconstrain_fn <- lapply(support, unconstrain)
-  return(unconstrain_fn)
-}
-
-S7::method(constrain, Distribution) <- function(x, ..., which="all") {
-  support <- parameter_properties(x, "support", which=which)
-  constrain_fn <- lapply(support, constrain)
-  return(constrain_fn)
-}
-
-# S7::method(derivative, Distribution) <- function(x, ..., which="all") {
-#   support <- parameter_properties(x, "support", which=which)
-#   derivative_fn <- lapply(support, derivative)
-#   return(derivative_fn)
-# }
