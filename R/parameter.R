@@ -71,7 +71,6 @@ is.fixed <- function(x) {
   isTRUE(attr(x, "fixed"))
 }
 
-
 is.parameter <- function(x) {
   S7::S7_inherits(x, Parameter)
 }

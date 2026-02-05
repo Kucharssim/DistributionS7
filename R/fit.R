@@ -49,6 +49,8 @@ S7::method(parameter_start, Distribution) <- function(distribution, data) {
 
 ## point estimation generics ----
 parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","estimator"), function(distribution, estimator, data) {
+  if (distribution@support@numeric)
+    assertthat::assert_that(all(inside(distribution, data)), msg = "data are outside of the parameter support")
   if (all(unlist(parameter_properties(distribution, property="fixed")))) {
     rlang::inform("All parameters are fixed, nothing to estimate")
     return(list())
@@ -199,8 +201,8 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
 
   if (inference_method@constrained) {
     se <- sqrt(diag(vcov))
-    lower <- qnorm(inference_method@lower, estimates, se)
-    upper <- qnorm(inference_method@upper, estimates, se)
+    lower <- qnorm(inference_method@lower, unlist(estimates), se)
+    upper <- qnorm(inference_method@upper, unlist(estimates), se)
     return(estimates_table(distribution, estimates=estimates, se=se, lower=lower, upper=upper))
   }
 
@@ -224,7 +226,7 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
   }
 
   # compute Jacobian of the inverse transform
-  derivatives <- parameter_properties(distribution, property="derivative", which="free")
+  derivatives <- unlist(parameter_properties(distribution, property="derivative", which="free"))
   jac <- if (npar == 1) matrix(derivatives) else diag(derivatives)
   # compute SE on the constrained space using delta method
   vcov <- jac %*% vcov %*% jac
