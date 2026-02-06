@@ -254,3 +254,27 @@ S7::method(support, Distribution) <- function(object) {
 S7::method(inside, Distribution) <- function(object, x, ...) {
   inside(support(object), x, ...)
 }
+
+
+as_latex <- S7::new_generic("as_latex", "distribution", function(distribution, digits=3) {
+  S7::S7_dispatch()
+})
+
+S7::method(as_latex, Distribution) <- function(distribution, digits=3) {
+  keys   <- parameter_properties(distribution, property="key")
+  labels <- parameter_properties(distribution, property="label")
+  fixed  <- parameter_properties(distribution, property="fixed")
+  values <- parameter_values(distribution)
+
+  pars <- list()
+  for (key in keys) {
+    lab <- labels[[key]]
+    if (!fixed[[key]]) lab <- sprintf("\\hat{%s}", lab)
+    pars[[key]] <- sprintf("%1$s = %2$s", lab, format(values[[key]], digits=digits))
+  }
+  pars <- paste(pars, collapse=", ")
+
+  text <- sprintf("\\text{%1$s}(%2$s)", distribution@name, pars)
+
+  return(text)
+}

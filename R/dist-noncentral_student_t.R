@@ -28,7 +28,8 @@ student_t <- function(nu, mu, sigma) NoncentralStudentT(nu=nu, kappa=fixed(0), m
 
 S7::method(pdf_fn, NoncentralStudentT) <- function(distribution) function(x, nu, kappa, mu, sigma, log=FALSE) {
   xi <- (x-mu)/sigma
-  return(dt(xi, df=nu, ncp=kappa, log=log))
+  lpdf <- dt(xi, df=nu, ncp=kappa, log=TRUE) - log(sigma)
+  if(log) return(lpdf) else return(exp(lpdf))
 }
 
 S7::method(cdf_fn, NoncentralStudentT) <- function(distribution) function(q, nu, kappa, mu, sigma, lower.tail=TRUE, log.p=FALSE) {

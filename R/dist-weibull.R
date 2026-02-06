@@ -2,48 +2,59 @@ Weibull <- S7::new_class(
   "Weibull",
   parent = DistributionContinuous,
   properties = list(
-    k = Parameter,
-    lambda = Parameter,
-    theta = Parameter
+    shape = Parameter,
+    scale = Parameter
   ),
-  constructor = function(k, lambda, theta) {
+  constructor = function(k, lambda) {
     S7::new_object(
       S7::S7_object(),
       name = "Weibull",
-      support = Real(min=expression(theta)),
-      k = Parameter("k", "shape", "\\text{k}", k, Real(min=0)),
-      lambda = Parameter("lambda", "scale", "\\lambda", lambda, Real(min=0)),
-      theta = Parameter("theta", "location", "\\theta", theta, Real())
+      support = Real(min=0),
+      shape = Parameter("shape", "shape", "\\text{k}", k, Real(min=0)),
+      scale = Parameter("scale", "scale", "\\lambda", lambda, Real(min=0))
     )
   }
 )
 
-weibull <- function(k, lambda, theta) Weibull(k, lambda, theta)
+weibull <- function(k, lambda) Weibull(k, lambda)
 
-S7::method(pdf_fn, Weibull) <- function(distribution) function(x, k, lambda, theta, log=FALSE) {
-  stats::dweibull(x-theta, shape = k, scale = lambda, log = log)
-}
+S7::method(pdf_fn, Weibull) <- function(distribution) stats::dweibull
+S7::method(cdf_fn, Weibull) <- function(distribution) stats::pweibull
+S7::method(qf_fn,  Weibull) <- function(distribution) stats::qweibull
+S7::method(rng_fn, Weibull) <- function(distribution) stats::rweibull
+S7::method(rargs,  Weibull) <- function(distribution) parameter_values(distribution)
 
-S7::method(cdf_fn, Weibull) <- function(distribution) function(q, k, lambda, theta, lower.tail=TRUE, log.p=FALSE) {
-  stats::pweibull(q-theta, shape = k, scale = lambda, lower.tail = lower.tail, log.p = log.p)
-}
+S7::method(parameter_estimates, list(Weibull, Mom)) <- function(distribution, estimator, data) {
+  estimates <- list()
+  if (!distribution@shape@fixed) {
+    lhs <- var(data)/mean(data)^2
 
-S7::method(qf_fn, Weibull) <- function(distribution) function(p, k, lambda, theta, lower.tail=TRUE, log.p=FALSE) {
-  stats::qweibull(p, shape = k, scale = lambda, lower.tail = lower.tail, log.p = log.p) + theta
-}
+    fn <- function(par, d, lhs) {
+      d@shape@uvalue <- par[["ushape"]]
+      shape <- d@shape@value
+      g <- lgamma(1 + 2/shape)
+      g2 <- 2 * lgamma(1 + 1/shape)
+      rhs <- exp(g - g2) - 1
+      abs(rhs - lhs)
+    }
 
-S7::method(rng_fn, Weibull) <- function(distribution) function(n, k, lambda, theta) {
-  stats::rweibull(n, shape = k, scale = lambda) + theta
-}
+    shape <- try(optim(
+      par=c(ushape=distribution@shape@uvalue), fn, d=distribution, lhs=lhs, method="BFGS")
+      )
 
-S7::method(rargs, Weibull) <- function(distribution) parameter_values(distribution)
+    if (inherits(shape, "try-error")) rlang::abort("Could not determine `shape` parameter")
 
-S7::method(parameter_start, Weibull) <- function(distribution, data) {
-  if (!distribution@theta@fixed) {
-    rlang::warn("Estimates of parameter `theta` is known to be unstable, consider fixing the parameter.")
-    m <- min(data)
-    distribution@theta@value <- m-1
-    distribution@theta@support@max <- m
+    distribution@shape@uvalue <- shape[["par"]][["ushape"]]
+    estimates[["shape"]] <- distribution@shape@value
+    shape <- estimates[["shape"]]
+  } else {
+    shape <- distribution@shape@value
   }
-  return(distribution)
+
+  if (!distribution@shape@fixed) {
+    lm <- log(mean(data))
+    estimates[["scale"]] <- exp(lm - lgamma(1 + 1/shape))
+  }
+
+  return(estimates)
 }
