@@ -143,7 +143,7 @@ information_criteria <- S7::new_generic("information_criteria", "distribution", 
 })
 
 S7::method(information_criteria, Distribution) <- function(distribution, data, estimated=FALSE) {
-  if (estimated) fitted <- fit_distribution(distribution, Mle(), data)
+  if (!estimated) distribution <- fit_distribution(distribution, Mle(), data)
 
   log_lik <- log_lik(distribution, data)
   ll <- log_lik

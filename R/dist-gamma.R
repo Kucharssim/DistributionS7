@@ -153,3 +153,83 @@ S7::method(parameter_estimates, list(GammaMean, Mom)) <- function(distribution, 
 
   return(estimates)
 }
+
+
+S7::method(parameter_estimates, list(GammaScale, Mle)) <- function(distribution, estimator, data) {
+  distribution <- parameter_start(distribution, data)
+  estimates <- list()
+  if (!distribution@alpha@fixed) {
+    rhs <- log(mean(data)) - mean(log(data))
+    fn <- function(par, d, rhs) {
+      d@alpha@uvalue <- par[["ualpha"]]
+      lhs <- log(d@alpha@value) - digamma(d@alpha@value)
+      abs(lhs-rhs)
+    }
+    par <- c(ualpha = distribution@alpha@uvalue)
+    par <- optim(par, fn, d=distribution, rhs=rhs, method="BFGS")
+    distribution@alpha@uvalue <- par[["par"]][["ualpha"]]
+    alpha <- distribution@alpha@value
+    estimates[["alpha"]] <- alpha
+  } else {
+    alpha <- distribution@alpha@value
+  }
+
+  if (!distribution@theta@fixed) {
+    estimates[["theta"]] <- mean(data)/alpha
+  }
+
+  return(estimates)
+}
+
+S7::method(parameter_estimates, list(GammaRate, Mle)) <- function(distribution, estimator, data) {
+  distribution <- parameter_start(distribution, data)
+  estimates <- list()
+  if (!distribution@alpha@fixed) {
+    rhs <- log(mean(data)) - mean(log(data))
+    fn <- function(par, d, rhs) {
+      d@alpha@uvalue <- par[["ualpha"]]
+      lhs <- log(d@alpha@value) - digamma(d@alpha@value)
+      abs(lhs-rhs)
+    }
+    par <- c(ualpha = distribution@alpha@uvalue)
+    par <- optim(par, fn, d=distribution, rhs=rhs, method="BFGS")
+    distribution@alpha@uvalue <- par[["par"]][["ualpha"]]
+    alpha <- distribution@alpha@value
+    estimates[["alpha"]] <- alpha
+  } else {
+    alpha <- distribution@alpha@value
+  }
+
+  if (!distribution@lambda@fixed) {
+    estimates[["lambda"]] <- alpha/mean(data)
+  }
+
+  return(estimates)
+}
+
+
+S7::method(parameter_estimates, list(GammaMean, Mle)) <- function(distribution, estimator, data) {
+  distribution <- parameter_start(distribution, data)
+  estimates <- list()
+  if (!distribution@alpha@fixed) {
+    rhs <- log(mean(data)) - mean(log(data))
+    fn <- function(par, d, rhs) {
+      d@alpha@uvalue <- par[["ualpha"]]
+      lhs <- log(d@alpha@value) - digamma(d@alpha@value)
+      abs(lhs-rhs)
+    }
+    par <- c(ualpha = distribution@alpha@uvalue)
+    par <- optim(par, fn, d=distribution, rhs=rhs, method="BFGS")
+    distribution@alpha@uvalue <- par[["par"]][["ualpha"]]
+    alpha <- distribution@alpha@value
+    estimates[["alpha"]] <- alpha
+  } else {
+    alpha <- distribution@alpha@value
+  }
+
+  if (!distribution@mu@fixed) {
+    estimates[["mu"]] <- mean(data)
+  }
+
+  return(estimates)
+}

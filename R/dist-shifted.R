@@ -23,6 +23,12 @@ Shifted <- S7::new_class(
 
 shifted <- function(distribution, shift = 0) Shifted(distribution, shift)
 
+shifted_log_normal <- function(mu, sigma, shift=0) shifted(log_normal(mu, sigma), shift)
+
+shifted_gamma <- function(alpha, theta, lambda, mu, shift=0) shifted(gamma(alpha, theta, lambda, mu), shift)
+
+shifted_inverse_gamma <- function(alpha, theta, lambda, mu, shift=0) shifted(inverse_gamma(alpha, theta, lambda, mu), shift)
+
 S7::method(pdf, Shifted) <- function(distribution, x, log = FALSE, ...) {
   pdf(distribution@distribution, x-distribution@shift@value, log=log, ...)
 }
@@ -133,3 +139,4 @@ S7::method(fit_distribution, list(Shifted, Mle)) <- function(distribution, estim
   distribution <- shifted(distribution@distribution, shift=shift)
   return(distribution)
 }
+
