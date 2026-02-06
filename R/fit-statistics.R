@@ -4,7 +4,7 @@ log_lik <- S7::new_generic("log_lik", "distribution", function(distribution, dat
 })
 
 S7::method(log_lik, Distribution) <- function(distribution, data) {
-  result <- likelihood(distribution, x=data, log=TRUE)
+  result <- likelihood(distribution, x=data, log=TRUE, )
 
   fixed <- parameter_properties(distribution, "fixed") |> unlist()
   attr(result, "df") <- sum(!fixed)
@@ -97,20 +97,20 @@ fit_statistics <- S7::new_generic("fit_statistics", "distribution", function(dis
   S7::S7_dispatch()
 })
 
-S7::method(fit_statistics, Distribution) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
+S7::method(fit_statistics, Distribution) <- function(distribution, data, estimated=FALSE, estimator=Mle(), bootstrap=0L) {
   results <- list(
-    absolute = gof_test(distribution, data, estimated=estimated, bootstrap=bootstrap, ...),
-    relative = information_criteria(distribution, data)
+    absolute = gof_test(distribution, data, estimated=estimated, estimator=estimator, bootstrap=bootstrap),
+    relative = information_criteria(distribution, data, estimated=estimated)
   )
   return(results)
 }
 
-gof_test <- S7::new_generic("gof_test", "distribution", function(distribution, data, ...) {
+gof_test <- S7::new_generic("gof_test", "distribution", function(distribution, data, estimated=FALSE, estimator=Mle(), bootstrap=0L) {
   data <- na.omit(data)
   S7::S7_dispatch()
 })
 
-S7::method(gof_test, DistributionContinuous) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
+S7::method(gof_test, DistributionContinuous) <- function(distribution, data, estimated=FALSE, estimator=Mle(), bootstrap=0L) {
   results = list(
     ks_test  = ks_test (distribution, data),
     cvm_test = cvm_test(distribution, data),
@@ -122,7 +122,7 @@ S7::method(gof_test, DistributionContinuous) <- function(distribution, data, ...
     boot_fn <- function(distribution, data, estimated, ...) {
       n <- length(data)
       data_boot <- rng(distribution, n)
-      if (estimated) dist <- fit_distribution(distribution, data_boot, ...) else dist <- distribution
+      if (estimated) dist <- fit_distribution(distribution, estimator, data_boot) else dist <- distribution
       res <- gof_test(dist, data_boot, estimated=FALSE, bootstrap=0)
       return(res[["statistic"]])
     }
@@ -137,19 +137,14 @@ S7::method(gof_test, DistributionContinuous) <- function(distribution, data, ...
   return(results)
 }
 
-S7::method(gof_test, DistributionDiscrete) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
-  rlang::inform("Absolute fit statistics not yet implemented")
-
-  results <- data.frame(test=character(), statistic=character(), p_value=numeric(), method=numeric())
-  return(results)
-}
-
-information_criteria <- S7::new_generic("information_criteria", "distribution", function(distribution, data) {
+information_criteria <- S7::new_generic("information_criteria", "distribution", function(distribution, data, estimated=FALSE) {
   data <- na.omit(data)
   S7::S7_dispatch()
 })
 
-S7::method(information_criteria, Distribution) <- function(distribution, data) {
+S7::method(information_criteria, Distribution) <- function(distribution, data, estimated=FALSE) {
+  if (estimated) fitted <- fit_distribution(distribution, Mle(), data)
+
   log_lik <- log_lik(distribution, data)
   ll <- log_lik
   attributes(ll) <- NULL

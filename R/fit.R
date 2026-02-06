@@ -51,10 +51,10 @@ S7::method(parameter_start, Distribution) <- function(distribution, data) {
 parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","estimator"), function(distribution, estimator, data) {
   if (distribution@support@numeric)
     assertthat::assert_that(all(inside(distribution, data)), msg = "data are outside of the parameter support")
-  # if (all(unlist(parameter_properties(distribution, property="fixed")))) {
-  #   rlang::inform("All parameters are fixed, nothing to estimate")
-  #   return(list())
-  # }
+  if (all(unlist(parameter_properties(distribution, property="fixed")))) {
+    rlang::inform("All parameters are fixed, nothing to estimate")
+    return(list())
+  }
 
   data <- na.omit(data)
   # override custom methods if optim requested
@@ -129,7 +129,7 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
 
   estimates <- parameter_values(distribution, which="free")
 
-  return(unlist(estimates))
+  return(estimates)
 }
 
 # inference ----

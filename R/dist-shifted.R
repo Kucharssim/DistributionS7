@@ -10,12 +10,11 @@ Shifted <- S7::new_class(
 
     S7::new_object(
       S7::S7_object(),
-      name = "Shifted",
-      support = Real(),
-      # support = Real(
-      #   min = distribution@support@min + shift,
-      #   max = distribution@support@max + shift
-      # ),
+      name = paste("Shifted", distribution@name),
+      support = Real(
+        min = as.expression(call("+", distribution@support@min, quote(shift))),
+        max = as.expression(call("+", distribution@support@max, quote(shift)))
+      ),
       distribution = distribution,
       shift = Parameter(key = "shift", name="shift", label="shift", value = shift, support = Real())
     )

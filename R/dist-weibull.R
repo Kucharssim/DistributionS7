@@ -5,18 +5,18 @@ Weibull <- S7::new_class(
     shape = Parameter,
     scale = Parameter
   ),
-  constructor = function(k, lambda) {
+  constructor = function(shape, scale) {
     S7::new_object(
       S7::S7_object(),
       name = "Weibull",
       support = Real(min=0),
-      shape = Parameter("shape", "shape", "\\text{k}", k, Real(min=0)),
-      scale = Parameter("scale", "scale", "\\lambda", lambda, Real(min=0))
+      shape = Parameter("shape", "shape", "\\text{k}", shape, Real(min=0)),
+      scale = Parameter("scale", "scale", "\\lambda", scale, Real(min=0))
     )
   }
 )
 
-weibull <- function(k, lambda) Weibull(k, lambda)
+weibull <- function(shape, scale) Weibull(shape, scale)
 
 S7::method(pdf_fn, Weibull) <- function(distribution) stats::dweibull
 S7::method(cdf_fn, Weibull) <- function(distribution) stats::pweibull

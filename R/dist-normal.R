@@ -115,7 +115,7 @@ S7::method(rargs, Normal) <- function(distribution, ...) {
 }
 
 S7::method(parameter_estimates, list(NormalSigma, Mle)) <- function(distribution, estimator, data) {
-  estimates <- numeric()
+  estimates <- list()
 
   if (is.fixed(distribution@mu)) {
     mu <- distribution@mu@value
@@ -132,7 +132,7 @@ S7::method(parameter_estimates, list(NormalSigma, Mle)) <- function(distribution
 }
 
 S7::method(parameter_estimates, list(NormalSigma2, Mle)) <- function(distribution, estimator, data) {
-  estimates <- numeric()
+  estimates <- list()
 
   if (is.fixed(distribution@mu)) {
     mu <- distribution@mu@value
@@ -149,7 +149,7 @@ S7::method(parameter_estimates, list(NormalSigma2, Mle)) <- function(distributio
 }
 
 S7::method(parameter_estimates, list(NormalTau, Mle)) <- function(distribution, estimator, data) {
-  estimates <- numeric()
+  estimates <- list()
 
   if (is.fixed(distribution@mu)) {
     mu <- distribution@mu@value
@@ -305,7 +305,7 @@ S7::method(parameter_inference, list(NormalTau, DefaultMethod)) <- function(dist
 }
 
 
-S7::method(gof_test, Normal) <- function(distribution, data, ..., estimated=FALSE, bootstrap=0L) {
+S7::method(gof_test, Normal) <- function(distribution, data, estimated=FALSE, estimator=Mle(), bootstrap=0L) {
   if(!estimated && bootstrap==0L) {
     results = list(
       ks_test  = ks_test (distribution, data),
@@ -329,12 +329,12 @@ S7::method(gof_test, Normal) <- function(distribution, data, ..., estimated=FALS
     results <- data.frame(test = names(results), statistic = statistic, p_value = p_value)
   } else {
     # get point estimate
-    results <- gof_test(distribution, data, estimated=FALSE, bootstrap=0L)
+    results <- gof_test(distribution, data, estimated=FALSE, estimator=estimator, bootstrap=0L)
     # get bootstrap distribution
     boot_fn <- function(distribution, data, estimated, ...) {
       n <- length(data)
       data_boot <- rng(distribution, n)
-      if (estimated) dist <- fit_distribution(distribution, data_boot, ...) else dist <- distribution
+      if (estimated) dist <- fit_distribution(distribution, estimator, data_boot) else dist <- distribution
       res <- gof_test(dist, data_boot, estimated=FALSE, bootstrap=0L)
       return(res[["statistic"]])
     }
