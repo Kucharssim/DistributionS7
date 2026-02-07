@@ -1,7 +1,10 @@
 # point estimation ----
 Estimator <- S7::new_class(
   name = "Estimator",
-  abstract = TRUE
+  abstract = TRUE,
+  properties = list(
+    silent = S7::new_property(class = S7::class_logical, default=FALSE)
+  )
 )
 
 Mom <- S7::new_class(
@@ -19,14 +22,15 @@ Mle <- S7::new_class(
     start = Estimator | S7::class_function | S7::class_list,
     control = S7::class_list
   ),
-  constructor = function(optim=FALSE, constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", start=parameter_start, control=list()) {
+  constructor = function(optim=FALSE, constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", start=parameter_start, control=list(), silent=FALSE) {
     S7::new_object(
       S7::S7_object(),
       optim=optim,
       constrained=constrained,
       method=method,
       start=start,
-      control=control
+      control=control,
+      silent=silent
     )
   }
 )
@@ -52,7 +56,7 @@ parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","
   if (distribution@support@numeric)
     assertthat::assert_that(all(inside(distribution, data)), msg = "data are outside of the parameter support")
   if (all(unlist(parameter_properties(distribution, property="fixed")))) {
-    rlang::inform("All parameters are fixed, nothing to estimate")
+    if (estimator@silent) rlang::inform("All parameters are fixed, nothing to estimate")
     return(list())
   }
 
@@ -66,7 +70,7 @@ parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","
 
 
 S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distribution, estimator, data) {
-  if (!estimator@optim)
+  if (!estimator@optim && !estimator@silent)
     rlang::inform(message = "Using numerical optimization to find parameter estimates...")
 
   # try to set intelligent starting values
@@ -174,7 +178,18 @@ ProfileLikelihood <- S7::new_class(
 
 Bootstrap <- S7::new_class(
   name = "Bootstrap",
-  parent = InferenceMethod
+  parent = InferenceMethod,
+  properties = list(
+    samples = S7::new_property(
+      class = S7::class_integer,
+      validator = function(value) { assertthat::assert_that(value >= 0); return(NULL) },
+      default = 1000L
+    ),
+    callback = S7::new_property(
+      class = S7::class_function,
+      default = function() {}
+    )
+  )
 )
 
 ## inference generics ----

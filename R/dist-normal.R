@@ -305,15 +305,8 @@ S7::method(parameter_inference, list(NormalTau, DefaultMethod)) <- function(dist
 }
 
 
-S7::method(gof_test, Normal) <- function(distribution, data, estimated=FALSE, estimator=Mle(), bootstrap=0L) {
-  if(!estimated && bootstrap==0L) {
-    results = list(
-      ks_test  = ks_test (distribution, data),
-      cvm_test = cvm_test(distribution, data),
-      ad_test  = ad_test (distribution, data)
-    )
-    results <- do.call(rbind, results)
-  } else if (estimated && bootstrap==0L) { # analytic normality tests
+S7::method(gof_test, Normal) <- function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
+  if(estimated && bootstrap@samples == 0) { # analytic normality tests
     results <- try(list(
       lillie_test          = nortest::lillie.test(data),
       cvm_test             = nortest::cvm.test(data),
@@ -322,27 +315,13 @@ S7::method(gof_test, Normal) <- function(distribution, data, estimated=FALSE, es
       shapiro_francia_test = nortest::sf.test(data)
     ))
     if (inherits(results, "try-error")) rlang::abort("Could not compute exact p-values for absolute fit statistics. Try bootstrap.")
-
     statistic <- vapply(results, "[[", numeric(1), "statistic")
     p_value <- vapply(results, "[[", numeric(1), "p.value")
 
     results <- data.frame(test = names(results), statistic = statistic, p_value = p_value)
-  } else {
-    # get point estimate
-    results <- gof_test(distribution, data, estimated=FALSE, estimator=estimator, bootstrap=0L)
-    # get bootstrap distribution
-    boot_fn <- function(distribution, data, estimated, ...) {
-      n <- length(data)
-      data_boot <- rng(distribution, n)
-      if (estimated) dist <- fit_distribution(distribution, estimator, data_boot) else dist <- distribution
-      res <- gof_test(dist, data_boot, estimated=FALSE, bootstrap=0L)
-      return(res[["statistic"]])
-    }
-
-    statistics <- replicate(bootstrap, boot_fn(distribution=distribution, data=data, estimated=estimated, ...))
-    # compare to observed to get boostrapped p-vals
-    results[["p_value"]] <- sweep(statistics, 1, results[["statistic"]], ">") |> rowMeans()
+    return(results)
   }
 
-  return(results)
+  distribution <- S7::super(distribution, DistributionContinuous)
+  gof_test(distribution, data, estimated, bootstrap)
 }
