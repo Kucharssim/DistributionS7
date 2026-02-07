@@ -17,7 +17,7 @@ Support <- S7::new_class(
     )
   ),
   validator = function(self) {
-    if (self@numeric) stopifnot(self@min <= self@max)
+    if (self@numeric && self@min > self@max) return("min cannot be larger than max")
   }
 )
 
@@ -96,7 +96,7 @@ S7::method(derivative, list(Real, S7::class_numeric)) <- function(object, x) {
   }
 
   if (is.finite(object@min)) return(exp(x))
-  if (is.finite(object@max)) return(exp(x))
+  if (is.finite(object@max)) return(-exp(x))
 }
 
 S7::method(derivative, list(Int, S7::class_numeric)) <- function(object, x) return(NaN)

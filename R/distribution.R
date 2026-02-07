@@ -165,7 +165,7 @@ parameter_properties <- S7::new_generic("parameter_properties", "distribution")
 
 S7::method(parameter_properties, Distribution) <- function(
     distribution,
-    property = c("key", "label", "value", "uvalue", "derivative", "support", "fixed"),
+    property = c("key", "name", "label", "value", "uvalue", "derivative", "support", "fixed"),
     which = "all", ...) {
   property <- match.arg(property)
 
@@ -174,6 +174,7 @@ S7::method(parameter_properties, Distribution) <- function(
   output <- switch(
     property,
     key        = lapply(pars, \(p) p@key    ),
+    name       = lapply(pars, \(p) p@name   ),
     label      = lapply(pars, \(p) p@label  ),
     value      = lapply(pars, \(p) p@value  ),
     uvalue     = lapply(pars, \(p) p@uvalue ),

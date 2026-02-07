@@ -35,9 +35,9 @@ Parameter <- S7::new_class(
     S7::new_object(S7::S7_object(), key=key, name=name, label=label, value=value, support=support, fixed=fixed)
   },
   validator = function(self) {
-    if (length(self@value) != 1) rlang::abort("Parameter value must be of length 1")
-    if (self@support@min > self@value) rlang::abort("Parameter value is smaller than the minimum of the parameter support")
-    if (self@support@max < self@value) rlang::abort("Parameter value is larger than the maximum of the parameter support")
+    if (length(self@value) != 1) return("Parameter value must be of length 1")
+    if (self@support@min > self@value) return("Parameter value is smaller than the minimum of the parameter support")
+    if (self@support@max < self@value) return("Parameter value is larger than the maximum of the parameter support")
   },
 )
 
