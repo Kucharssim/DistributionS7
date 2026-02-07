@@ -1,12 +1,12 @@
 Package: DistributionS7
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Probability distributions with a S7 class system.
 Version: 0.1.0
 Author: Šimon Kucharský
 Maintainer: Šimon Kucharský <s.kucharsky@jasp-stats.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Description: An interface for working with probability distributions via the S7 class system. 
+    Plot the distribution, fit the distribution to data, compute fit statistics, and more.
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 Collate:
@@ -48,6 +48,8 @@ Collate:
   'dist-symmetric_generalized_normal.R'
   'dist-wald.R'
   'dist-weibull.R'
+  'dist-shifted.R'
+  'dist-shifted_exponential.R'
   'compare.R'
   'zzz.R'
 RoxygenNote: 7.3.3
