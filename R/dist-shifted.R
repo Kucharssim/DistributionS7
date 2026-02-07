@@ -29,6 +29,13 @@ shifted_gamma <- function(alpha, theta, lambda, mu, shift=0) shifted(gamma(alpha
 
 shifted_inverse_gamma <- function(alpha, theta, lambda, mu, shift=0) shifted(inverse_gamma(alpha, theta, lambda, mu), shift)
 
+shifted_log_logistic <- function(mu, sigma, alpha, beta, shift=0) shifted(log_logistic(mu, sigma, alpha, beta), shift)
+
+shifted_wald <- function(mu, lambda, nu, alpha, sigma=fixed(1), shift=0) shifted(wald(mu, lambda, nu, alpha, sigma), shift)
+
+shifted_weibull <- function(shape, scale, shift=0) shifted(weibull(shape, scale), shift)
+
+
 S7::method(pdf, Shifted) <- function(distribution, x, log = FALSE, ...) {
   pdf(distribution@distribution, x-distribution@shift@value, log=log, ...)
 }
