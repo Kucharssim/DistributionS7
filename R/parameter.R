@@ -9,7 +9,7 @@
 #' @param value character; Value of the parameter.
 #' @param support Object of class [Support()].
 #' @param fixed logical; Is the parameter fixed? If true, the parameter will not be estimated with parameter estimation methods.
-#'
+#' @param x object to check.
 #' @details
 #' Fixed parameter can be either specified by setting the `fixed` property to `TRUE`, but one can also fix the parameter by
 #' using the `fixed()` function on the parameter value. For example `normal(mu=0, sigma=fixed(1))` specifies a normal distribution

@@ -4,6 +4,12 @@
 #' @param distribution An object of class [Distribution()].
 #' @param shift A shift parameter.
 #'
+#' @inheritParams log_normal
+#' @inheritParams gamma
+#' @inheritParams wald
+#' @inheritParams weibull
+#' @inheritParams exponential
+#'
 #' @note
 #' Estimating the shift parameter might not be a good idea, depending on the distribution. Distributions with their
 #' own location parameter (e.g., normal), do not need a shift parameter in the first place.

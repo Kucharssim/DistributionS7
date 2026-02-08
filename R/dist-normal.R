@@ -7,6 +7,8 @@
 #' @param sigma2 Variance.
 #' @param tau Precision.
 #'
+#' @importFrom nortest lillie.test
+#' @importFrom nortest sf.test
 #' @returns Object of class [NormalSigma()], [NormalSigma2()], or [NormalTau()].
 #' @family distributions
 #' @export
@@ -329,7 +331,7 @@ S7::method(gof_test, Normal) <- function(distribution, data, estimated=FALSE, bo
       lillie_test          = nortest::lillie.test(data),
       cvm_test             = nortest::cvm.test(data),
       ad_test              = nortest::ad.test(data),
-      shapiro_wilk_test    = shapiro.test(data),
+      shapiro_wilk_test    = stats::shapiro.test(data),
       shapiro_francia_test = nortest::sf.test(data)
     ))
     if (inherits(results, "try-error")) rlang::abort("Could not compute exact p-values for absolute fit statistics. Try bootstrap.")

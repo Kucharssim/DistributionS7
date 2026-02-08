@@ -5,6 +5,10 @@
 #' @param alpha scale parameter.
 #' @param beta shape parameter.
 #' @family distributions
+#' @importFrom gnorm dgnorm
+#' @importFrom gnorm pgnorm
+#' @importFrom gnorm qgnorm
+#' @importFrom gnorm rgnorm
 #' @export
 symmetric_generalized_normal <- function(mu, alpha, beta) SymmetricGeneralizedNormal(mu, alpha, beta)
 

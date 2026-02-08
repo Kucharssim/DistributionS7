@@ -9,27 +9,15 @@
 \alias{Bootstrap}
 \title{Parameter inference methods}
 \usage{
-InferenceMethod(estimator = <object>, ci_level = 0.95)
+InferenceMethod(estimator=Mle(), ci_level = 0.95)
 
-DefaultMethod(estimator = <object>, ci_level = 0.95, args = list())
+DefaultMethod(estimator=Mle(), ci_level = 0.95, args=list())
 
-NormalTheory(
-  estimator = <object>,
-  ci_level = 0.95,
-  constrained = FALSE,
-  control = list()
-)
+NormalTheory(estimator=Mle(), ci_level = 0.95, constrained=FALSE, control=list())
 
-ProfileLikelihood(estimator = <object>, ci_level = 0.95)
+ProfileLikelihood(estimator=Mle(), ci_level=0.95)
 
-Bootstrap(
-  estimator = <object>,
-  ci_level = 0.95,
-  samples = 1000L,
-  callback = function () 
- {
- }
-)
+Bootstrap(estimator=Mle(), ci_level=0.95, samples=1000L, callback=function() {})
 }
 \arguments{
 \item{estimator}{Object of class \code{\link[=Estimator]{Estimator()}}.}

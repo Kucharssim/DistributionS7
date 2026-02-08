@@ -225,11 +225,12 @@ S7::method(parameter_start, Distribution) <- function(distribution, data) {
 NULL
 
 #' @rdname parameter-inference
+#' @usage InferenceMethod(estimator=Mle(), ci_level = 0.95)
 #' @export
 InferenceMethod <- S7::new_class(
   name = "InferenceMethod",
   properties = list(
-    estimator = S7::new_property(Estimator, default = Mle()),
+    estimator = S7::new_property(class = Estimator, default = Mle()),
     ci_level = S7::new_property(
       class = S7::class_double,
       validator = function(value) { assertthat::assert_that(value > 0, value < 1); return(NULL) },
@@ -242,6 +243,7 @@ InferenceMethod <- S7::new_class(
 )
 
 #' @rdname parameter-inference
+#' @usage DefaultMethod(estimator=Mle(), ci_level = 0.95, args=list())
 #' @export
 DefaultMethod <- S7::new_class(
   name = "DefaultMethod",
@@ -252,6 +254,7 @@ DefaultMethod <- S7::new_class(
 )
 
 #' @rdname parameter-inference
+#' @usage NormalTheory(estimator=Mle(), ci_level = 0.95, constrained=FALSE, control=list())
 #' @export
 NormalTheory <- S7::new_class(
   name = "NormalTheory",
@@ -264,6 +267,7 @@ NormalTheory <- S7::new_class(
 )
 
 #' @rdname parameter-inference
+#' @usage ProfileLikelihood(estimator=Mle(), ci_level=0.95)
 #' @export
 ProfileLikelihood <- S7::new_class(
   name = "Profile",
@@ -271,6 +275,7 @@ ProfileLikelihood <- S7::new_class(
 )
 
 #' @rdname parameter-inference
+#' @usage Bootstrap(estimator=Mle(), ci_level=0.95, samples=1000L, callback=function() {})
 #' @export
 Bootstrap <- S7::new_class(
   name = "Bootstrap",

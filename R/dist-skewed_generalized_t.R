@@ -6,6 +6,12 @@
 #' @param lambda skew parameter.
 #' @param p kurtosis parameter.
 #' @param q kurtosis parameter.
+#'
+#' @importFrom sgt dsgt
+#' @importFrom sgt dsgt
+#' @importFrom sgt qsgt
+#' @importFrom sgt rsgt
+
 #' @family distributions
 #' @export
 skewed_generalized_t <- function(mu, sigma, lambda, p, q) SkewedGeneralizedT(mu, sigma, lambda, p, q)

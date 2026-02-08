@@ -1,15 +1,15 @@
-S7::new_generic("plot", "x")
+plot_distribution <- S7::new_generic("plot", "distribution")
 plot_pdf <- S7::new_generic("plot_pdf", "distribution")
 plot_cdf <- S7::new_generic("plot_cdf", "distribution")
 plot_qf  <- S7::new_generic("plot_qf",  "distribution")
 
-S7::method(plot, Distribution) <- function(x, type=c("all", "pdf", "cdf", "qf"), ...) {
+S7::method(plot_distribution, Distribution) <- function(distribution, type=c("all", "pdf", "cdf", "qf"), ...) {
   type <- rlang::arg_match(type, multiple=FALSE)
   plot <- switch(
     type,
-    pdf = plot_pdf(x, ...),
-    cdf = plot_cdf(x, ...),
-    qf  = plot_qf (x, ...),
+    pdf = plot_pdf(distribution, ...),
+    cdf = plot_cdf(distribution, ...),
+    qf  = plot_qf (distribution, ...),
     all = list(plot_pdf(x, ...), plot_cdf(x, ...), plot_qf(x, ...))
   )
 

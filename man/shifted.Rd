@@ -34,6 +34,24 @@ shifted_exponential(lambda, beta, shift = 0)
 \item{distribution}{An object of class \code{\link[=Distribution]{Distribution()}}.}
 
 \item{shift}{A shift parameter.}
+
+\item{mu}{log mean parameter.}
+
+\item{sigma}{log standard deviation parameter.}
+
+\item{alpha}{shape parameter.}
+
+\item{theta}{scale parameter.}
+
+\item{lambda}{rate parameter.}
+
+\item{beta}{scale parameter.}
+
+\item{nu}{drift rate parameter.}
+
+\item{shape}{shape parameter.}
+
+\item{scale}{scale parameter.}
 }
 \description{
 Create a distribution that has an additional shift parameter.

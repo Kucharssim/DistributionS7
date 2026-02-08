@@ -1,11 +1,24 @@
 #' @title Support classes
 #' @description
 #' Classes the encapsulate support of distributions or parameters.
-#' @name support
 #'
 #' @param min Minimum of the support. Can be either a numeric, or an expression.
 #' @param max Maximum of the support. Can be either a numeric, or an expression.
+#' @param object Object of class [Support()], [Parameter()], or [Distribution()].
+#' @param x Vector or values.
 #'
+#' @returns
+#' [support()] returns the [Support()] of the object (either the object itself or the `support` property). For [Distribution()],
+#' the returned support object will always be `support@numeric == TRUE`, evaluating `min` and `max` properties if they are
+#' specified as expressions. This allows you to inpect support of a distribution for distributions whose support depends on its
+#' parameter values.
+#'
+#' [inside()] returns a logical vector indicating whether `x` is inside of the support. Note: support limits are always
+#' treated as inclusive; one has to treat boundary conditions manually.
+#'
+#' [constrain()] returns a numeric vector transforming `x` from unconstrained space into a constrained space.
+#' [unconstrain()] returns a numeric vector transforming `x` from a constrained space into an unconstrained space.
+#' [derivative()] returns a derivative of the constrain transform at the unconstrained value `x`.
 #' @export
 Support <- S7::new_class(
   name = "Support",
@@ -30,14 +43,14 @@ Support <- S7::new_class(
   }
 )
 
-#' @rdname support
+#' @rdname Support
 #' @export
 Real <- S7::new_class(
   name = "Real",
   parent = Support
 )
 
-#' @rdname support
+#' @rdname Support
 #' @export
 Int <- S7::new_class(
   name = "Int",
@@ -46,48 +59,32 @@ Int <- S7::new_class(
 
 # Methods -----
 
-#' @title Methods for support classes.
-#' @description
-#' Methods for [Support()] classes.
-#' @name support-methods
-#'
-#' @param object Object of class [Support()], [Parameter()], or [Distribution()].
-#' @param x Vector or values.
-#'
-#' @returns
-#' [support()] returns the [Support()] of the object (either the object itself or the `support` property). For [Distribution()],
-#' the returned support object will always be `support@numeric == TRUE`, evaluating `min` and `max` properties if they are
-#' specified as expressions. This allows you to inpect support of a distribution for distributions whose support depends on its
-#' parameter values.
-#'
-#' [inside()] returns a logical vector indicating whether `x` is inside of the support. Note: support limits are always
-#' treated as inclusive; one has to treat boundary conditions manually.
-#'
-#' [constrain()] returns a numeric vector transforming `x` from unconstrained space into a constrained space.
-#' [unconstrain()] returns a numeric vector transforming `x` from a constrained space into an unconstrained space.
-#' [derivative()] returns a derivative of the constrain transform at the unconstrained value `x`.
+#' @rdname Support
 #' @export
-support <- S7::new_generic("support", "object")
+support <- S7::new_generic("support", "object", function(object) S7::S7_dispatch() )
 
 S7::method(support, Support) <- function(object) object
 
-#' @rdname support-methods
+#' @rdname Support
 #' @export
-inside <- S7::new_generic("inside", "object")
+inside <- S7::new_generic("inside", "object", function(object, x) {
+  S7::S7_dispatch()
+})
 
-S7::method(inside, Real) <- function(object, x, ...) object@min <= x & x <= object@max
+S7::method(inside, Real) <- function(object, x) object@min <= x & x <= object@max
 
-S7::method(inside, Int) <- function(object, x, ...) {
+S7::method(inside, Int) <- function(object, x) {
   if (rlang::is_integerish(x))
     return(object@min <= x & x <= object@max)
 
   return(FALSE)
 }
 
+
 ## unconstrain ----
-#' @rdname support-methods
+#' @rdname Support
 #' @export
-unconstrain <- S7::new_generic("unconstrain", c("object", "x"))
+unconstrain <- S7::new_generic("unconstrain", c("object", "x"), function(object, x) S7::S7_dispatch())
 
 S7::method(unconstrain, list(Real, S7::class_numeric)) <- function(object, x) {
   if (is.infinite(object@min) && is.infinite(object@max)) return(x)
@@ -105,9 +102,9 @@ S7::method(unconstrain, list(Int, S7::class_numeric)) <- function(object, x) ret
 
 
 ## constrain ----
-#' @rdname support-methods
+#' @rdname Support
 #' @export
-constrain <- S7::new_generic("constrain", c("object", "x"))
+constrain <- S7::new_generic("constrain", c("object", "x"), function(object, x) S7::S7_dispatch())
 
 S7::method(constrain, list(Real, S7::class_numeric)) <- function(object, x) {
   if (is.infinite(object@min) && is.infinite(object@max)) return(x)
@@ -125,9 +122,9 @@ S7::method(constrain, list(Int, S7::class_numeric)) <- function(object, x) retur
 
 
 ## derivatives of the constrain transform---
-#' @rdname support-methods
+#' @rdname Support
 #' @export
-derivative <- S7::new_generic("derivative", c("object", "x"))
+derivative <- S7::new_generic("derivative", c("object", "x"), function(object, x) S7::S7_dispatch())
 
 S7::method(derivative, list(Real, S7::class_numeric)) <- function(object, x) {
   if (is.infinite(object@min) && is.infinite(object@max)) return(1)
@@ -142,4 +139,3 @@ S7::method(derivative, list(Real, S7::class_numeric)) <- function(object, x) {
 }
 
 S7::method(derivative, list(Int, S7::class_numeric)) <- function(object, x) return(NaN)
-

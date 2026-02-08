@@ -6,6 +6,7 @@
 #' @param alpha slant (skew) parameter.
 #' @param nu degrees of freedom parameter.
 #' @family distributions
+#' @import sn
 #' @name skew
 #' @export
 skew_normal <- function(xi, omega, alpha) SkewNormal(xi, omega, alpha)

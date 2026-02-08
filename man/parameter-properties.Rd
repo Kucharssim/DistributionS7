@@ -28,7 +28,7 @@ parameter_uvalues(distribution, which = "all")
 
 parameter_uvalues(distribution) <- value
 
-recreate_parameters(distribution, ...)
+recreate_parameters(distribution)
 }
 \arguments{
 \item{distribution}{Object of class \code{\link[=Distribution]{Distribution()}}.}

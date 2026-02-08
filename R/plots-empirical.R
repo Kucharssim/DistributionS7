@@ -10,7 +10,10 @@
 #' @param ci_level Numeric; Confidence level of confidence bands.
 #' @param bin_width_type Character; Passed to [jaspGraphs::jaspHistogramBinWidth()].
 #' @param number_of_bins Integer; Passed to [jaspGraphs::jaspHistogramBinWidth()].
+#' @param ... Not used.
 #'
+#' @import jaspGraphs
+#' @import patchwork
 #' @name plot-empirical
 #' @export
 plot_empirical <- S7::new_generic("plot_empirical", "distribution", function(distribution, data, type=c("all", "hist", "qq", "ecdf", "pp"), ..., name, ci=FALSE, ci_level=0.95) {

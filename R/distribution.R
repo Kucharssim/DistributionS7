@@ -164,11 +164,11 @@ S7::method(rng, Distribution) <- function(distribution, n) {
 
 #' @rdname distribution-functions
 #' @export
-likelihood <- S7::new_generic("likelihood", "distribution", function(distribution, x, log=TRUE, factor=1, ...) {
+likelihood <- S7::new_generic("likelihood", "distribution", function(distribution, x, log=TRUE, factor=1) {
   S7::S7_dispatch()
 })
 
-S7::method(likelihood, Distribution) <- function(distribution, x, log=TRUE, factor=1, ...) {
+S7::method(likelihood, Distribution) <- function(distribution, x, log=TRUE, factor=1) {
   loglik <- factor*sum(pdf(distribution, x, log=TRUE))
   if (log) return(loglik)
 
@@ -309,7 +309,7 @@ S7::method(`parameter_uvalues<-`, Distribution) <- function(distribution, value)
 
 #' @rdname parameter-properties
 #' @export
-recreate_parameters <- S7::new_generic("recreate_parameters", "distribution")
+recreate_parameters <- S7::new_generic("recreate_parameters", "distribution", function(distribution) S7::S7_dispatch())
 
 S7::method(recreate_parameters, Distribution) <- function(distribution) {
   parameters <- parameter_values(distribution)
@@ -332,8 +332,8 @@ S7::method(support, Distribution) <- function(object) {
   return(object@support)
 }
 
-S7::method(inside, Distribution) <- function(object, x, ...) {
-  inside(support(object), x, ...)
+S7::method(inside, Distribution) <- function(object, x) {
+  inside(support(object), x)
 }
 
 

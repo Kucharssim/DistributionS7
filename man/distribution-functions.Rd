@@ -17,7 +17,7 @@ qf(distribution, p, lower.tail = TRUE, log.p = FALSE)
 
 rng(distribution, n)
 
-likelihood(distribution, x, log = TRUE, factor = 1, ...)
+likelihood(distribution, x, log = TRUE, factor = 1)
 }
 \arguments{
 \item{distribution}{an object of \code{S7} class \code{Distribution}.}

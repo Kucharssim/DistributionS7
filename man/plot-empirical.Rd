@@ -41,6 +41,8 @@ plot_pp(distribution, data, ..., ci = FALSE, ci_level = 0.95)
 
 \item{type}{Character; which plots to plot.}
 
+\item{...}{Not used.}
+
 \item{name}{Character; Name of the variable.}
 
 \item{ci}{Logical; Should confidence bands be plotted?}

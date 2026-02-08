@@ -1,4 +1,4 @@
-testthat::test_that("Basic support functilality works", {
+testthat::test_that("Basic support functionality works", {
   support <- Real(min=0, max=1)
 
   testthat::expect_equal(

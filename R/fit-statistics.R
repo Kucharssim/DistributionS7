@@ -18,6 +18,8 @@
 #' Alternatively, one can specify a [Bootstrap()] method, which will perform a parametric bootstrap. Note that when `estimated=TRUE`,
 #' the [Estimator()] that was used for fitting the distribution should be also passed in the [Bootstrap()] option.
 #'
+#' @importFrom goftest ad.test
+#' @importFrom goftest cvm.test
 #' @name fit-statistics
 #' @export
 information_criteria <- S7::new_generic("information_criteria", "distribution", function(distribution, data) {

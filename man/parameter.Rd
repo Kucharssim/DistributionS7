@@ -25,6 +25,8 @@ is.parameter(x)
 \item{support}{Object of class \code{\link[=Support]{Support()}}.}
 
 \item{fixed}{logical; Is the parameter fixed? If true, the parameter will not be estimated with parameter estimation methods.}
+
+\item{x}{object to check.}
 }
 \description{
 Parameter classes encapsulating important information about distribution parameters.
