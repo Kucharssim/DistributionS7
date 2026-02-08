@@ -33,3 +33,7 @@ fit_distribution(distribution, estimator, data)
 \description{
 Methods for estimating parameters of a distribution.
 }
+\note{
+\code{\link[=fit_distribution]{fit_distribution()}} is recommended if you want to fit a distribution to the data. In addition to estimating the parameters,
+it also validates the distribution object and checks if the final parameter values are compatible with the data.
+}

@@ -1,8 +1,45 @@
-plot_empirical <- S7::new_generic("plot_empirical", "distribution")
-plot_hist  <- S7::new_generic("plot_hist",  "distribution")
-plot_qq    <- S7::new_generic("plot_qq",    "distribution")
-plot_ecdf  <- S7::new_generic("plot_ecdf",  "distribution")
-plot_pp    <- S7::new_generic("plot_pp",    "distribution")
+#' @title Empirical plots
+#' @description
+#' Plot a distribution against data.
+#'
+#' @param distribution Object of class [Distribution()].
+#' @param data Numeric containing the data.
+#' @param type Character; which plots to plot.
+#' @param name Character; Name of the variable.
+#' @param ci Logical; Should confidence bands be plotted?
+#' @param ci_level Numeric; Confidence level of confidence bands.
+#' @param bin_width_type Character; Passed to [jaspGraphs::jaspHistogramBinWidth()].
+#' @param number_of_bins Integer; Passed to [jaspGraphs::jaspHistogramBinWidth()].
+#'
+#' @name plot-empirical
+#' @export
+plot_empirical <- S7::new_generic("plot_empirical", "distribution", function(distribution, data, type=c("all", "hist", "qq", "ecdf", "pp"), ..., name, ci=FALSE, ci_level=0.95) {
+  S7::S7_dispatch()
+})
+
+#' @rdname plot-empirical
+#' @export
+plot_hist  <- S7::new_generic("plot_hist",  "distribution", function(distribution, data, ..., name, bin_width_type="doane", number_of_bins=NA) {
+  S7::S7_dispatch()
+})
+
+#' @rdname plot-empirical
+#' @export
+plot_qq    <- S7::new_generic("plot_qq",    "distribution", function(distribution, data, ..., ci=FALSE, ci_level=0.95) {
+  S7::S7_dispatch()
+})
+
+#' @rdname plot-empirical
+#' @export
+plot_ecdf  <- S7::new_generic("plot_ecdf",  "distribution", function(distribution, data, ..., name) {
+  S7::S7_dispatch()
+})
+
+#' @rdname plot-empirical
+#' @export
+plot_pp    <- S7::new_generic("plot_pp",    "distribution", function(distribution, data, ..., ci=FALSE, ci_level=0.95) {
+  S7::S7_dispatch()
+})
 
 S7::method(plot_empirical, Distribution) <- function(distribution, data, type=c("all", "hist", "qq", "ecdf", "pp"), ..., name, ci=FALSE, ci_level=0.95) {
   if (missing(name)) name <- deparse1(substitute(data))

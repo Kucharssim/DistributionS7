@@ -247,7 +247,7 @@ parameter_values <- S7::new_generic("parameter_values", "distribution", function
 })
 
 S7::method(parameter_values, Distribution) <- function(distribution, which = "all") {
-  parameter_properties(distribution, property="value", which=which, ...)
+  parameter_properties(distribution, property="value", which=which)
 }
 
 #' @rdname parameter-properties
@@ -277,7 +277,7 @@ parameter_uvalues <- S7::new_generic("parameter_uvalues", "distribution", functi
 })
 
 S7::method(parameter_uvalues, Distribution) <- function(distribution, which = "all") {
-  parameter_properties(distribution, property="uvalue", which=which, ...)
+  parameter_properties(distribution, property="uvalue", which=which)
 }
 
 #' @rdname parameter-properties

@@ -23,6 +23,7 @@
 #' the starting parameter values default to the values set by the distribution.
 #' One can pass an arbitrary method/function with arguments \code{distribution}, \code{data}, to implement a custom parameter value initialization.
 #' Otherwise, one can also pass a named list to overwrite the parameter values before starting the optimization.
+#'
 NULL
 
 #' @rdname parameter-estimators
@@ -87,6 +88,10 @@ BiasCorrected <- S7::new_class(
 #' [parameter_estimates()] returns a named list with parameter values.
 #' [parameter_inference()] returns a data.frame with parameter estimates, optionally SE and CI or other summaries.
 #' [parameter_start()] and [fit_distribution()] return an object of class [Distribution()].
+#'
+#' @note
+#' [fit_distribution()] is recommended if you want to fit a distribution to the data. In addition to estimating the parameters,
+#' it also validates the distribution object and checks if the final parameter values are compatible with the data.
 #'
 #' @name parameter-estimation
 NULL
@@ -353,6 +358,9 @@ S7::method(fit_distribution, list(Distribution, Estimator)) <- function(distribu
   dist_class <- S7::S7_class(distribution)
   parameters <- recreate_parameters(distribution)
   distribution <- do.call(dist_class, parameters)
+
+  # check if data is inside of the support of the distribution
+  assertthat::assert_that(all(inside(distribution, data)), msg = "data are outside of the distribution support")
   return(distribution)
 }
 
