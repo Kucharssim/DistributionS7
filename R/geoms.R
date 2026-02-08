@@ -41,7 +41,7 @@ StatPdf <- ggplot2::ggproto(
 stat_pdf <- function(dist, mapping = NULL, data = NULL, geom = "point",
                      position = "identity", ..., show.legend = NA, inherit.aes = TRUE) {
   if(is.null(data))
-    data <- ggplot2:::ensure_nonempty_data
+    data <- ensure_nonempty_data
 
   ggplot2::layer(
     stat = StatPdf, data = data, mapping = mapping, geom = geom,
@@ -75,7 +75,7 @@ StatCdf <- ggplot2::ggproto(
 stat_cdf <- function(dist, mapping = NULL, data = NULL, geom = "point",
                      position = "identity", ..., show.legend = NA, inherit.aes = TRUE) {
   if(is.null(data))
-    data = ggplot2:::ensure_nonempty_data
+    data = ensure_nonempty_data
 
   ggplot2::layer(
     stat = StatCdf, data = data, mapping = mapping, geom = geom,
@@ -136,7 +136,7 @@ StatCdfInterval <- ggplot2::ggproto(
 stat_cdf_interval <- function(dist, mapping = NULL, data = NULL, geom = ggrepel::GeomLabelRepel,
                               position = "identity", ..., show.legend = NA, inherit.aes = TRUE) {
   if(is.null(data))
-    data = ggplot2:::ensure_nonempty_data
+    data = ensure_nonempty_data
 
   ggplot2::layer(
     stat = StatCdfInterval, data = data, mapping = mapping, geom = geom,
@@ -151,4 +151,8 @@ ensure_nonempty_data <- function(data) {
   } else {
     data
   }
+}
+
+empty <- function (df) {
+  is.null(df) || nrow(df) == 0 || ncol(df) == 0 || ggplot2::is_waiver(df)
 }

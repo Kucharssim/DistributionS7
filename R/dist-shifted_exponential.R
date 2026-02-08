@@ -45,7 +45,7 @@ shifted_exponential <- function(lambda, beta, shift=0) {
   distribution <- switch(
     parametrization,
     lambda = ShiftedExponentialRate(lambda, shift),
-    beta = ShifterExponentialScale(beta, shift)
+    beta = ShiftedExponentialScale(beta, shift)
   )
 }
 

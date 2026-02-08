@@ -1,5 +1,5 @@
 log_lik <- S7::new_generic("log_lik", "distribution", function(distribution, data) {
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   S7::S7_dispatch()
 })
 
@@ -15,7 +15,7 @@ S7::method(log_lik, Distribution) <- function(distribution, data) {
 }
 
 aic <- S7::new_generic("aic", "distribution", function(distribution, data) {
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   S7::S7_dispatch()
 })
 
@@ -25,7 +25,7 @@ S7::method(aic, Distribution) <- function(distribution, data) {
 }
 
 bic <- S7::new_generic("bic", "distribution", function(distribution, data) {
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   S7::S7_dispatch()
 })
 
@@ -35,7 +35,7 @@ S7::method(bic, Distribution) <- function(distribution, data) {
 }
 
 information_criteria <- S7::new_generic("information_criteria", "distribution", function(distribution, data) {
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   S7::S7_dispatch()
 })
 
@@ -70,7 +70,7 @@ S7::method(ks_test, DistributionContinuous) <- function(distribution, data) {
 
 
 cvm_test <- S7::new_generic("cvm_test", "distribution", function(distribution, data, estimated=FALSE) {
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   S7::S7_dispatch()
 })
 
@@ -89,7 +89,7 @@ S7::method(cvm_test, DistributionContinuous) <- function(distribution, data, est
 }
 
 ad_test <- S7::new_generic("ad_test", "distribution", function(distribution, data, estimated=FALSE) {
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   S7::S7_dispatch()
 })
 
@@ -108,7 +108,7 @@ S7::method(ad_test, DistributionContinuous) <- function(distribution, data, esti
 }
 
 gof_test <- S7::new_generic("gof_test", "distribution", function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   S7::S7_dispatch()
 })
 

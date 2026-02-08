@@ -36,20 +36,20 @@ shifted_wald <- function(mu, lambda, nu, alpha, sigma=fixed(1), shift=0) shifted
 shifted_weibull <- function(shape, scale, shift=0) shifted(weibull(shape, scale), shift)
 
 
-S7::method(pdf, Shifted) <- function(distribution, x, log = FALSE, ...) {
-  pdf(distribution@distribution, x-distribution@shift@value, log=log, ...)
+S7::method(pdf, Shifted) <- function(distribution, x, log = FALSE) {
+  pdf(distribution@distribution, x-distribution@shift@value, log=log)
 }
 
-S7::method(cdf, Shifted) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE, ...) {
+S7::method(cdf, Shifted) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE) {
   cdf(distribution@distribution, q-distribution@shift@value, lower.tail = lower.tail, log.p = log.p, ...)
 }
 
-S7::method(qf, Shifted) <- function(distribution, p, lower.tail = TRUE, log.p = FALSE, ...) {
+S7::method(qf, Shifted) <- function(distribution, p, lower.tail = TRUE, log.p = FALSE) {
   q <- qf(distribution@distribution, p, lower.tail = lower.tail, log.p = log.p, ...)
   q + distribution@shift@value
 }
 
-S7::method(rng, Shifted) <- function(distribution, n, ...) {
+S7::method(rng, Shifted) <- function(distribution, n) {
   x <- rng(distribution@distribution, n = n, ...)
   x + distribution@shift@value
 }
@@ -71,7 +71,7 @@ S7::method(parameter_estimates, list(Shifted, Mle)) <- function(distribution, es
   }
 
   result <- try(
-    optim(
+    stats::optim(
       par=start, fn=objective, d=distribution, data=data,
       method="BFGS",
       control=estimator@control, hessian=FALSE),

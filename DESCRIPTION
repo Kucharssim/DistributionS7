@@ -1,6 +1,6 @@
 Package: DistributionS7
 Type: Package
-Title: Probability distributions with a S7 class system.
+Title: Probability distributions with a S7 class system
 Version: 0.1.0
 Author: Šimon Kucharský
 Maintainer: Šimon Kucharský <s.kucharsky@jasp-stats.com>

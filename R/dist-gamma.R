@@ -166,7 +166,7 @@ S7::method(parameter_estimates, list(GammaScale, Mle)) <- function(distribution,
       abs(lhs-rhs)
     }
     par <- c(ualpha = distribution@alpha@uvalue)
-    par <- optim(par, fn, d=distribution, rhs=rhs, method="BFGS")
+    par <- stats::optim(par, fn, d=distribution, rhs=rhs, method="BFGS")
     distribution@alpha@uvalue <- par[["par"]][["ualpha"]]
     alpha <- distribution@alpha@value
     estimates[["alpha"]] <- alpha
@@ -192,7 +192,7 @@ S7::method(parameter_estimates, list(GammaRate, Mle)) <- function(distribution, 
       abs(lhs-rhs)
     }
     par <- c(ualpha = distribution@alpha@uvalue)
-    par <- optim(par, fn, d=distribution, rhs=rhs, method="BFGS")
+    par <- stats::optim(par, fn, d=distribution, rhs=rhs, method="BFGS")
     distribution@alpha@uvalue <- par[["par"]][["ualpha"]]
     alpha <- distribution@alpha@value
     estimates[["alpha"]] <- alpha
@@ -219,7 +219,7 @@ S7::method(parameter_estimates, list(GammaMean, Mle)) <- function(distribution, 
       abs(lhs-rhs)
     }
     par <- c(ualpha = distribution@alpha@uvalue)
-    par <- optim(par, fn, d=distribution, rhs=rhs, method="BFGS")
+    par <- stats::optim(par, fn, d=distribution, rhs=rhs, method="BFGS")
     distribution@alpha@uvalue <- par[["par"]][["ualpha"]]
     alpha <- distribution@alpha@value
     estimates[["alpha"]] <- alpha

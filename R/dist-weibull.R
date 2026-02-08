@@ -38,7 +38,7 @@ S7::method(parameter_estimates, list(Weibull, Mom)) <- function(distribution, es
       abs(rhs - lhs)
     }
 
-    shape <- try(optim(
+    shape <- try(stats::optim(
       par=c(ushape=distribution@shape@uvalue), fn, d=distribution, lhs=lhs, method="BFGS")
       )
 

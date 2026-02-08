@@ -60,7 +60,7 @@ parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","
     return(list())
   }
 
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   # override custom methods if optim requested
   if (S7::S7_inherits(estimator, Mle) && estimator@optim)
     distribution <- S7::super(distribution, Distribution)
@@ -97,7 +97,7 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
     upper <- lapply(support, S7::prop, "max")
 
     result <- try(
-      optim(
+      stats::optim(
         par=start, fn=objective, d=distribution, data=data,
         method=estimator@method, lower=lower, upper=upper,
         control=estimator@control, hessian=FALSE),
@@ -112,7 +112,7 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
     }
 
     result <- try(
-      optim(
+      stats::optim(
         par=start, fn=objective, d=distribution, data=data,
         method=estimator@method,
         control=estimator@control, hessian=FALSE),
@@ -194,7 +194,7 @@ Bootstrap <- S7::new_class(
 
 ## inference generics ----
 parameter_inference <- S7::new_generic("parameter_inference", c("distribution", "inference_method"), function(distribution, inference_method, data){
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   S7::S7_dispatch()
 })
 
@@ -252,7 +252,7 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
 
 # helper functions ----
 fit_distribution <- S7::new_generic("fit_distribution", c("distribution", "estimator"), function(distribution, estimator, data) {
-  data <- na.omit(data)
+  data <- stats::na.omit(data)
   S7::S7_dispatch()
 })
 
@@ -286,7 +286,7 @@ vcov <- function(distribution, data, constrained, control) {
   }
 
   hessian <- try(
-    optimHess(par=start, fn=objective, d=distribution, data=data, control=control),
+    stats::optimHess(par=start, fn=objective, d=distribution, data=data, control=control),
     silent=TRUE
   )
 
@@ -300,7 +300,7 @@ vcov <- function(distribution, data, constrained, control) {
 }
 
 estimates_table <- function(distribution, estimates, se, lower, upper) {
-  output <- tibble::tibble(
+  output <- data.frame(
     key = unlist(parameter_properties(distribution, property="key", which="free")),
     label = unlist(parameter_properties(distribution, property="label", which="free")),
     estimate = unlist(estimates),

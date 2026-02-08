@@ -1,14 +1,13 @@
-compare <- function(..., data, estimated=FALSE) {
+compare <- function(..., data) {
   distributions <- rlang::dots_list(..., .named = TRUE)
   names <- names(distributions)
 
-  ic <- lapply(distributions, function(distribution) information_criteria(distribution, data, estimated=estimated))
+  ic <- lapply(distributions, function(distribution) information_criteria(distribution, data))
   ic <- do.call(rbind, ic)
 
   ic[["aic_weight"]] <- weights_ic(ic[["aic"]])
   ic[["bic_weight"]] <- weights_ic(ic[["bic"]])
   ic[["name"]] <- names
-  ic <- tibble::tibble(ic)
   return(ic)
 }
 
