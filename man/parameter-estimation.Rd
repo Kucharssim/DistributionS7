@@ -17,18 +17,18 @@ parameter_inference(distribution, inference_method, data)
 fit_distribution(distribution, estimator, data)
 }
 \arguments{
-\item{distribution}{Object of class [Distribution()].}
+\item{distribution}{Object of class \code{\link[=Distribution]{Distribution()}}.}
 
-\item{estimator}{Object of class [Estimator()].}
+\item{estimator}{Object of class \code{\link[=Estimator]{Estimator()}}.}
 
 \item{data}{numeric vector.}
 
-\item{inference_method}{Object of class [InferenceMethod()].}
+\item{inference_method}{Object of class \code{\link[=InferenceMethod]{InferenceMethod()}}.}
 }
 \value{
-[parameter_estimates()] returns a named list with parameter values.
-[parameter_inference()] returns a data.frame with parameter estimates, optionally SE and CI or other summaries.
-[parameter_start()] and [fit_distribution()] return an object of class [Distribution()].
+\code{\link[=parameter_estimates]{parameter_estimates()}} returns a named list with parameter values.
+\code{\link[=parameter_inference]{parameter_inference()}} returns a data.frame with parameter estimates, optionally SE and CI or other summaries.
+\code{\link[=parameter_start]{parameter_start()}} and \code{\link[=fit_distribution]{fit_distribution()}} return an object of class \code{\link[=Distribution]{Distribution()}}.
 }
 \description{
 Methods for estimating parameters of a distribution.

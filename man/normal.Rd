@@ -25,9 +25,9 @@ NormalTau(mu, tau)
 \item{tau}{Precision.}
 }
 \value{
-Object of class [NormalSigma()], [NormalSigma2()], or [NormalTau()].
+Object of class \code{\link[=NormalSigma]{NormalSigma()}}, \code{\link[=NormalSigma2]{NormalSigma2()}}, or \code{\link[=NormalTau]{NormalTau()}}.
 }
 \description{
-Create a normal distribution object. It is advised to use the factory method [normal()] rather than calling the
+Create a normal distribution object. It is advised to use the factory method \code{\link[=normal]{normal()}} rather than calling the
 constructors of the indivitual classes.
 }

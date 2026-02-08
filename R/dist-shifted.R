@@ -116,7 +116,7 @@ S7::method(parameter_start, Shifted) <- function(distribution, data) {
   return(distribution)
 }
 
-S7::method(parameters, Shifted) <- function(distribution, which = c("all", "free", "fixed"), ...) {
+S7::method(parameters, Shifted) <- function(distribution, which = c("all", "free", "fixed")) {
   pars <- parameters(distribution@distribution, which=which, ...)
 
   distribution <- S7::super(distribution, DistributionContinuous)

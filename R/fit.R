@@ -391,7 +391,7 @@ estimates_table <- function(distribution, estimates, se, lower, upper) {
   output <- data.frame(
     key = unlist(parameter_properties(distribution, property="key", which="free")),
     label = unlist(parameter_properties(distribution, property="label", which="free")),
-    estimate = unlist(estimates),
+    estimate = unlist(estimates)
   )
   if (!missing(se))
     output[["se"]] <- unlist(se)

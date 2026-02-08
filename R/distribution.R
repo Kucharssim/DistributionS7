@@ -1,3 +1,10 @@
+#' @title Distribution classes
+#' @description
+#' These classes are abstract and provide the base classes for all individual distributions in the package.
+#' These classes are not intended for direct use, unless you want to implement a custom distribution class.
+#'
+#' @name distribution
+#' @export
 Distribution <- S7::new_class(
   name = "Distribution",
   properties = list(
@@ -7,6 +14,8 @@ Distribution <- S7::new_class(
   abstract = TRUE
 )
 
+#' @rdname distribution
+#' @export
 DistributionDiscrete <- S7::new_class(
   name = "DistributionDiscrete",
   parent = Distribution,
@@ -16,7 +25,8 @@ DistributionDiscrete <- S7::new_class(
   abstract = TRUE
 )
 
-
+#' @rdname distribution
+#' @export
 DistributionContinuous <- S7::new_class(
   name = "DistributionContinuous",
   parent = Distribution,
@@ -165,9 +175,22 @@ rargs <- S7::new_generic("rargs", "distribution")
 
 # parameter properties ----
 
-parameters <- S7::new_generic("parameters", "distribution")
+#' @title Parameter properties
+#' @description
+#' Get or set parameter properties. These methods are mostly intended for internal use, but can make some tasks easier elsewhere.
+#'
+#' @param distribution Object of class [Distribution()].
+#' @param which character; should all, free, or fixed parameters be extracted?
+#' @param property character; which parameter property to extract.
+#' @param value list of parameter values (constrained or uncosntrained) to which to set the parameters.
+#'
+#' @name parameter-properties
+#' @export
+parameters <- S7::new_generic("parameters", "distribution", function(distribution, which = c("all", "free", "fixed")) {
+  S7::S7_dispatch()
+})
 
-S7::method(parameters, Distribution) <- function(distribution, which = c("all", "free", "fixed"), ...) {
+S7::method(parameters, Distribution) <- function(distribution, which = c("all", "free", "fixed")) {
   which <- match.arg(which)
   props <- S7::props(distribution)
   is_par <- vapply(props, is.parameter, logical(1))
@@ -183,12 +206,21 @@ S7::method(parameters, Distribution) <- function(distribution, which = c("all", 
   return(pars)
 }
 
-parameter_properties <- S7::new_generic("parameter_properties", "distribution")
+#' @rdname parameter-properties
+#' @export
+parameter_properties <- S7::new_generic(
+  "parameter_properties", "distribution",
+  function(
+    distribution,
+    property = c("key", "name", "label", "value", "uvalue", "derivative", "support", "fixed"),
+    which = "all") {
+    S7::S7_dispatch()
+  })
 
 S7::method(parameter_properties, Distribution) <- function(
     distribution,
     property = c("key", "name", "label", "value", "uvalue", "derivative", "support", "fixed"),
-    which = "all", ...) {
+    which = "all") {
   property <- match.arg(property)
 
   pars <- parameters(distribution, which=which)
@@ -208,12 +240,18 @@ S7::method(parameter_properties, Distribution) <- function(
   return(output)
 }
 
-parameter_values <- S7::new_generic("parameter_values", "distribution")
+#' @rdname parameter-properties
+#' @export
+parameter_values <- S7::new_generic("parameter_values", "distribution", function(distribution, which = "all") {
+  S7::S7_dispatch()
+})
 
-S7::method(parameter_values, Distribution) <- function(distribution, which = "all", ...) {
+S7::method(parameter_values, Distribution) <- function(distribution, which = "all") {
   parameter_properties(distribution, property="value", which=which, ...)
 }
 
+#' @rdname parameter-properties
+#' @export
 `parameter_values<-` <- S7::new_generic("parameter_values<-", "distribution", function(distribution, value) {
   S7::S7_dispatch()
 })
@@ -232,12 +270,18 @@ S7::method(`parameter_values<-`, Distribution) <- function(distribution, value) 
   return(distribution)
 }
 
-parameter_uvalues <- S7::new_generic("parameter_uvalues", "distribution")
+#' @rdname parameter-properties
+#' @export
+parameter_uvalues <- S7::new_generic("parameter_uvalues", "distribution", function(distribution, which = "all") {
+  S7::S7_dispatch()
+})
 
-S7::method(parameter_uvalues, Distribution) <- function(distribution, which = "all", ...) {
+S7::method(parameter_uvalues, Distribution) <- function(distribution, which = "all") {
   parameter_properties(distribution, property="uvalue", which=which, ...)
 }
 
+#' @rdname parameter-properties
+#' @export
 `parameter_uvalues<-` <- S7::new_generic("parameter_uvalues<-", "distribution", function(distribution, value) {
   S7::S7_dispatch()
 })
@@ -256,6 +300,8 @@ S7::method(`parameter_uvalues<-`, Distribution) <- function(distribution, value)
   return(distribution)
 }
 
+#' @rdname parameter-properties
+#' @export
 recreate_parameters <- S7::new_generic("recreate_parameters", "distribution")
 
 S7::method(recreate_parameters, Distribution) <- function(distribution) {
@@ -269,6 +315,7 @@ S7::method(recreate_parameters, Distribution) <- function(distribution) {
 }
 
 # from support.R
+
 S7::method(support, Distribution) <- function(object) {
   pars <- parameter_values(object)
   if (is.expression(object@support@min))

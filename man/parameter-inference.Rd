@@ -29,7 +29,7 @@ Bootstrap(
 )
 }
 \arguments{
-\item{estimator}{Object of class [Estimator()].}
+\item{estimator}{Object of class \code{\link[=Estimator]{Estimator()}}.}
 
 \item{ci_level}{numeric; confidence level.}
 
@@ -38,7 +38,7 @@ Bootstrap(
 \item{constrained}{logical; should the CIs be computed on the unconstrained space (and then transformed),
 or should be computed directly on the constrained space.}
 
-\item{control}{list; passed to [stats::optimHess].}
+\item{control}{list; passed to \link[stats:optim]{stats::optimHess}.}
 
 \item{samples}{integer; How many samples to take.}
 

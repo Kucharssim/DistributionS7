@@ -30,20 +30,20 @@ BiasCorrected(silent = FALSE)
 
 \item{constrained}{logical; Should numerical optimization be done on the constrained or on the unconstrained parameter space?}
 
-\item{method}{character; passed to [stats::optim()].}
+\item{method}{character; passed to \code{\link[stats:optim]{stats::optim()}}.}
 
 \item{start}{method/function, list, or object of \code{S7} class \code{Estimator}. See details.}
 
-\item{control}{list; passed to [stats::optim()].}
+\item{control}{list; passed to \code{\link[stats:optim]{stats::optim()}}.}
 }
 \description{
 These classes encapsulate methods for parameter estimation.
 }
 \details{
-These classes are used for dispatching methods such as [fit_distribution()], [parameter_estimates()], or as a subroutine for [InferenceMethod()].
+These classes are used for dispatching methods such as \code{\link[=fit_distribution]{fit_distribution()}}, \code{\link[=parameter_estimates]{parameter_estimates()}}, or as a subroutine for \code{\link[=InferenceMethod]{InferenceMethod()}}.
 
 \code{start} is used for initialization of the distribution parameters for numerical optimization.
-By default, the routine calls [parameter_start()], which for selected distributions attempts to use some heuristics to find
+By default, the routine calls \code{\link[=parameter_start]{parameter_start()}}, which for selected distributions attempts to use some heuristics to find
 reasonable starting values, otherwise call \code{parameteter_estimates(distribution, Mom(), data)} to start the parameters
 with method of moments estimation. In the absence of an implementation of either of the methods for a particular distribution,
 the starting parameter values default to the values set by the distribution.

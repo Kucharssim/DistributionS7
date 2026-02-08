@@ -1,3 +1,23 @@
+#' @title Parameter class
+#' @description
+#' Parameter classes encapsulating important information about distribution parameters.
+#' This class is used internally and is not suppored to by used directly, unless one wants to implement a custom distribution.
+#'
+#' @param key character; Parameter key.
+#' @param name character; Optional name of the parameter.
+#' @param label character; Optional label of the parameter. Typically a LaTeX expression (for convenience to render in software like in JASP).
+#' @param value character; Value of the parameter.
+#' @param support Object of class [Support()].
+#' @param fixed logical; Is the parameter fixed? If true, the parameter will not be estimated with parameter estimation methods.
+#'
+#' @details
+#' Fixed parameter can be either specified by setting the `fixed` property to `TRUE`, but one can also fix the parameter by
+#' using the `fixed()` function on the parameter value. For example `normal(mu=0, sigma=fixed(1))` specifies a normal distribution
+#' with the standard deviation parameter fixed to 1.
+#'
+#'
+#' @name parameter
+#' @export
 Parameter <- S7::new_class(
   "Parameter",
   properties = list(
@@ -62,15 +82,19 @@ S7::method(derivative, list(Parameter, S7::class_numeric)) <- function(object, x
 
 ## free/fixed parameters convenience ----
 
-fixed <- function(x) {
-  attr(x, "fixed") <- TRUE
-  return(x)
+#' @name parameter
+#' @export
+fixed <- function(value) {
+  attr(value, "fixed") <- TRUE
+  return(value)
 }
 
 is.fixed <- function(x) {
   isTRUE(attr(x, "fixed"))
 }
 
+#' @name parameter
+#' @export
 is.parameter <- function(x) {
   S7::S7_inherits(x, Parameter)
 }

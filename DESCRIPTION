@@ -53,6 +53,7 @@ Collate:
   'compare.R'
   'zzz.R'
 RoxygenNote: 7.3.3
+Roxygen: list(markdown=TRUE)
 Imports:
   S7,
   assertthat,

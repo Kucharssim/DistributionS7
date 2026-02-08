@@ -1,3 +1,39 @@
+#' @title Fit statistics
+#' @description
+#' Fit statistics of a distribution.
+#'
+#' @param distribution Object of class [Distribution()].
+#' @param data Numeric containing the data.
+#' @param estimated Was the distribution fitted to data on which we compute the goodness of fit tests? Passed to [goftest::ad.test] and [goftest::cvm.test].
+#' @param bootstrap Object of class [Bootstrap()].
+#'
+#' @details
+#' Calling [information_criteria()] and [gof_test()] is recommended.
+#'
+#' [information_criteria()] is valid only when the distribution has been already fitted to the data with [Mle()] (see [fit_distribution()]).
+#'
+#' [gof_test()] will work if the distribution has not been fitted to the data (`estimated=FALSE`), in which case it will compute
+#' the Kolmogorov-Smirnov test and the simple hypothesis test Anderson-Darling and Cramer-von Mises.
+#' When `estimated=TRUE`, the method will compute composite hypothesis test Anderson-Darling and Cramer-von Mises.
+#' Alternatively, one can specify a [Bootstrap()] method, which will perform a parametric bootstrap. Note that when `estimated=TRUE`,
+#' the [Estimator()] that was used for fitting the distribution should be also passed in the [Bootstrap()] option.
+#'
+#' @name fit-statistics
+#' @export
+information_criteria <- S7::new_generic("information_criteria", "distribution", function(distribution, data) {
+  data <- stats::na.omit(data)
+  S7::S7_dispatch()
+})
+
+#' @rdname fit-statistics
+#' @export
+gof_test <- S7::new_generic("gof_test", "distribution", function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
+  data <- stats::na.omit(data)
+  S7::S7_dispatch()
+})
+
+#' @rdname fit-statistics
+#' @export
 log_lik <- S7::new_generic("log_lik", "distribution", function(distribution, data) {
   data <- stats::na.omit(data)
   S7::S7_dispatch()
@@ -14,6 +50,8 @@ S7::method(log_lik, Distribution) <- function(distribution, data) {
   return(result)
 }
 
+#' @rdname fit-statistics
+#' @export
 aic <- S7::new_generic("aic", "distribution", function(distribution, data) {
   data <- stats::na.omit(data)
   S7::S7_dispatch()
@@ -24,6 +62,8 @@ S7::method(aic, Distribution) <- function(distribution, data) {
   AIC(ll)
 }
 
+#' @rdname fit-statistics
+#' @export
 bic <- S7::new_generic("bic", "distribution", function(distribution, data) {
   data <- stats::na.omit(data)
   S7::S7_dispatch()
@@ -33,11 +73,6 @@ S7::method(bic, Distribution) <- function(distribution, data) {
   ll <- log_lik(distribution, data)
   BIC(ll)
 }
-
-information_criteria <- S7::new_generic("information_criteria", "distribution", function(distribution, data) {
-  data <- stats::na.omit(data)
-  S7::S7_dispatch()
-})
 
 S7::method(information_criteria, Distribution) <- function(distribution, data) {
   log_lik <- log_lik(distribution, data)
@@ -53,8 +88,11 @@ S7::method(information_criteria, Distribution) <- function(distribution, data) {
   return(results)
 }
 
-
-ks_test <- S7::new_generic("ks_test", "distribution")
+#' @rdname fit-statistics
+#' @export
+ks_test <- S7::new_generic("ks_test", "distribution", function(distribution, data) {
+  S7::S7_dispatch()
+})
 
 S7::method(ks_test, DistributionContinuous) <- function(distribution, data) {
   result <- ks.test(data, cdf, distribution=distribution)
@@ -68,7 +106,8 @@ S7::method(ks_test, DistributionContinuous) <- function(distribution, data) {
   return(result)
 }
 
-
+#' @rdname fit-statistics
+#' @export
 cvm_test <- S7::new_generic("cvm_test", "distribution", function(distribution, data, estimated=FALSE) {
   data <- stats::na.omit(data)
   S7::S7_dispatch()
@@ -88,6 +127,8 @@ S7::method(cvm_test, DistributionContinuous) <- function(distribution, data, est
   return(result)
 }
 
+#' @rdname fit-statistics
+#' @export
 ad_test <- S7::new_generic("ad_test", "distribution", function(distribution, data, estimated=FALSE) {
   data <- stats::na.omit(data)
   S7::S7_dispatch()
@@ -106,11 +147,6 @@ S7::method(ad_test, DistributionContinuous) <- function(distribution, data, esti
 
   return(result)
 }
-
-gof_test <- S7::new_generic("gof_test", "distribution", function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
-  data <- stats::na.omit(data)
-  S7::S7_dispatch()
-})
 
 S7::method(gof_test, DistributionContinuous) <- function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
   results <- list()
