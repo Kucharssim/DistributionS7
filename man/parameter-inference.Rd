@@ -9,11 +9,16 @@
 \alias{Bootstrap}
 \title{Parameter inference methods}
 \usage{
-InferenceMethod(estimator=Mle(), ci_level = 0.95)
+InferenceMethod(estimator = Mle(), ci_level = 0.95)
 
-DefaultMethod(estimator=Mle(), ci_level = 0.95, args=list())
+DefaultMethod(estimator = Mle(), ci_level = 0.95, args = list())
 
-NormalTheory(estimator=Mle(), ci_level = 0.95, constrained=FALSE, control=list())
+NormalTheory(
+  estimator = Mle(),
+  ci_level = 0.95,
+  constrained = FALSE,
+  control = list()
+)
 
 ProfileLikelihood(estimator=Mle(), ci_level=0.95)
 

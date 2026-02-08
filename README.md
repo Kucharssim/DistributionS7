@@ -39,36 +39,36 @@ library(DistributionS7)
 # create a distribution object
 n <- normal(0, 1)
 
-# sample from a distribution
-x <- rng(n, 1000)
+# sample from a distribution (and distort to make the distribution not fitting well)
+x <- rng(n, 100) * 0.3 + 1
 
 # goodness-of-fit tests
 gof_test(n, x, estimated=FALSE)
-#>              test statistic   p_value
-#> ks_test   ks_test 0.0372936 0.1238460
-#> cvm_test cvm_test 0.3091308 0.1274170
-#> ad_test   ad_test 1.9198886 0.1017058
+#>              test  statistic      p_value
+#> ks_test   ks_test  0.6881246 1.485927e-41
+#> cvm_test cvm_test 16.7925722 0.000000e+00
+#> ad_test   ad_test 81.6858728 6.000000e-06
 
 # fit to data using maximum likelihood
 n <- fit_distribution(n, Mle(), x)
 
 # get uncertainty around parameter estimates using normal theory intervals
 parameter_inference(n, NormalTheory(), x)
-#>         key   label    estimate         se      lower       upper
-#> mu       mu    \\mu -0.05823803 0.03109232 -0.1191779 0.002701806
-#> sigma sigma \\sigma  0.98322554 0.02198558  0.9410652 1.027274683
+#>         key   label  estimate         se     lower     upper
+#> mu       mu    \\mu 1.0433487 0.02855216 0.9873875 1.0993099
+#> sigma sigma \\sigma 0.2855216 0.02018941 0.2485707 0.3279653
 
 # fit indices of the fitted distribution
 gof_test(n, x, estimated=TRUE)
-#>                                      test  statistic    p_value
-#> lillie_test                   lillie_test 0.02933822 0.04163899
-#> cvm_test                         cvm_test 0.14544444 0.02732160
-#> ad_test                           ad_test 0.76589234 0.04636819
-#> shapiro_wilk_test       shapiro_wilk_test 0.99695697 0.05321971
-#> shapiro_francia_test shapiro_francia_test 0.99697475 0.05275794
+#>                                      test  statistic   p_value
+#> lillie_test                   lillie_test 0.04809704 0.8242030
+#> cvm_test                         cvm_test 0.03042504 0.8395434
+#> ad_test                           ad_test 0.27591167 0.6509543
+#> shapiro_wilk_test       shapiro_wilk_test 0.98596035 0.3715832
+#> shapiro_francia_test shapiro_francia_test 0.98783881 0.4206180
 information_criteria(n, x)
 #>   n_par n_obs   log_lik      aic      bic
-#> 1     2  1000 -1402.022 2808.044 2817.859
+#> 1     2   100 -16.55009 37.10018 42.31052
 
 # compare data to distribution
 plot_empirical(n, x, ci=TRUE)

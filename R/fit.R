@@ -225,12 +225,11 @@ S7::method(parameter_start, Distribution) <- function(distribution, data) {
 NULL
 
 #' @rdname parameter-inference
-#' @usage InferenceMethod(estimator=Mle(), ci_level = 0.95)
 #' @export
 InferenceMethod <- S7::new_class(
   name = "InferenceMethod",
   properties = list(
-    estimator = S7::new_property(class = Estimator, default = Mle()),
+    estimator = Estimator,
     ci_level = S7::new_property(
       class = S7::class_double,
       validator = function(value) { assertthat::assert_that(value > 0, value < 1); return(NULL) },
@@ -239,31 +238,52 @@ InferenceMethod <- S7::new_class(
     alpha = S7::new_property(getter = function(self) 1-self@ci_level),
     lower = S7::new_property(getter = function(self) self@alpha/2),
     upper = S7::new_property(getter = function(self) 1-self@alpha/2)
-  )
+  ),
+  constructor = function(estimator = Mle(), ci_level = 0.95) {
+    S7::new_object(
+      S7::S7_object(),
+      estimator = estimator,
+      ci_level = ci_level
+    )
+  }
 )
 
 #' @rdname parameter-inference
-#' @usage DefaultMethod(estimator=Mle(), ci_level = 0.95, args=list())
 #' @export
 DefaultMethod <- S7::new_class(
   name = "DefaultMethod",
   parent = InferenceMethod,
   properties = list(
-    args = S7::new_property(S7::class_list, default=list())
-  )
+    args = S7::class_list
+  ),
+  constructor = function(estimator = Mle(), ci_level = 0.95, args = list()) {
+    S7::new_object(
+      S7::S7_object(),
+      estimator = estimator,
+      ci_level = ci_level,
+      args = args
+    )
+  }
 )
 
 #' @rdname parameter-inference
-#' @usage NormalTheory(estimator=Mle(), ci_level = 0.95, constrained=FALSE, control=list())
 #' @export
 NormalTheory <- S7::new_class(
   name = "NormalTheory",
   parent = InferenceMethod,
   properties = list(
-    estimator = S7::new_property(Mle, default = Mle()),
-    constrained = S7::new_property(S7::class_logical, default=FALSE),
-    control = S7::new_property(S7::class_list, default=list())
-  )
+    constrained = S7::class_logical,
+    control = S7::class_list
+  ),
+  constructor = function(estimator = Mle(), ci_level = 0.95, constrained = FALSE, control = list()) {
+    S7::new_object(
+      S7::S7_object(),
+      estimator = estimator,
+      ci_level = ci_level,
+      constrained = constrained,
+      control = control
+    )
+  }
 )
 
 #' @rdname parameter-inference
@@ -271,7 +291,14 @@ NormalTheory <- S7::new_class(
 #' @export
 ProfileLikelihood <- S7::new_class(
   name = "Profile",
-  parent = InferenceMethod
+  parent = InferenceMethod,
+  constructor = function(estimator = Mle(), ci_level = 0.95) {
+    S7::new_object(
+      S7::S7_object(),
+      estimator = estimator,
+      ci_level = ci_level
+    )
+  }
 )
 
 #' @rdname parameter-inference
@@ -281,16 +308,18 @@ Bootstrap <- S7::new_class(
   name = "Bootstrap",
   parent = InferenceMethod,
   properties = list(
-    samples = S7::new_property(
-      class = S7::class_integer,
-      validator = function(value) { assertthat::assert_that(value >= 0); return(NULL) },
-      default = 1000L
-    ),
-    callback = S7::new_property(
-      class = S7::class_function,
-      default = function() {}
+    samples = S7::class_integer,
+    callback = S7::class_function
+  ),
+  constructor = function(estimator = Mle(), ci_level = 0.95, samples = 1000L, callback = function() {}) {
+    S7::new_object(
+      S7::S7_object(),
+      estimator = estimator,
+      ci_level = ci_level,
+      samples = samples,
+      callback = callback
     )
-  )
+  }
 )
 
 ## inference generics ----

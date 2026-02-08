@@ -37,8 +37,8 @@ library(DistributionS7)
 # create a distribution object
 n <- normal(0, 1)
 
-# sample from a distribution
-x <- rng(n, 1000)
+# sample from a distribution (and distort to make the distribution not fitting well)
+x <- rng(n, 100) * 0.3 + 1
 
 # goodness-of-fit tests
 gof_test(n, x, estimated=FALSE)
