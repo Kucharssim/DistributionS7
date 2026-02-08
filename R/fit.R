@@ -1,4 +1,32 @@
 # point estimation ----
+
+#' @title Estimators of distribution parameters.
+#' @description
+#' These classes encapsulate methods for parameter estimation.
+#'
+#' @name parameter-estimators
+#'
+#' @param silent logical; Should we suppress info messages during fitting.
+#' @param optim logical; Should we force generic numerical optimization, even if there is a specific method to find the estimates for the particular distribution?
+#' @param constrained logical; Should numerical optimization be done on the constrained or on the unconstrained parameter space?
+#' @param method character; passed to [stats::optim()].
+#' @param start method/function, list, or object of \code{S7} class \code{Estimator}. See details.
+#' @param control list; passed to [stats::optim()].
+#'
+#' @details
+#' These classes are used for dispatching methods such as [fit_distribution()], [parameter_estimates()], or as a subroutine for [InferenceMethod()].
+#'
+#' \code{start} is used for initialization of the distribution parameters for numerical optimization.
+#' By default, the routine calls [parameter_start()], which for selected distributions attempts to use some heuristics to find
+#' reasonable starting values, otherwise call \code{parameteter_estimates(distribution, Mom(), data)} to start the parameters
+#' with method of moments estimation. In the absence of an implementation of either of the methods for a particular distribution,
+#' the starting parameter values default to the values set by the distribution.
+#' One can pass an arbitrary method/function with arguments \code{distribution}, \code{data}, to implement a custom parameter value initialization.
+#' Otherwise, one can also pass a named list to overwrite the parameter values before starting the optimization.
+NULL
+
+#' @rdname parameter-estimators
+#' @export
 Estimator <- S7::new_class(
   name = "Estimator",
   abstract = TRUE,
@@ -7,11 +35,15 @@ Estimator <- S7::new_class(
   )
 )
 
+#' @rdname parameter-estimators
+#' @export
 Mom <- S7::new_class(
   name = "Mom",
   parent = Estimator
 )
 
+#' @rdname parameter-estimators
+#' @export
 Mle <- S7::new_class(
   name = "Mle",
   parent = Estimator,
@@ -35,23 +67,33 @@ Mle <- S7::new_class(
   }
 )
 
+#' @rdname parameter-estimators
+#' @export
 BiasCorrected <- S7::new_class(
   name = "BiasCorrected",
   parent = Estimator
 )
 
-
-parameter_start <- S7::new_generic("parameter_start", "distribution", function(distribution, data) {
-  S7::S7_dispatch()
-})
-
-S7::method(parameter_start, Distribution) <- function(distribution, data) {
-  estimates <- try(parameter_estimates(distribution, Mom(), data), silent=TRUE)
-  if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
-  return(distribution)
-}
+#' @title Parameter estimation
+#' @description
+#' Methods for estimating parameters of a distribution.
+#'
+#' @param distribution Object of class [Distribution()].
+#' @param estimator Object of class [Estimator()].
+#' @param data numeric vector.
+#' @param inference_method Object of class [InferenceMethod()].
+#'
+#' @returns
+#' [parameter_estimates()] returns a named list with parameter values.
+#' [parameter_inference()] returns a data.frame with parameter estimates, optionally SE and CI or other summaries.
+#' [parameter_start()] and [fit_distribution()] return an object of class [Distribution()].
+#'
+#' @name parameter-estimation
+NULL
 
 ## point estimation generics ----
+#' @rdname parameter-estimation
+#' @export
 parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","estimator"), function(distribution, estimator, data) {
   if (distribution@support@numeric)
     assertthat::assert_that(all(inside(distribution, data)), msg = "data are outside of the parameter support")
@@ -136,8 +178,40 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
   return(estimates)
 }
 
+#' @rdname parameter-estimation
+#' @export
+parameter_start <- S7::new_generic("parameter_start", "distribution", function(distribution, data) {
+  S7::S7_dispatch()
+})
+
+S7::method(parameter_start, Distribution) <- function(distribution, data) {
+  estimates <- try(parameter_estimates(distribution, Mom(), data), silent=TRUE)
+  if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
+  return(distribution)
+}
+
+
 # inference ----
 
+#' @title Parameter inference methods
+#' @description
+#' These classes encapsulate methods for parameter inference.
+#'
+#' @name parameter-inference
+#'
+#' @param estimator Object of class [Estimator()].
+#' @param ci_level numeric; confidence level.
+#' @param args list; optional arguments for the method.
+#' @param constrained logical; should the CIs be computed on the unconstrained space (and then transformed),
+#' or should be computed directly on the constrained space.
+#' @param control list; passed to [stats::optimHess].
+#' @param samples integer; How many samples to take.
+#' @param callback function; Optional function to exectute on every iteration.
+#'
+NULL
+
+#' @rdname parameter-inference
+#' @export
 InferenceMethod <- S7::new_class(
   name = "InferenceMethod",
   properties = list(
@@ -153,6 +227,8 @@ InferenceMethod <- S7::new_class(
   )
 )
 
+#' @rdname parameter-inference
+#' @export
 DefaultMethod <- S7::new_class(
   name = "DefaultMethod",
   parent = InferenceMethod,
@@ -161,6 +237,8 @@ DefaultMethod <- S7::new_class(
   )
 )
 
+#' @rdname parameter-inference
+#' @export
 NormalTheory <- S7::new_class(
   name = "NormalTheory",
   parent = InferenceMethod,
@@ -171,11 +249,15 @@ NormalTheory <- S7::new_class(
   )
 )
 
-ProfileLikelihood <- S7::new_class(
-  name = "Profile",
-  parent = InferenceMethod
-)
+#' #' @rdname parameter-inference
+#' #' @export
+#' ProfileLikelihood <- S7::new_class(
+#'   name = "Profile",
+#'   parent = InferenceMethod
+#' )
 
+#' @rdname parameter-inference
+#' @export
 Bootstrap <- S7::new_class(
   name = "Bootstrap",
   parent = InferenceMethod,
@@ -193,6 +275,9 @@ Bootstrap <- S7::new_class(
 )
 
 ## inference generics ----
+
+#' @rdname parameter-estimation
+#' @export
 parameter_inference <- S7::new_generic("parameter_inference", c("distribution", "inference_method"), function(distribution, inference_method, data){
   data <- stats::na.omit(data)
   S7::S7_dispatch()
@@ -251,6 +336,9 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
 }
 
 # helper functions ----
+
+#' @rdname parameter-estimation
+#' @export
 fit_distribution <- S7::new_generic("fit_distribution", c("distribution", "estimator"), function(distribution, estimator, data) {
   data <- stats::na.omit(data)
   S7::S7_dispatch()

@@ -1,3 +1,28 @@
+#' @title Normal distribution
+#' @description Create a normal distribution object. It is advised to use the factory method [normal()] rather than calling the
+#' constructors of the indivitual classes.
+#' @name normal
+#'
+#' @param mu Mean.
+#' @param sigma Standard deviation.
+#' @param sigma2 Variance.
+#' @param tau Precision.
+#'
+#' @returns Object of class [NormalSigma()], [NormalSigma2()], or [NormalTau()].
+#'
+#' @export
+normal <- function(mu, sigma, sigma2, tau) {
+  parametrization <- rlang::check_exclusive(sigma, sigma2, tau)
+  distribution <- switch(
+    parametrization,
+    sigma = NormalSigma(mu=mu, sigma=sigma),
+    sigma2 = NormalSigma2(mu=mu, sigma2=sigma2),
+    tau = NormalTau(mu=mu, tau=tau)
+  )
+
+  return(distribution)
+}
+
 Normal <- S7::new_class(
   "Normal",
   parent = DistributionContinuous,
@@ -7,6 +32,8 @@ Normal <- S7::new_class(
   abstract = TRUE
 )
 
+#' @rdname normal
+#' @export
 NormalSigma <- S7::new_class(
   "NormalSigma",
   parent = Normal,
@@ -24,6 +51,8 @@ NormalSigma <- S7::new_class(
   }
 )
 
+#' @rdname normal
+#' @export
 NormalSigma2 <- S7::new_class(
   "NormalSigma2",
   parent = Normal,
@@ -41,6 +70,8 @@ NormalSigma2 <- S7::new_class(
   }
 )
 
+#' @rdname normal
+#' @export
 NormalTau <- S7::new_class(
   "NormalTau",
   parent = Normal,
@@ -58,18 +89,6 @@ NormalTau <- S7::new_class(
     )
   }
 )
-
-normal <- function(mu, sigma, sigma2, tau) {
-  parametrization <- rlang::check_exclusive(sigma, sigma2, tau)
-  distribution <- switch(
-    parametrization,
-    sigma = NormalSigma(mu=mu, sigma=sigma),
-    sigma2 = NormalSigma2(mu=mu, sigma2=sigma2),
-    tau = NormalTau(mu=mu, tau=tau)
-    )
-
-  return(distribution)
-}
 
 
 S7::method(pdf_fn, Normal) <- function(distribution) stats::dnorm
