@@ -14,7 +14,15 @@
 #' @param control list; passed to [stats::optim()].
 #'
 #' @details
+#'
 #' These classes are used for dispatching methods such as [fit_distribution()], [parameter_estimates()], or as a subroutine for [InferenceMethod()].
+#'
+#' [Mom()] specifies method of moments estimator, [Mle()]
+#' specifies maximum likelihood estimator, and [BiasCorrected()] specifies some version of bias corrected estimators
+#' (this is highly dependent on the type of distribution).
+#'
+#' [Mle()] is the default method that is implemented for any distribution. If there are no closed-form solutions for the MLE,
+#' then numerical optimization of the log likelihood is used.
 #'
 #' \code{start} is used for initialization of the distribution parameters for numerical optimization.
 #' By default, the routine calls [parameter_start()], which for selected distributions attempts to use some heuristics to find
@@ -200,8 +208,8 @@ S7::method(parameter_start, Distribution) <- function(distribution, data) {
 
 #' @title Parameter inference methods
 #' @description
-#' These classes encapsulate methods for parameter inference.
-#'
+#' These classes encapsulate methods for parameter inference. This is yet experimental; methods for [Bootstrap()] and [ProfileLikelihood()] are not implemented at all.
+#' [DefaultMethod()] will currently default to [NormalTheory()], *which is not a good default for some distributions!*
 #' @name parameter-inference
 #'
 #' @param estimator Object of class [Estimator()].
@@ -213,6 +221,7 @@ S7::method(parameter_start, Distribution) <- function(distribution, data) {
 #' @param samples integer; How many samples to take.
 #' @param callback function; Optional function to exectute on every iteration.
 #'
+#' @seealso [parameter_inference()]
 NULL
 
 #' @rdname parameter-inference
@@ -254,12 +263,12 @@ NormalTheory <- S7::new_class(
   )
 )
 
-#' #' @rdname parameter-inference
-#' #' @export
-#' ProfileLikelihood <- S7::new_class(
-#'   name = "Profile",
-#'   parent = InferenceMethod
-#' )
+#' @rdname parameter-inference
+#' @export
+ProfileLikelihood <- S7::new_class(
+  name = "Profile",
+  parent = InferenceMethod
+)
 
 #' @rdname parameter-inference
 #' @export

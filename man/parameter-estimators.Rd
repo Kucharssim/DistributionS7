@@ -42,6 +42,13 @@ These classes encapsulate methods for parameter estimation.
 \details{
 These classes are used for dispatching methods such as \code{\link[=fit_distribution]{fit_distribution()}}, \code{\link[=parameter_estimates]{parameter_estimates()}}, or as a subroutine for \code{\link[=InferenceMethod]{InferenceMethod()}}.
 
+\code{\link[=Mom]{Mom()}} specifies method of moments estimator, \code{\link[=Mle]{Mle()}}
+specifies maximum likelihood estimator, and \code{\link[=BiasCorrected]{BiasCorrected()}} specifies some version of bias corrected estimators
+(this is highly dependent on the type of distribution).
+
+\code{\link[=Mle]{Mle()}} is the default method that is implemented for any distribution. If there are no closed-form solutions for the MLE,
+then numerical optimization of the log likelihood is used.
+
 \code{start} is used for initialization of the distribution parameters for numerical optimization.
 By default, the routine calls \code{\link[=parameter_start]{parameter_start()}}, which for selected distributions attempts to use some heuristics to find
 reasonable starting values, otherwise call \code{parameteter_estimates(distribution, Mom(), data)} to start the parameters

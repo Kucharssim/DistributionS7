@@ -5,6 +5,7 @@
 \alias{InferenceMethod}
 \alias{DefaultMethod}
 \alias{NormalTheory}
+\alias{ProfileLikelihood}
 \alias{Bootstrap}
 \title{Parameter inference methods}
 \usage{
@@ -18,6 +19,8 @@ NormalTheory(
   constrained = FALSE,
   control = list()
 )
+
+ProfileLikelihood(estimator = <object>, ci_level = 0.95)
 
 Bootstrap(
   estimator = <object>,
@@ -45,5 +48,9 @@ or should be computed directly on the constrained space.}
 \item{callback}{function; Optional function to exectute on every iteration.}
 }
 \description{
-These classes encapsulate methods for parameter inference.
+These classes encapsulate methods for parameter inference. This is yet experimental; methods for \code{\link[=Bootstrap]{Bootstrap()}} and \code{\link[=ProfileLikelihood]{ProfileLikelihood()}} are not implemented at all.
+\code{\link[=DefaultMethod]{DefaultMethod()}} will currently default to \code{\link[=NormalTheory]{NormalTheory()}}, \emph{which is not a good default for some distributions!}
+}
+\seealso{
+\code{\link[=parameter_inference]{parameter_inference()}}
 }
