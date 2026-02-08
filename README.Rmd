@@ -55,6 +55,5 @@ information_criteria(n, x)
 
 # compare data to distribution
 plot_empirical(n, x, ci=TRUE)
-
 ```
 

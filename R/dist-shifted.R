@@ -77,16 +77,16 @@ S7::method(pdf, Shifted) <- function(distribution, x, log = FALSE) {
 }
 
 S7::method(cdf, Shifted) <- function(distribution, q, lower.tail = TRUE, log.p = FALSE) {
-  cdf(distribution@distribution, q-distribution@shift@value, lower.tail = lower.tail, log.p = log.p, ...)
+  cdf(distribution@distribution, q-distribution@shift@value, lower.tail = lower.tail, log.p = log.p)
 }
 
 S7::method(qf, Shifted) <- function(distribution, p, lower.tail = TRUE, log.p = FALSE) {
-  q <- qf(distribution@distribution, p, lower.tail = lower.tail, log.p = log.p, ...)
+  q <- qf(distribution@distribution, p, lower.tail = lower.tail, log.p = log.p)
   q + distribution@shift@value
 }
 
 S7::method(rng, Shifted) <- function(distribution, n) {
-  x <- rng(distribution@distribution, n = n, ...)
+  x <- rng(distribution@distribution, n = n)
   x + distribution@shift@value
 }
 
@@ -153,10 +153,10 @@ S7::method(parameter_start, Shifted) <- function(distribution, data) {
 }
 
 S7::method(parameters, Shifted) <- function(distribution, which = c("all", "free", "fixed")) {
-  pars <- parameters(distribution@distribution, which=which, ...)
+  pars <- parameters(distribution@distribution, which=which)
 
   distribution <- S7::super(distribution, DistributionContinuous)
-  shift <- parameters(distribution, which=which, ...)
+  shift <- parameters(distribution, which=which)
 
   return(c(pars, shift))
 }
