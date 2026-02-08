@@ -1,3 +1,14 @@
+#' @title Log-normal distribution
+#' @description Create a log-normal distribution object.
+#'
+#' @param mu log mean parameter.
+#' @param sigma log standard deviation parameter.
+#' @family distributions
+#' @export
+log_normal <- function(mu, sigma) LogNormal(mu, sigma)
+
+#' @rdname log_normal
+#' @export
 LogNormal <- S7::new_class(
   "LogNormal",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ LogNormal <- S7::new_class(
     )
   }
 )
-
-log_normal <- function(mu, sigma) LogNormal(mu, sigma)
 
 S7::method(pdf_fn, LogNormal) <- function(distribution) stats::dlnorm
 S7::method(cdf_fn, LogNormal) <- function(distribution) stats::plnorm

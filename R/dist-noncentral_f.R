@@ -1,3 +1,20 @@
+#' @title F-distribution
+#' @description Create an F-distribution object.
+#'
+#' @param nu1 degrees of freedom parameter.
+#' @param nu2 degrees of freedom parameter.
+#' @param kappa noncentrality parameter.
+#' @family distributions
+#' @name f-distribution
+#' @export
+central_f <- function(nu1, nu2) CentralF(nu1, nu2)
+
+#' @rdname f-distribution
+#' @export
+noncentral_f <- function(nu1, nu2, kappa) NoncentralF(nu1, nu2, kappa)
+
+#' @rdname f-distribution
+#' @export
 CentralF <- S7::new_class(
   "CentralF",
   parent = DistributionContinuous,
@@ -16,6 +33,8 @@ CentralF <- S7::new_class(
   }
 )
 
+#' @rdname f-distribution
+#' @export
 NoncentralF <- S7::new_class(
   "NoncentralF",
   parent = CentralF,

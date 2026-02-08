@@ -1,9 +1,32 @@
+#' @title Wald (inverse gaussian) distribution
+#' @description Create a Wald distribution object.
+#'
+#' @param mu mean parameter.
+#' @param lambda shape parameter.
+#' @param nu drift rate parameter.
+#' @param alpha threshold parameter.
+#' @param sigma noise parameter.
+#' @family distributions
+#' @export
+wald <- function(mu, lambda, nu, alpha, sigma=fixed(1)) {
+  parametrization <- rlang::check_exclusive(mu, nu)
+
+  distribution <- switch(
+    parametrization,
+    mu = WaldMean(mu, lambda),
+    nu = WaldDrift(nu, alpha, sigma)
+  )
+  return(distribution)
+}
+
 Wald <- S7::new_class(
   "Wald",
   parent = DistributionContinuous,
   abstract = TRUE
 )
 
+#' @rdname wald
+#' @export
 WaldMean <- S7::new_class(
   "WaldMean",
   parent = Wald,
@@ -22,6 +45,8 @@ WaldMean <- S7::new_class(
   }
 )
 
+#' @rdname wald
+#' @export
 WaldDrift <- S7::new_class(
   "WaldDrift",
   parent = Wald,
@@ -45,17 +70,6 @@ WaldDrift <- S7::new_class(
     if (sum(is_fixed) == 0) rlang::abort("At least one of the three parameters `nu`, `alpha`, and `sigma` must be fixed")
   }
 )
-
-wald <- function(mu, lambda, nu, alpha, sigma=fixed(1)) {
-  parametrization <- rlang::check_exclusive(mu, nu)
-
-  distribution <- switch(
-    parametrization,
-    mu = WaldMean(mu, lambda),
-    nu = WaldDrift(nu, alpha, sigma)
-  )
-  return(distribution)
-}
 
 S7::method(pdf_fn, Wald) <- function(distribution) function(x, mu, lambda, log = FALSE) {
   alpha <- sqrt(lambda)

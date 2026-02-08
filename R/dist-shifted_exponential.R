@@ -40,6 +40,8 @@ ShiftedExponentialScale <- S7::new_class(
   }
 )
 
+#' @rdname shifted
+#' @export
 shifted_exponential <- function(lambda, beta, shift=0) {
   parametrization <- rlang::check_exclusive(lambda, beta)
   distribution <- switch(

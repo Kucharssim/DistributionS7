@@ -1,9 +1,27 @@
+#' @title Exponential distribution
+#' @description Create an exponential distribution object.
+#'
+#' @param lambda rate parameter.
+#' @param beta scale parameter.
+#' @family distributions
+#' @export
+exponential <- function(lambda, beta) {
+  parametrization <- rlang::check_exclusive(lambda, beta)
+  distribution <- switch(
+    parametrization,
+    lambda = ExponentialRate(lambda),
+    beta = ExponentialScale(beta)
+  )
+}
+
 Exponential <- S7::new_class(
   "Exponential",
   parent = DistributionContinuous,
   abstract = TRUE
 )
 
+#' @rdname exponential
+#' @export
 ExponentialRate <- S7::new_class(
   "ExponentialRate",
   parent = Exponential,
@@ -20,6 +38,8 @@ ExponentialRate <- S7::new_class(
   }
 )
 
+#' @rdname exponential
+#' @export
 ExponentialScale <- S7::new_class(
   "ExponentialScale",
   parent = Exponential,
@@ -36,14 +56,6 @@ ExponentialScale <- S7::new_class(
   }
 )
 
-exponential <- function(lambda, beta) {
-  parametrization <- rlang::check_exclusive(lambda, beta)
-  distribution <- switch(
-    parametrization,
-    lambda = ExponentialRate(lambda),
-    beta = ExponentialScale(beta)
-  )
-}
 
 S7::method(pdf_fn, Exponential) <- function(distribution) stats::dexp
 

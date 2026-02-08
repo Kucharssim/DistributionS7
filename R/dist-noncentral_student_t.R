@@ -1,3 +1,26 @@
+#' @title T-distribution
+#' @description Create a t-distribution object.
+#'
+#' @param nu degrees of freedom parameter.
+#' @param kappa noncentrality parameter.
+#' @param mu location parameter.
+#' @param sigma scale parameter.
+#' @family distributions
+#' @name t-distribution
+#' @export
+noncentral_student_t <- function(nu, kappa, mu, sigma) NoncentralStudentT(nu=nu, kappa=kappa, mu=mu, sigma=sigma)
+
+#' @rdname t-distribution
+#' @export
+noncentral_t <- function(nu, kappa) NoncentralStudentT(nu=nu, kappa=kappa, mu=fixed(0), sigma=fixed(1))
+
+#' @rdname t-distribution
+#' @export
+student_t <- function(nu, mu, sigma) NoncentralStudentT(nu=nu, kappa=fixed(0), mu=mu, sigma=sigma)
+
+
+#' @rdname t-distribution
+#' @export
 NoncentralStudentT <- S7::new_class(
   "NoncentralStudentT",
   parent = DistributionContinuous,
@@ -19,12 +42,6 @@ NoncentralStudentT <- S7::new_class(
     )
   }
 )
-
-noncentral_student_t <- function(nu, kappa, mu, sigma) NoncentralStudentT(nu=nu, kappa=kappa, mu=mu, sigma=sigma)
-
-noncentral_t <- function(nu, kappa) NoncentralStudentT(nu=nu, kappa=kappa, mu=fixed(0), sigma=fixed(1))
-
-student_t <- function(nu, mu, sigma) NoncentralStudentT(nu=nu, kappa=fixed(0), mu=mu, sigma=sigma)
 
 S7::method(pdf_fn, NoncentralStudentT) <- function(distribution) function(x, nu, kappa, mu, sigma, log=FALSE) {
   xi <- (x-mu)/sigma

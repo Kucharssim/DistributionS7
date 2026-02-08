@@ -1,3 +1,15 @@
+#' @title Triangular distribution
+#' @description Create a triangular distribution object.
+#'
+#' @param a minimum parameter.
+#' @param b maximum parameter.
+#' @param c mode parameter.
+#' @family distributions
+#' @export
+triangular <- function(a, b, c) Triangular(a, b, c)
+
+#' @rdname triangular
+#' @export
 Triangular <- S7::new_class(
   "Triangular",
   parent = DistributionContinuous,
@@ -19,10 +31,6 @@ Triangular <- S7::new_class(
     )
   }
 )
-
-triangular <- function(a, b, c) {
-  Triangular(a, b, c)
-}
 
 S7::method(pdf_fn, Triangular) <- function(distribution) function(x, a, b, c, log = FALSE) {
   lpdf <- rep(-Inf, length(x))

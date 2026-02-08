@@ -1,3 +1,14 @@
+#' @title Cauchy distribution
+#' @description Create a Cauchy distribution object.
+#'
+#' @param mu location parameter.
+#' @param sigma scale parameter.
+#' @family distributions
+#' @export
+cauchy <- function(mu, sigma) Cauchy(mu, sigma)
+
+#' @rdname cauchy
+#' @export
 Cauchy <- S7::new_class(
   "Cauchy",
   parent = DistributionContinuous,
@@ -16,7 +27,6 @@ Cauchy <- S7::new_class(
   }
 )
 
-cauchy <- function(mu, sigma) Cauchy(mu, sigma)
 
 S7::method(pdf_fn, Cauchy) <- function(distribution) stats::dcauchy
 

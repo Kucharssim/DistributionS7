@@ -1,3 +1,14 @@
+#' @title Pareto distribution
+#' @description Create a Pareto distribution object.
+#'
+#' @param alpha shape parameter.
+#' @param beta scale parameter.
+#' @family distributions
+#' @export
+pareto <- function(alpha, beta) Pareto(alpha, beta)
+
+#' @rdname pareto
+#' @export
 Pareto <- S7::new_class(
   "Pareto",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ Pareto <- S7::new_class(
     )
   }
 )
-
-pareto <- function(alpha, beta) Pareto(alpha, beta)
 
 S7::method(pdf_fn, Pareto) <- function(distribution) function(x, alpha, beta, log=FALSE) {
   lpdf <- log(alpha) + alpha * log(beta) - (alpha+1) * log(x)

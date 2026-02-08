@@ -1,3 +1,14 @@
+#' @title Binomial distribution
+#' @description Create a binomial distribution object.
+#'
+#' @param prob Probability of success parameter.
+#' @param size Sample size parameter.
+#' @family distributions
+#' @export
+binomial <- function(prob, size) Binomial(prob, fixed(size))
+
+#' @rdname binomial
+#' @export
 Binomial <- S7::new_class(
   "Binomial",
   parent = DistributionDiscrete,
@@ -19,8 +30,6 @@ Binomial <- S7::new_class(
     return(NULL)
   }
 )
-
-binomial <- function(prob, size) Binomial(prob, fixed(size))
 
 S7::method(pdf_fn, Binomial) <- function(distribution) stats::dbinom
 S7::method(cdf_fn, Binomial) <- function(distribution) stats::pbinom

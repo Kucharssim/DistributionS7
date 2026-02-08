@@ -1,3 +1,17 @@
+#' @title Skewed generalized t-distribution
+#' @description Create a skewed generalized t-distribution.
+#'
+#' @param mu location parameter.
+#' @param sigma scale parameter.
+#' @param lambda skew parameter.
+#' @param p kurtosis parameter.
+#' @param q kurtosis parameter.
+#' @family distributions
+#' @export
+skewed_generalized_t <- function(mu, sigma, lambda, p, q) SkewedGeneralizedT(mu, sigma, lambda, p, q)
+
+#' @rdname skewed_generalized_t
+#' @export
 SkewedGeneralizedT <- S7::new_class(
   "SkewedGeneralizedT",
   parent = DistributionContinuous,
@@ -21,8 +35,6 @@ SkewedGeneralizedT <- S7::new_class(
     )
   }
 )
-
-skewed_generalized_t <- function(mu, sigma, lambda, p, q) SkewedGeneralizedT(mu, sigma, lambda, p, q)
 
 S7::method(pdf_fn, SkewedGeneralizedT) <- function(distribution) function(x, mu, sigma, lambda, pp, qq, log=FALSE){
   sgt::dsgt(x, mu, sigma, lambda, pp, qq, mean.cent = FALSE, var.adj = FALSE, log=log)

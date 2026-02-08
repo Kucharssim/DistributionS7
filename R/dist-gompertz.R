@@ -1,3 +1,14 @@
+#' @title Gompertz distribution
+#' @description Create a Gompertz distribution object.
+#'
+#' @param eta shape parameter.
+#' @param beta scale parameter.
+#' @family distributions
+#' @export
+gompertz <- function(eta, beta) Gompertz(eta, beta)
+
+#' @rdname gompertz
+#' @export
 Gompertz <- S7::new_class(
   "Gompertz",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ Gompertz <- S7::new_class(
     )
   }
 )
-
-gompertz <- function(eta, beta) Gompertz(eta, beta)
 
 S7::method(pdf_fn, Gompertz) <- function(distribution) function(x, eta, beta, log = FALSE) {
   lpdf <- log(beta) + log(eta) + (eta + beta*x - eta * exp(beta*x))

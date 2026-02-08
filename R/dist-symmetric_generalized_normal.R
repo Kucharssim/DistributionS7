@@ -1,3 +1,15 @@
+#' @title Symmetric generalized normal distribution (Subbotin)
+#' @description Create a symmetric generalized normal distribution object.
+#'
+#' @param mu location parameter.
+#' @param alpha scale parameter.
+#' @param beta shape parameter.
+#' @family distributions
+#' @export
+symmetric_generalized_normal <- function(mu, alpha, beta) SymmetricGeneralizedNormal(mu, alpha, beta)
+
+#' @rdname symmetric_generalized_normal
+#' @export
 SymmetricGeneralizedNormal <- S7::new_class(
   "SymmetricGeneralizedNormal",
   parent = DistributionContinuous,
@@ -17,8 +29,6 @@ SymmetricGeneralizedNormal <- S7::new_class(
     )
   }
 )
-
-symmetric_generalized_normal <- function(mu, alpha, beta) SymmetricGeneralizedNormal(mu, alpha, beta)
 
 S7::method(pdf_fn, SymmetricGeneralizedNormal) <- function(distribution) gnorm::dgnorm
 S7::method(cdf_fn, SymmetricGeneralizedNormal) <- function(distribution) gnorm::pgnorm

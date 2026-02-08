@@ -1,3 +1,16 @@
+#' @title Stretched beta distribution
+#' @description Create a stretched beta distribution object.
+#'
+#' @param alpha shape parameter.
+#' @param beta shape parameter.
+#' @param min minimum parameter.
+#' @param max maximum parameter.
+#' @family distributions
+#' @export
+stretched_beta <- function(alpha, beta, min=fixed(0), max=fixed(1)) StretchedBeta(alpha, beta, min, max)
+
+#' @rdname stretched_beta
+#' @export
 StretchedBeta <- S7::new_class(
   "StretchedBeta",
   parent = DistributionContinuous,
@@ -26,8 +39,6 @@ StretchedBeta <- S7::new_class(
     return(NULL)
   }
 )
-
-stretched_beta <- function(alpha, beta, min, max) StretchedBeta(alpha, beta, fixed(min), fixed(max))
 
 S7::method(pdf_fn, StretchedBeta) <- function(distribution) function(x, alpha, beta, min, max, log=FALSE) {
   x <- (x-min)/(max-min)

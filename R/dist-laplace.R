@@ -1,3 +1,14 @@
+#' @title Laplace distribution
+#' @description Create a Laplace distribution object.
+#'
+#' @param mu location parameter.
+#' @param beta scale parameter.
+#' @family distributions
+#' @export
+laplace <- function(mu, beta) Laplace(mu, beta)
+
+#' @rdname laplace
+#' @export
 Laplace <- S7::new_class(
   "Laplace",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ Laplace <- S7::new_class(
     )
   }
 )
-
-laplace <- function(mu, beta) Laplace(mu, beta)
 
 S7::method(pdf_fn, Laplace) <- function(distribution) function(x, mu, beta, log=FALSE) {
   lpdf <- - log(2*beta) - abs(x-mu)/beta

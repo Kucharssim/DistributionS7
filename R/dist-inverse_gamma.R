@@ -1,3 +1,25 @@
+#' @title Inverse gamma distribution
+#' @description Create an inverse gamma distribution object.
+#'
+#' @param alpha shape parameter.
+#' @param theta scale parameter.
+#' @param lambda rate parameter.
+#' @param mu mean parameter.
+#'
+#' @note Parameter meanings are on the inverse scale, e.g., `mu` is the mean of 1/x.
+#' @family distributions
+#' @export
+inverse_gamma <- function(alpha, theta, lambda, mu) {
+  parametrization <- rlang::check_exclusive(theta, lambda, mu)
+  distribution <- switch(
+    parametrization,
+    theta  = InverseGammaScale(alpha, theta),
+    lambda = InverseGammaRate (alpha, lambda),
+    mu     = InverseGammaMean (alpha, mu)
+  )
+  return(distribution)
+}
+
 InverseGamma <- S7::new_class(
   "InverseGamma",
   parent = DistributionContinuous,
@@ -7,6 +29,8 @@ InverseGamma <- S7::new_class(
   abstract=TRUE
 )
 
+#' @rdname inverse_gamma
+#' @export
 InverseGammaScale <- S7::new_class(
   "InverseGammaScale",
   parent = InverseGamma,
@@ -24,6 +48,8 @@ InverseGammaScale <- S7::new_class(
   }
 )
 
+#' @rdname inverse_gamma
+#' @export
 InverseGammaRate <- S7::new_class(
   "InverseGammaRate",
   parent = InverseGamma,
@@ -41,6 +67,8 @@ InverseGammaRate <- S7::new_class(
   }
 )
 
+#' @rdname inverse_gamma
+#' @export
 InverseGammaMean <- S7::new_class(
   "InverseGammaMean",
   parent = InverseGamma,
@@ -57,18 +85,6 @@ InverseGammaMean <- S7::new_class(
     )
   }
 )
-
-inverse_gamma <- function(alpha, theta, lambda, mu) {
-  parametrization <- rlang::check_exclusive(theta, lambda, mu)
-  distribution <- switch(
-    parametrization,
-    theta  = InverseGammaScale(alpha, theta),
-    lambda = InverseGammaRate (alpha, lambda),
-    mu     = InverseGammaMean (alpha, mu)
-  )
-  return(distribution)
-}
-
 
 S7::method(pdf_fn, InverseGamma) <- function(distribution) function(x, ..., log=FALSE) {
   xinv <- 1/x

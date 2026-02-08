@@ -1,9 +1,33 @@
+#' @title Log-logistic distribution
+#' @description Create a log-logistic distribution object.
+#'
+#' @param mu location parameter.
+#' @param sigma scale parameter.
+#' @param alpha scale parameter.
+#' @param beta scale parameter.
+#' @family distributions
+#' @export
+log_logistic <- function(mu, sigma, alpha, beta) {
+  parametrization <- rlang::check_exclusive(mu, alpha)
+  rlang::check_exclusive(mu, beta)
+  rlang::check_exclusive(sigma, alpha)
+  rlang::check_exclusive(sigma, beta)
+
+  distribution <- switch(
+    parametrization,
+    mu = LogLogisticLocation(mu, sigma),
+    alpha = LogLogisticScale(alpha, beta)
+  )
+  return(distribution)
+}
 LogLogistic <- S7::new_class(
   "LogLogistic",
   parent = DistributionContinuous,
   abstract = TRUE
 )
 
+#' @rdname log_logistic
+#' @export
 LogLogisticLocation <- S7::new_class(
   "LogLogisticLocation",
   parent = LogLogistic,
@@ -22,6 +46,8 @@ LogLogisticLocation <- S7::new_class(
   }
 )
 
+#' @rdname log_logistic
+#' @export
 LogLogisticScale <- S7::new_class(
   "LogLogisticScale",
   parent = LogLogistic,
@@ -39,20 +65,6 @@ LogLogisticScale <- S7::new_class(
     )
   }
 )
-
-log_logistic <- function(mu, sigma, alpha, beta) {
-  parametrization <- rlang::check_exclusive(mu, alpha)
-  rlang::check_exclusive(mu, beta)
-  rlang::check_exclusive(sigma, alpha)
-  rlang::check_exclusive(sigma, beta)
-
-  distribution <- switch(
-    parametrization,
-    mu = LogLogisticLocation(mu, sigma),
-    alpha = LogLogisticScale(alpha, beta)
-  )
-  return(distribution)
-}
 
 S7::method(pdf_fn, LogLogistic) <- function(distribution) function(x, alpha, beta, log = FALSE) {
   lpdf <- log(beta) - log(alpha) + (beta-1) * (log(x) - log(alpha)) - 2 * log1p((x/alpha)^beta)

@@ -1,3 +1,14 @@
+#' @title Logistic distribution
+#' @description Create a logistic distribution object.
+#'
+#' @param mu location parameter.
+#' @param sigma scale parameter.
+#' @family distributions
+#' @export
+logistic <- function(mu, sigma) Logistic(mu, sigma)
+
+#' @rdname logistic
+#' @export
 Logistic <- S7::new_class(
   "Logistic",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ Logistic <- S7::new_class(
     )
   }
 )
-
-logistic <- function(mu, sigma) Logistic(mu, sigma)
 
 S7::method(pdf_fn, Logistic) <- function(distribution) stats::dlogis
 S7::method(cdf_fn, Logistic) <- function(distribution) stats::plogis

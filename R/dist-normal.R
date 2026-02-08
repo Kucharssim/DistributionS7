@@ -1,6 +1,5 @@
 #' @title Normal distribution
-#' @description Create a normal distribution object. It is advised to use the factory method [normal()] rather than calling the
-#' constructors of the indivitual classes.
+#' @description Create a normal distribution object.
 #' @name normal
 #'
 #' @param mu Mean.
@@ -9,7 +8,7 @@
 #' @param tau Precision.
 #'
 #' @returns Object of class [NormalSigma()], [NormalSigma2()], or [NormalTau()].
-#'
+#' @family distributions
 #' @export
 normal <- function(mu, sigma, sigma2, tau) {
   parametrization <- rlang::check_exclusive(sigma, sigma2, tau)

@@ -1,3 +1,14 @@
+#' @title Beta distribution
+#' @description Create a beta distribution object.
+#'
+#' @param alpha shape parameter.
+#' @param beta shape parameter.
+#' @family distributions
+#' @export
+beta <- function(alpha, beta) Beta(alpha, beta)
+
+#' @rdname beta
+#' @export
 Beta <- S7::new_class(
   "Beta",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ Beta <- S7::new_class(
     )
   }
 )
-
-beta <- function(alpha, beta) Beta(alpha, beta)
 
 S7::method(pdf_fn, Beta) <- function(distribution) stats::dbeta
 

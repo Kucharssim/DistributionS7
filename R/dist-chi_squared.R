@@ -1,3 +1,18 @@
+#' @title Chi-squared distribution
+#' @description Create a chi-squared distribution object.
+#'
+#' @param nu degrees of freedom paramter.
+#' @param kappa noncentrality parameter.
+#' @family distributions
+#' @export
+chi_squared <- function(nu) ChiSquared(nu, fixed(0))
+
+#' @rdname chi_squared
+#' @export
+noncentral_chi_squared <- function(nu, kappa) ChiSquared(nu, kappa)
+
+#' @rdname chi_squared
+#' @export
 ChiSquared <- S7::new_class(
   "ChiSquared",
   parent = DistributionContinuous,
@@ -15,9 +30,6 @@ ChiSquared <- S7::new_class(
     )
   }
 )
-
-chi_squared <- function(nu) ChiSquared(nu, fixed(0))
-noncentral_chi_squared <- function(nu, kappa) ChiSquared(nu, kappa)
 
 S7::method(pdf_fn, ChiSquared) <- function(distribution) stats::dchisq
 S7::method(cdf_fn, ChiSquared) <- function(distribution) stats::pchisq

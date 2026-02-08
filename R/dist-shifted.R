@@ -1,3 +1,23 @@
+#' @title Shift a distribution by a scalar.
+#' @description Create a distribution that has an additional shift parameter.
+#'
+#' @param distribution An object of class [Distribution()].
+#' @param shift A shift parameter.
+#'
+#' @note
+#' Estimating the shift parameter might not be a good idea, depending on the distribution. Distributions with their
+#' own location parameter (e.g., normal), do not need a shift parameter in the first place.
+#'
+#' For convenience, additional distribution factories are added for distributions that are typical to parametrise with
+#' an additional shift parameter. For some, custom fitting methods are used to estimate the shift parameter.
+#'
+#' @seealso [log_normal()], [gamma()], [inverse_gamma()], [log_logistic()], [wald()], [weibull()], [exponential()].
+#' @family distributions
+#' @export
+shifted <- function(distribution, shift = 0) Shifted(distribution, shift)
+
+#' @rdname shifted
+#' @export
 Shifted <- S7::new_class(
   "Shifted",
   parent = DistributionContinuous,
@@ -21,18 +41,28 @@ Shifted <- S7::new_class(
   }
 )
 
-shifted <- function(distribution, shift = 0) Shifted(distribution, shift)
-
+#' @rdname shifted
+#' @export
 shifted_log_normal <- function(mu, sigma, shift=0) shifted(log_normal(mu, sigma), shift)
 
+#' @rdname shifted
+#' @export
 shifted_gamma <- function(alpha, theta, lambda, mu, shift=0) shifted(gamma(alpha, theta, lambda, mu), shift)
 
+#' @rdname shifted
+#' @export
 shifted_inverse_gamma <- function(alpha, theta, lambda, mu, shift=0) shifted(inverse_gamma(alpha, theta, lambda, mu), shift)
 
+#' @rdname shifted
+#' @export
 shifted_log_logistic <- function(mu, sigma, alpha, beta, shift=0) shifted(log_logistic(mu, sigma, alpha, beta), shift)
 
+#' @rdname shifted
+#' @export
 shifted_wald <- function(mu, lambda, nu, alpha, sigma=fixed(1), shift=0) shifted(wald(mu, lambda, nu, alpha, sigma), shift)
 
+#' @rdname shifted
+#' @export
 shifted_weibull <- function(shape, scale, shift=0) shifted(weibull(shape, scale), shift)
 
 

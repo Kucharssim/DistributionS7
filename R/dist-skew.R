@@ -1,3 +1,23 @@
+#' @title Skew distribution family
+#' @description Create an object of Skew family.
+#'
+#' @param xi location parameter.
+#' @param omega scale parameter.
+#' @param alpha slant (skew) parameter.
+#' @param nu degrees of freedom parameter.
+#' @family distributions
+#' @name skew
+#' @export
+skew_normal <- function(xi, omega, alpha) SkewNormal(xi, omega, alpha)
+
+#' @rdname skew
+#' @export
+skew_cauchy <- function(xi, omega, alpha) SkewCauchy(xi, omega, alpha)
+#' @rdname skew
+#' @export
+skew_t      <- function(xi, omega, alpha, nu) SkewT (xi, omega, alpha, nu)
+
+
 SkewDistribution <- S7::new_class(
   "SkewDistribution",
   parent = DistributionContinuous,
@@ -9,6 +29,8 @@ SkewDistribution <- S7::new_class(
   abstract = TRUE
 )
 
+#' @rdname skew
+#' @export
 SkewNormal <- S7::new_class(
   "SkewNormal",
   parent = SkewDistribution,
@@ -24,6 +46,8 @@ SkewNormal <- S7::new_class(
   }
 )
 
+#' @rdname skew
+#' @export
 SkewCauchy <- S7::new_class(
   "SkewCauchy",
   parent = SkewDistribution,
@@ -39,6 +63,8 @@ SkewCauchy <- S7::new_class(
   }
 )
 
+#' @rdname skew
+#' @export
 SkewT <- S7::new_class(
   "SkewT",
   parent = SkewDistribution,
@@ -55,10 +81,6 @@ SkewT <- S7::new_class(
     )
   }
 )
-
-skew_normal <- function(xi, omega, alpha) SkewNormal(xi, omega, alpha)
-skew_cauchy <- function(xi, omega, alpha) SkewCauchy(xi, omega, alpha)
-skew_t      <- function(xi, omega, alpha, nu) SkewT (xi, omega, alpha, nu)
 
 S7::method(pdf_fn, SkewNormal) <- function(distribution) sn::dsn
 S7::method(cdf_fn, SkewNormal) <- function(distribution) function(q, xi, omega, alpha, lower.tail=TRUE, log.p=FALSE) {

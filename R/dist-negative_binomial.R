@@ -1,9 +1,34 @@
+#' @title Negative binomial distribution
+#' @description Create a negative binomial distribution object.
+#'
+#' @param mu mean parameter.
+#' @param phi dispersion parameter.
+#' @param p probability of success parameter.
+#' @param k number of successes parameter.
+#' @family distributions
+#' @export
+negative_binomial <- function(mu, phi, p, k) {
+  parametrization <- rlang::check_exclusive(mu, p)
+  rlang::check_exclusive(mu, k)
+  rlang::check_exclusive(phi, k)
+
+  distribution <- switch (parametrization,
+                          mu = NegativeBinomialMean(mu, phi),
+                          p  = NegativeBinomialProb(p, k)
+  )
+
+  return(distribution)
+}
+
+
 NegativeBinomial <- S7::new_class(
   "NegativeBinomial",
   parent = DistributionDiscrete,
   abstract = TRUE
 )
 
+#' @rdname negative_binomial
+#' @export
 NegativeBinomialMean <- S7::new_class(
   "NegativeBinomialMean",
   parent = NegativeBinomial,
@@ -22,6 +47,8 @@ NegativeBinomialMean <- S7::new_class(
   }
 )
 
+#' @rdname negative_binomial
+#' @export
 NegativeBinomialProb <- S7::new_class(
   "NegativeBinomialProb",
   parent = NegativeBinomial,
@@ -39,20 +66,6 @@ NegativeBinomialProb <- S7::new_class(
     )
   }
 )
-
-negative_binomial <- function(mu, phi, p, k) {
-  parametrization <- rlang::check_exclusive(mu, p)
-  rlang::check_exclusive(mu, k)
-  rlang::check_exclusive(phi, k)
-
-  distribution <- switch (parametrization,
-    mu = NegativeBinomialMean(mu, phi),
-    p  = NegativeBinomialProb(p, k)
-  )
-
-  return(distribution)
-}
-
 
 S7::method(pdf_fn, NegativeBinomial) <- function(distribution) stats::dnbinom
 

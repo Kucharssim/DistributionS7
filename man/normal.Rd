@@ -28,6 +28,39 @@ NormalTau(mu, tau)
 Object of class \code{\link[=NormalSigma]{NormalSigma()}}, \code{\link[=NormalSigma2]{NormalSigma2()}}, or \code{\link[=NormalTau]{NormalTau()}}.
 }
 \description{
-Create a normal distribution object. It is advised to use the factory method \code{\link[=normal]{normal()}} rather than calling the
-constructors of the indivitual classes.
+Create a normal distribution object.
 }
+\seealso{
+Other distributions: 
+\code{\link{amoroso}()},
+\code{\link{beta}()},
+\code{\link{beta_prime}()},
+\code{\link{binomial}()},
+\code{\link{cauchy}()},
+\code{\link{chi_squared}()},
+\code{\link{distributions}},
+\code{\link{exponential}()},
+\code{\link{f-distribution}},
+\code{\link{frechet}()},
+\code{\link{gamma}()},
+\code{\link{gompertz}()},
+\code{\link{gumbel}()},
+\code{\link{inverse_gamma}()},
+\code{\link{laplace}()},
+\code{\link{log_logistic}()},
+\code{\link{log_normal}()},
+\code{\link{logistic}()},
+\code{\link{negative_binomial}()},
+\code{\link{pareto}()},
+\code{\link{shifted}()},
+\code{\link{skew}},
+\code{\link{skewed_generalized_t}()},
+\code{\link{stretched_beta}()},
+\code{\link{symmetric_generalized_normal}()},
+\code{\link{t-distribution}},
+\code{\link{triangular}()},
+\code{\link{uniform}()},
+\code{\link{wald}()},
+\code{\link{weibull}()}
+}
+\concept{distributions}

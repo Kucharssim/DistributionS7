@@ -1,3 +1,24 @@
+#' @title Gamma distribution
+#' @description Create a gamma distribution object.
+#'
+#' @param alpha shape parameter.
+#' @param theta scale parameter.
+#' @param lambda rate parameter.
+#' @param mu mean parameter.
+#' @family distributions
+#' @export
+gamma <- function(alpha, theta, lambda, mu) {
+  parametrization <- rlang::check_exclusive(theta, lambda, mu)
+  distribution <- switch(
+    parametrization,
+    theta  = GammaScale(alpha, theta),
+    lambda = GammaRate (alpha, lambda),
+    mu     = GammaMean (alpha, mu)
+  )
+  return(distribution)
+}
+
+
 Gamma <- S7::new_class(
   "Gamma",
   parent = DistributionContinuous,
@@ -7,6 +28,8 @@ Gamma <- S7::new_class(
   abstract=TRUE
 )
 
+#' @rdname gamma
+#' @export
 GammaScale <- S7::new_class(
   "GammaScale",
   parent = Gamma,
@@ -24,6 +47,8 @@ GammaScale <- S7::new_class(
   }
 )
 
+#' @rdname gamma
+#' @export
 GammaRate <- S7::new_class(
   "GammaRate",
   parent = Gamma,
@@ -41,6 +66,8 @@ GammaRate <- S7::new_class(
   }
 )
 
+#' @rdname gamma
+#' @export
 GammaMean <- S7::new_class(
   "GammaMean",
   parent = Gamma,
@@ -57,18 +84,6 @@ GammaMean <- S7::new_class(
     )
   }
 )
-
-gamma <- function(alpha, theta, lambda, mu) {
-  parametrization <- rlang::check_exclusive(theta, lambda, mu)
-  distribution <- switch(
-    parametrization,
-    theta  = GammaScale(alpha, theta),
-    lambda = GammaRate (alpha, lambda),
-    mu     = GammaMean (alpha, mu)
-  )
-  return(distribution)
-}
-
 
 S7::method(pdf_fn, Gamma) <- function(distribution) stats::dgamma
 

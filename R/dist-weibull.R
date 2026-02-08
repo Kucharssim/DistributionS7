@@ -1,3 +1,14 @@
+#' @title Weibull distribution
+#' @description Create a Weibull distribution object.
+#'
+#' @param shape shape parameter.
+#' @param scale scale parameter.
+#' @family distributions
+#' @export
+weibull <- function(shape, scale) Weibull(shape, scale)
+
+#' @rdname weibull
+#' @export
 Weibull <- S7::new_class(
   "Weibull",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ Weibull <- S7::new_class(
     )
   }
 )
-
-weibull <- function(shape, scale) Weibull(shape, scale)
 
 S7::method(pdf_fn, Weibull) <- function(distribution) stats::dweibull
 S7::method(cdf_fn, Weibull) <- function(distribution) stats::pweibull

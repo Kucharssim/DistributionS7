@@ -3,7 +3,14 @@
 #' These classes are abstract and provide the base classes for all individual distributions in the package.
 #' These classes are not intended for direct use, unless you want to implement a custom distribution class.
 #'
-#' @name distribution
+#' Look below ("see also") for a list of all available distributions
+#'
+#' @param name Name of the distribution.
+#' @param support Support of the distribution.
+#'
+#' @name distributions
+#' @family distributions
+#' @keywords internal
 #' @export
 Distribution <- S7::new_class(
   name = "Distribution",
@@ -14,7 +21,7 @@ Distribution <- S7::new_class(
   abstract = TRUE
 )
 
-#' @rdname distribution
+#' @rdname distributions
 #' @export
 DistributionDiscrete <- S7::new_class(
   name = "DistributionDiscrete",
@@ -25,7 +32,7 @@ DistributionDiscrete <- S7::new_class(
   abstract = TRUE
 )
 
-#' @rdname distribution
+#' @rdname distributions
 #' @export
 DistributionContinuous <- S7::new_class(
   name = "DistributionContinuous",

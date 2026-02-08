@@ -1,3 +1,17 @@
+#' @title Amoroso distribution
+#' @description Create a normal distribution object.
+#'
+#' @param a location parameter.
+#' @param theta scale parameter.
+#' @param alpha shape parameter.
+#' @param beta shape parameter.
+#'
+#' @family distributions
+#' @export
+amoroso <- function(a, theta, alpha, beta) Amoroso(a, theta, alpha, beta)
+
+#' @rdname amoroso
+#' @export
 Amoroso <- S7::new_class(
   "Amoroso",
   parent = DistributionContinuous,
@@ -23,7 +37,6 @@ Amoroso <- S7::new_class(
   }
 )
 
-amoroso <- function(a, theta, alpha, beta) Amoroso(a, theta, alpha, beta)
 
 S7::method(pdf_fn, Amoroso) <- function(distribution) function(x, a, theta, alpha, beta, log = FALSE) {
   terms <- list()

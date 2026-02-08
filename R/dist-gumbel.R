@@ -1,3 +1,14 @@
+#' @title Gumbel distribution
+#' @description Create a Gumbel distribution object.
+#'
+#' @param mu location parameter.
+#' @param beta scale parameter.
+#' @family distributions
+#' @export
+gumbel <- function(mu, beta) Gumbel(mu, beta)
+
+#' @rdname gumbel
+#' @export
 Gumbel <- S7::new_class(
   "Gumbel",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ Gumbel <- S7::new_class(
     )
   }
 )
-
-gumbel <- function(mu, beta) Gumbel(mu, beta)
 
 S7::method(pdf_fn, Gumbel) <- function(distribution) function(x, mu, beta, log=FALSE) {
   z <- (x - mu)/beta

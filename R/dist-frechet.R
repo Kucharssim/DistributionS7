@@ -1,3 +1,15 @@
+#' @title Frechet distribution
+#' @description Create a Frechet distribution object.
+#'
+#' @param alpha shape parameter.
+#' @param sigma scale parameter.
+#' @param theta theta parameter.
+#' @family distributions
+#' @export
+frechet <- function(alpha, sigma, theta) Frechet(alpha, sigma, theta)
+
+#' @rdname frechet
+#' @export
 Frechet <- S7::new_class(
   "Frechet",
   parent = DistributionContinuous,

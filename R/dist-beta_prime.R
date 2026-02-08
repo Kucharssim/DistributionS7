@@ -1,3 +1,14 @@
+#' @title Beta prime distribution
+#' @description Create a beta-prime distribution object.
+#'
+#' @param alpha shape parameter.
+#' @param beta shape parameter
+#' @family distributions
+#' @export
+beta_prime <- function(alpha, beta) BetaPrime(alpha, beta)
+
+#' @rdname beta_prime
+#' @export
 BetaPrime <- S7::new_class(
   "BetaPrime",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ BetaPrime <- S7::new_class(
     )
   }
 )
-
-beta_prime <- function(alpha, beta) BetaPrime(alpha, beta)
 
 S7::method(pdf_fn, BetaPrime) <- function(distribution) function(x, alpha, beta, log = FALSE) {
   lpdf <- (alpha-1) * log(x) - (alpha+beta) * log1p(x) - lbeta(alpha, beta)

@@ -1,3 +1,14 @@
+#' @title Uniform distribution
+#' @description Create a uniform distribution object.
+#'
+#' @param min minimum parameter.
+#' @param max maximum parameter.
+#' @family distributions
+#' @export
+uniform <- function(min, max) Uniform(min, max)
+
+#' @rdname uniform
+#' @export
 Uniform <- S7::new_class(
   "Uniform",
   parent = DistributionContinuous,
@@ -15,8 +26,6 @@ Uniform <- S7::new_class(
     )
   }
 )
-
-uniform <- function(min, max) Uniform(min, max)
 
 S7::method(pdf_fn, Uniform) <- function(distribution) stats::dunif
 
