@@ -343,5 +343,5 @@ S7::method(gof_test, Normal) <- function(distribution, data, estimated=FALSE, bo
   }
 
   distribution <- S7::super(distribution, DistributionContinuous)
-  gof_test(distribution, data, estimated, bootstrap)
+  gof_test(distribution = distribution, data = data, estimated = estimated, bootstrap = bootstrap)
 }

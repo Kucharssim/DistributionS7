@@ -25,8 +25,36 @@ The goal of DistributionS7 is to provide convenient functionality to work with p
 
 You can install the development version of DistributionS7 from [GitHub](https://github.com/) with:
 
-``` r
-# install.packages("pak")
-pak::pak("Kucharssim/DistributionS7")
+```{r}
+# renv::install("Kucharssim/DistributionS7")
+```
+
+# Example
+
+```{r}
+library(DistributionS7)
+
+# create a distribution object
+n <- normal(0, 1)
+
+# sample from a distribution
+x <- rng(n, 1000)
+
+# goodness-of-fit tests
+gof_test(n, x, estimated=FALSE)
+
+# fit to data using maximum likelihood
+n <- fit_distribution(n, Mle(), x)
+
+# get uncertainty around parameter estimates using normal theory intervals
+parameter_inference(n, NormalTheory(), x)
+
+# fit indices of the fitted distribution
+gof_test(n, x, estimated=TRUE)
+information_criteria(n, x)
+
+# compare data to distribution
+plot_empirical(n, x, ci=TRUE)
+
 ```
 
