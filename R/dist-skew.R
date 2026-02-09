@@ -163,13 +163,17 @@ S7::method(parameter_estimates, list(SkewNormal, Mom)) <- function(distribution,
 S7::method(parameter_start, SkewCauchy) <- function(distribution, data) {
   pars <- recreate_parameters(distribution)
   d <- do.call(skew_normal, pars)
-  parameter_start(d, data)
+  pars <- parameter_start(d, data) |> recreate_parameters()
+  distribution <- do.call(skew_cauchy, pars)
+  return(distribution)
 }
 
 S7::method(parameter_start, SkewT) <- function(distribution, data) {
   pars <- recreate_parameters(distribution)
+  pars[["nu"]] <- NULL
   d <- do.call(skew_normal, pars)
-  d <- parameter_start(d, data)
-  if (!d@nu@fixed) d@nu@value <- 10
-  return(d)
+  pars <- parameter_start(d, data) |> recreate_parameters()
+  pars[["nu"]] <- distribution@nu@value
+  distribution <- do.call(skew_t, pars)
+  return(distribution)
 }

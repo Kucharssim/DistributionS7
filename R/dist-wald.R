@@ -205,9 +205,10 @@ S7::method(parameter_estimates, list(WaldMean, Mle)) <- function(distribution, e
   }
 
   if (!distribution@lambda@fixed) {
-    estimates[["lambda"]] <- 1/mean(1/data - 1/mu)
+    estimates[["lambda"]] <- length(data) / sum(1/data - 1/mu)
   }
 
   return(estimates)
 }
+
 
