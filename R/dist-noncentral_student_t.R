@@ -33,7 +33,7 @@ NoncentralStudentT <- S7::new_class(
   constructor = function(nu, kappa, mu, sigma) {
     S7::new_object(
       S7::S7_object(),
-      name = "Noncentral t",
+      name = "Noncentral Student t",
       support = Real(),
       nu = Parameter("nu", "degrees of freedom", "nu", nu, Real(min=0)),
       kappa = Parameter("kappa", "noncentrality", "\\kappa", kappa, Real()),
