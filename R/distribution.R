@@ -336,7 +336,12 @@ S7::method(inside, Distribution) <- function(object, x) {
   inside(support(object), x)
 }
 
-
+#' @title Distribution as LaTeX expression
+#' @description Get a summary of a distribution as a LaTeX expression
+#'
+#' @param distribution A [Distribution()] object
+#' @param digits Integer to which to round digits
+#' @export
 as_latex <- S7::new_generic("as_latex", "distribution", function(distribution, digits=3) {
   S7::S7_dispatch()
 })

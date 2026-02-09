@@ -73,7 +73,7 @@ SkewT <- S7::new_class(
   constructor = function(xi, omega, alpha, nu) {
     S7::new_object(
       S7::S7_object(),
-      name = "Skew Cauchy",
+      name = "Skew T",
       support = Real(),
       xi = Parameter("xi", "location", "\\xi", xi, Real()),
       omega = Parameter("omega", "scale", "\\omega", omega, Real(min=0)),
