@@ -92,6 +92,7 @@ BiasCorrected <- S7::new_class(
 #' @param estimator Object of class [Estimator()].
 #' @param data numeric vector.
 #' @param inference_method Object of class [InferenceMethod()].
+#' @param ... For S3 compatibility; not used.
 #'
 #' @returns
 #' [parameter_estimates()] returns a named list with parameter values.
@@ -395,7 +396,7 @@ generics::fit
 
 #' @rdname parameter-estimation
 #' @export
-fit.Distribution <- function(object, estimator=Mle(), data) fit_distribution(object, estimator, data)
+fit.Distribution <- function(object, estimator=Mle(), data, ...) fit_distribution(object, estimator, data)
 
 fit_distribution <- S7::new_generic("fit_distribution", c("distribution", "estimator"), function(distribution, estimator, data) {
   data <- stats::na.omit(data)

@@ -14,7 +14,7 @@ parameter_start(distribution, data)
 
 parameter_inference(distribution, inference_method, data)
 
-\method{fit}{Distribution}(object, estimator = Mle(), data)
+\method{fit}{Distribution}(object, estimator = Mle(), data, ...)
 }
 \arguments{
 \item{distribution}{Object of class \code{\link[=Distribution]{Distribution()}}.}
@@ -26,6 +26,8 @@ parameter_inference(distribution, inference_method, data)
 \item{inference_method}{Object of class \code{\link[=InferenceMethod]{InferenceMethod()}}.}
 
 \item{object}{Object of class \code{\link[=Distribution]{Distribution()}}.}
+
+\item{...}{For S3 compatibility; not used.}
 }
 \value{
 \code{\link[=parameter_estimates]{parameter_estimates()}} returns a named list with parameter values.

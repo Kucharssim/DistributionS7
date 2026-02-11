@@ -65,7 +65,7 @@ ShiftedWald <- function(mu, lambda, nu, alpha, sigma=fixed(1), shift=0) Shifted(
 
 #' @rdname Shifted
 #' @export
-ShiftedWeibull <- function(shape, scale, shift=0) Shifted(weibull(shape, scale), shift)
+ShiftedWeibull <- function(shape, scale, shift=0) Shifted(Weibull(shape, scale), shift)
 
 
 S7::method(pdf, Shifted) <- function(distribution, x, log = FALSE) {
