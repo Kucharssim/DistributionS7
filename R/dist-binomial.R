@@ -33,7 +33,7 @@ S7::method(qf_fn,  Binomial) <- function(distribution) stats::qbinom
 S7::method(rng_fn, Binomial) <- function(distribution) stats::rbinom
 S7::method(rargs,  Binomial) <- function(distribution) parameter_values(distribution)
 
-S7::method(parameter_estimates, list(Binomial, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(Binomial, Mme)) <- function(distribution, estimator, data) {
   return(list(prob = mean(data) / distribution@size@value))
 }
 

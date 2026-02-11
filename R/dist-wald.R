@@ -131,7 +131,7 @@ S7::method(rargs, WaldDrift) <- function(distribution) {
   )
 }
 
-S7::method(parameter_estimates, list(WaldMean, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(WaldMean, Mme)) <- function(distribution, estimator, data) {
   estimates <- list()
   if (!distribution@mu@fixed) {
     mu <- mean(data)
@@ -149,7 +149,7 @@ S7::method(parameter_estimates, list(WaldMean, Mom)) <- function(distribution, e
   return(estimates)
 }
 
-S7::method(parameter_estimates, list(WaldDrift, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(WaldDrift, Mme)) <- function(distribution, estimator, data) {
   is_fixed <- unlist(parameter_properties(distribution, property="fixed"))
   estimates <- list()
   if (is_fixed[["sigma"]]) {

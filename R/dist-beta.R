@@ -35,7 +35,7 @@ S7::method(rargs, Beta) <- function(distribution, ...) {
   return(list(shape1=distribution@alpha@value, shape2=distribution@beta@value))
 }
 
-S7::method(parameter_estimates, list(Beta, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(Beta, Mme)) <- function(distribution, estimator, data) {
   fixed <- unlist(parameter_properties(distribution, property="fixed"))
   estimates <- list()
 

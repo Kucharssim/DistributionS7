@@ -17,7 +17,7 @@
 #'
 #' These classes are used for dispatching methods such as [fit_distribution()], [parameter_estimates()], or as a subroutine for [InferenceMethod()].
 #'
-#' [Mom()] specifies method of moments estimator, [Mle()]
+#' [Mme()] specifies method of moments estimator, [Mle()]
 #' specifies maximum likelihood estimator, and [BiasCorrected()] specifies some version of bias corrected estimators
 #' (this is highly dependent on the type of distribution).
 #'
@@ -26,7 +26,7 @@
 #'
 #' \code{start} is used for initialization of the distribution parameters for numerical optimization.
 #' By default, the routine calls [parameter_start()], which for selected distributions attempts to use some heuristics to find
-#' reasonable starting values, otherwise call \code{parameteter_estimates(distribution, Mom(), data)} to start the parameters
+#' reasonable starting values, otherwise call \code{parameteter_estimates(distribution, Mme(), data)} to start the parameters
 #' with method of moments estimation. In the absence of an implementation of either of the methods for a particular distribution,
 #' the starting parameter values default to the values set by the distribution.
 #' One can pass an arbitrary method/function with arguments \code{distribution}, \code{data}, to implement a custom parameter value initialization.
@@ -46,8 +46,8 @@ Estimator <- S7::new_class(
 
 #' @rdname parameter-estimators
 #' @export
-Mom <- S7::new_class(
-  name = "Mom",
+Mme <- S7::new_class(
+  name = "Mme",
   parent = Estimator
 )
 
@@ -109,7 +109,7 @@ NULL
 #' @export
 parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","estimator"), function(distribution, estimator, data) {
   if (distribution@support@numeric)
-    assertthat::assert_that(all(inside(distribution, data)), msg = "data are outside of the parameter support")
+    assertthat::assert_that(all(inside(distribution, data)), msg = "data are outside of the distribution support")
   if (all(unlist(parameter_properties(distribution, property="fixed")))) {
     if (estimator@silent) rlang::inform("All parameters are fixed, nothing to estimate")
     return(list())
@@ -198,7 +198,7 @@ parameter_start <- S7::new_generic("parameter_start", "distribution", function(d
 })
 
 S7::method(parameter_start, Distribution) <- function(distribution, data) {
-  estimates <- try(parameter_estimates(distribution, Mom(), data), silent=TRUE)
+  estimates <- try(parameter_estimates(distribution, Mme(), data), silent=TRUE)
   if (!inherits(estimates, "try-error")) parameter_values(distribution) <- estimates
   return(distribution)
 }

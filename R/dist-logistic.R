@@ -32,7 +32,7 @@ S7::method(rargs, Logistic) <- function(distribution) {
   list(location = distribution@mu@value, scale = distribution@sigma@value)
 }
 
-S7::method(parameter_estimates, list(Logistic, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(Logistic, Mme)) <- function(distribution, estimator, data) {
   is_fixed <- unlist(parameter_properties(distribution, property="fixed"))
 
   estimates <- list()

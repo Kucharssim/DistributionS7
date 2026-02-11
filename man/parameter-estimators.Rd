@@ -3,14 +3,14 @@
 \name{parameter-estimators}
 \alias{parameter-estimators}
 \alias{Estimator}
-\alias{Mom}
+\alias{Mme}
 \alias{Mle}
 \alias{BiasCorrected}
 \title{Estimators of distribution parameters.}
 \usage{
 Estimator(silent = FALSE)
 
-Mom(silent = FALSE)
+Mme(silent = FALSE)
 
 Mle(
   optim = FALSE,
@@ -42,7 +42,7 @@ These classes encapsulate methods for parameter estimation.
 \details{
 These classes are used for dispatching methods such as \code{\link[=fit_distribution]{fit_distribution()}}, \code{\link[=parameter_estimates]{parameter_estimates()}}, or as a subroutine for \code{\link[=InferenceMethod]{InferenceMethod()}}.
 
-\code{\link[=Mom]{Mom()}} specifies method of moments estimator, \code{\link[=Mle]{Mle()}}
+\code{\link[=Mme]{Mme()}} specifies method of moments estimator, \code{\link[=Mle]{Mle()}}
 specifies maximum likelihood estimator, and \code{\link[=BiasCorrected]{BiasCorrected()}} specifies some version of bias corrected estimators
 (this is highly dependent on the type of distribution).
 
@@ -51,7 +51,7 @@ then numerical optimization of the log likelihood is used.
 
 \code{start} is used for initialization of the distribution parameters for numerical optimization.
 By default, the routine calls \code{\link[=parameter_start]{parameter_start()}}, which for selected distributions attempts to use some heuristics to find
-reasonable starting values, otherwise call \code{parameteter_estimates(distribution, Mom(), data)} to start the parameters
+reasonable starting values, otherwise call \code{parameteter_estimates(distribution, Mme(), data)} to start the parameters
 with method of moments estimation. In the absence of an implementation of either of the methods for a particular distribution,
 the starting parameter values default to the values set by the distribution.
 One can pass an arbitrary method/function with arguments \code{distribution}, \code{data}, to implement a custom parameter value initialization.

@@ -36,7 +36,7 @@ S7::method(rargs, Cauchy) <- function(distribution, ...) {
   return(list(location=distribution@mu@value, scale=distribution@sigma@value))
 }
 
-S7::method(parameter_estimates, list(Cauchy, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(Cauchy, Mme)) <- function(distribution, estimator, data) {
   estimates <- list()
 
   if (!is.fixed(distribution@mu)) estimates[["mu"]] <- median(data)

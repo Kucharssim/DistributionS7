@@ -58,7 +58,7 @@ S7::method(rargs, Laplace) <- function(distribution) {
   parameter_values(distribution)
 }
 
-S7::method(parameter_estimates, list(Laplace, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(Laplace, Mme)) <- function(distribution, estimator, data) {
   estimates <- list()
 
   if (!distribution@mu@fixed) {

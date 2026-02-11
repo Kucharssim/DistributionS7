@@ -117,7 +117,7 @@ S7::method(rng_fn, SkewT) <- function(distribution) sn::rst
 
 S7::method(rargs, SkewClass) <- function(distribution) parameter_values(distribution)
 
-S7::method(parameter_estimates, list(SkewNormal, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(SkewNormal, Mme)) <- function(distribution, estimator, data) {
   estimates <- list()
   m <- mean(data)
   v <- mean((data-m)^2)

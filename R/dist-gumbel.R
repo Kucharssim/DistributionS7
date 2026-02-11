@@ -56,7 +56,7 @@ S7::method(rng_fn, Gumbel) <- function(distribution) function(n, mu, beta) {
 
 S7::method(rargs, Gumbel) <- function(distribution) parameter_values(distribution)
 
-S7::method(parameter_estimates, list(Gumbel, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(Gumbel, Mme)) <- function(distribution, estimator, data) {
   m <- mean(data)
   estimates <- list()
 

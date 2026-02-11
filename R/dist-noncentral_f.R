@@ -58,7 +58,7 @@ S7::method(rargs, NoncentralF) <- function(distribution) {
   list(df1 = distribution@nu1@value, df2 = distribution@nu2@value, ncp = distribution@kappa@value)
 }
 
-S7::method(parameter_estimates, list(CentralF, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(CentralF, Mme)) <- function(distribution, estimator, data) {
   rlang::inform("Moments matching for degrees of freedom of an F-distribution is extremely crude.")
 
   estimates <- list()
@@ -81,7 +81,7 @@ S7::method(parameter_estimates, list(CentralF, Mom)) <- function(distribution, e
   return(estimates[sort(names(estimates))])
 }
 
-S7::method(parameter_estimates, list(NoncentralF, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(NoncentralF, Mme)) <- function(distribution, estimator, data) {
   d <- S7::super(distribution, CentralF)
   estimates <- parameter_estimates(d, estimator, data)
 

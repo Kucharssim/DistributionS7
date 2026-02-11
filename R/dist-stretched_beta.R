@@ -58,7 +58,7 @@ S7::method(rng_fn, StretchedBeta) <- function(distribution) function(n, alpha, b
 
 S7::method(rargs, StretchedBeta) <- function(distribution) parameter_values(distribution)
 
-S7::method(parameter_estimates, list(StretchedBeta, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(StretchedBeta, Mme)) <- function(distribution, estimator, data) {
   parameters <- recreate_parameters(distribution)
   min <- parameters[["min"]]
   max <- parameters[["max"]]

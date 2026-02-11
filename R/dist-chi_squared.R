@@ -47,13 +47,13 @@ S7::method(rargs, NoncentralChiSquared) <- function(distribution) {
   list(df = distribution@nu@value, ncp = distribution@kappa@value)
 }
 
-S7::method(parameter_estimates, list(ChiSquared, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(ChiSquared, Mme)) <- function(distribution, estimator, data) {
   estimates <- list()
   if (!distribution@nu@fixed) estimates[["nu"]] <- mean(data)
   return(estimates)
 }
 
-S7::method(parameter_estimates, list(NoncentralChiSquared, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(NoncentralChiSquared, Mme)) <- function(distribution, estimator, data) {
   estimates <- list()
   if (!distribution@nu@fixed && !distribution@kappa@fixed) {
     m <- mean(data)

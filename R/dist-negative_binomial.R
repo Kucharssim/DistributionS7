@@ -115,7 +115,7 @@ S7::method(excess_kurtosis, NegativeBinomialProb) <- function(distribution, ...)
   with(pars, 6 / k + p^2 / ((1-p)*k) )
 }
 
-S7::method(parameter_estimates, list(NegativeBinomialMean, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(NegativeBinomialMean, Mme)) <- function(distribution, estimator, data) {
   estimates <- list()
   if (!distribution@mu@fixed) {
     mu <- mean(data)
@@ -132,7 +132,7 @@ S7::method(parameter_estimates, list(NegativeBinomialMean, Mom)) <- function(dis
 }
 
 
-S7::method(parameter_estimates, list(NegativeBinomialProb, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(NegativeBinomialProb, Mme)) <- function(distribution, estimator, data) {
   m <- mean(data)
   v <- var(data)
 

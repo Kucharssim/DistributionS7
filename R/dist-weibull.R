@@ -29,7 +29,7 @@ S7::method(qf_fn,  Weibull) <- function(distribution) stats::qweibull
 S7::method(rng_fn, Weibull) <- function(distribution) stats::rweibull
 S7::method(rargs,  Weibull) <- function(distribution) parameter_values(distribution)
 
-S7::method(parameter_estimates, list(Weibull, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(Weibull, Mme)) <- function(distribution, estimator, data) {
   estimates <- list()
   if (!distribution@shape@fixed) {
     lhs <- var(data)/mean(data)^2

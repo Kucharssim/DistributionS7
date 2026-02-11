@@ -70,16 +70,16 @@ S7::method(rargs, ExponentialScale) <- function(distribution) {
   return(list(rate = 1/distribution@beta@value))
 }
 
-S7::method(parameter_estimates, list(ExponentialRate, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(ExponentialRate, Mme)) <- function(distribution, estimator, data) {
   return(list(lambda = 1 / mean(data)))
 }
 
-S7::method(parameter_estimates, list(ExponentialScale, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(ExponentialScale, Mme)) <- function(distribution, estimator, data) {
   return(list(beta = mean(data)))
 }
 
 S7::method(parameter_estimates, list(ExponentialClass, Mle)) <- function(distribution, estimator, data) {
-  parameter_estimates(distribution, Mom(), data)
+  parameter_estimates(distribution, Mme(), data)
 }
 
 S7::method(parameter_estimates, list(ExponentialRate, BiasCorrected)) <- function(distribution, estimator, data) {
@@ -90,5 +90,5 @@ S7::method(parameter_estimates, list(ExponentialRate, BiasCorrected)) <- functio
 }
 
 S7::method(parameter_estimates, list(ExponentialScale, BiasCorrected)) <- function(distribution, estimator, data) {
-  parameter_estimates(distribution, Mom(), data)
+  parameter_estimates(distribution, Mme(), data)
 }

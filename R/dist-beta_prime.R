@@ -53,7 +53,7 @@ S7::method(rng_fn, BetaPrime) <- function(distribution) function(n, alpha, beta)
 
 S7::method(rargs, BetaPrime) <- function(distribution) parameter_values(distribution)
 
-S7::method(parameter_estimates, list(BetaPrime, Mom)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(BetaPrime, Mme)) <- function(distribution, estimator, data) {
   parameters <- recreate_parameters(distribution)
   distribution <- do.call(Beta, parameters)
   parameter_estimates(distribution, estimator, data/(1+data))
