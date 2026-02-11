@@ -43,8 +43,8 @@ x <- rng(n, 100) * 0.3 + 1
 # goodness-of-fit tests
 gof_test(n, x, estimated=FALSE)
 
-# fit to data using maximum likelihood
-n <- fit_distribution(n, Mle(), x)
+# fit to data (maximum likelihood by default)
+n <- fit(n, data=x)
 
 # get uncertainty around parameter estimates using normal theory intervals
 parameter_inference(n, NormalTheory(), x)

@@ -42,30 +42,30 @@ x <- rng(n, 100) * 0.3 + 1
 # goodness-of-fit tests
 gof_test(n, x, estimated=FALSE)
 #>              test  statistic      p_value
-#> ks_test   ks_test  0.6398649 5.478287e-36
-#> cvm_test cvm_test 15.2805061 0.000000e+00
-#> ad_test   ad_test 72.9246153 6.000000e-06
+#> ks_test   ks_test  0.6556809 9.096591e-38
+#> cvm_test cvm_test 15.5909272 0.000000e+00
+#> ad_test   ad_test 74.5152049 6.000000e-06
 
-# fit to data using maximum likelihood
-n <- fit_distribution(n, Mle(), x)
+# fit to data (maximum likelihood by default)
+n <- fit(n, data=x)
 
 # get uncertainty around parameter estimates using normal theory intervals
 parameter_inference(n, NormalTheory(), x)
-#>         key   label  estimate         se     lower    upper
-#> mu       mu    \\mu 0.9705081 0.02906247 0.9135468 1.027470
-#> sigma sigma \\sigma 0.2906247 0.02055025 0.2530134 0.333827
+#>         key   label  estimate         se     lower     upper
+#> mu       mu    \\mu 0.9861917 0.02934783 0.9286710 1.0437124
+#> sigma sigma \\sigma 0.2934783 0.02075203 0.2554977 0.3371048
 
 # fit indices of the fitted distribution
 gof_test(n, x, estimated=TRUE)
 #>                                      test  statistic   p_value
-#> lillie_test                   lillie_test 0.04763650 0.8344792
-#> cvm_test                         cvm_test 0.03141533 0.8253144
-#> ad_test                           ad_test 0.24730958 0.7472024
-#> shapiro_wilk_test       shapiro_wilk_test 0.98870400 0.5614682
-#> shapiro_francia_test shapiro_francia_test 0.99142378 0.6879283
+#> lillie_test                   lillie_test 0.07453232 0.1875239
+#> cvm_test                         cvm_test 0.09264333 0.1400276
+#> ad_test                           ad_test 0.51361252 0.1888669
+#> shapiro_wilk_test       shapiro_wilk_test 0.98748664 0.4711598
+#> shapiro_francia_test shapiro_francia_test 0.98913316 0.5088190
 information_criteria(n, x)
 #>   n_par n_obs   log_lik      aic      bic
-#> 1     2   100 -18.32159 40.64317 45.85351
+#> 1     2   100 -19.29869 42.59738 47.80772
 
 # compare data to distribution
 plot_empirical(n, x, ci=TRUE)
