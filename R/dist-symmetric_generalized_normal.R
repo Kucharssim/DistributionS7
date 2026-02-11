@@ -10,10 +10,6 @@
 #' @importFrom gnorm qgnorm
 #' @importFrom gnorm rgnorm
 #' @export
-symmetric_generalized_normal <- function(mu, alpha, beta) SymmetricGeneralizedNormal(mu, alpha, beta)
-
-#' @rdname symmetric_generalized_normal
-#' @export
 SymmetricGeneralizedNormal <- S7::new_class(
   "SymmetricGeneralizedNormal",
   parent = DistributionContinuous,

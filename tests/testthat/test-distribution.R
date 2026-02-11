@@ -1,8 +1,8 @@
 testthat::test_that("Distribution functions work", {
-  n <- normal(0, 1)
+  n <- Normal(0, 1)
 
   testthat::expect_no_error(x <- rng(n, 100))
-  testthat::expect_no_error(p <- rng(uniform(0, 1), 100))
+  testthat::expect_no_error(p <- rng(Uniform(0, 1), 100))
 
   testthat::expect_equal(pdf(n, x), dnorm(x))
   testthat::expect_equal(cdf(n, x), pnorm(x))
@@ -11,14 +11,14 @@ testthat::test_that("Distribution functions work", {
 })
 
 testthat::test_that("Dynamic support works", {
-  d <- triangular(0, 1, 0.5)
+  d <- Triangular(0, 1, 0.5)
 
   testthat::expect_false(d@support@numeric)
   testthat::expect_true(support(d)@numeric)
 })
 
 testthat::test_that("Parameter methods work", {
-  d <- normal(0, fixed(1))
+  d <- Normal(0, fixed(1))
 
   fixed <- parameter_properties(d, "fixed")
   testthat::expect_equal(fixed, list(mu=FALSE, sigma=TRUE))

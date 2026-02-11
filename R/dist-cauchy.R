@@ -5,10 +5,6 @@
 #' @param sigma scale parameter.
 #' @family distributions
 #' @export
-cauchy <- function(mu, sigma) Cauchy(mu, sigma)
-
-#' @rdname cauchy
-#' @export
 Cauchy <- S7::new_class(
   "Cauchy",
   parent = DistributionContinuous,

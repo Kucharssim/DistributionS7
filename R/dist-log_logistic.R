@@ -7,7 +7,7 @@
 #' @param beta scale parameter.
 #' @family distributions
 #' @export
-log_logistic <- function(mu, sigma, alpha, beta) {
+LogLogistic <- function(mu, sigma, alpha, beta) {
   parametrization <- rlang::check_exclusive(mu, alpha)
   rlang::check_exclusive(mu, beta)
   rlang::check_exclusive(sigma, alpha)
@@ -20,17 +20,16 @@ log_logistic <- function(mu, sigma, alpha, beta) {
   )
   return(distribution)
 }
-LogLogistic <- S7::new_class(
-  "LogLogistic",
+
+LogLogisticClass <- S7::new_class(
+  "LogLogisticClass",
   parent = DistributionContinuous,
   abstract = TRUE
 )
 
-#' @rdname log_logistic
-#' @export
 LogLogisticLocation <- S7::new_class(
   "LogLogisticLocation",
-  parent = LogLogistic,
+  parent = LogLogisticClass,
   properties = list(
     mu = Parameter,
     sigma = Parameter
@@ -38,7 +37,7 @@ LogLogisticLocation <- S7::new_class(
   constructor = function(mu, sigma) {
     S7::new_object(
       S7::S7_object(),
-      name = "LogLogistic",
+      name = "Log-logistic",
       support = Real(min=0),
       mu = Parameter("mu", "location", "\\mu", mu, Real()),
       sigma = Parameter("sigma", "scale", "\\sigma", sigma, Real(min=0))
@@ -46,11 +45,9 @@ LogLogisticLocation <- S7::new_class(
   }
 )
 
-#' @rdname log_logistic
-#' @export
 LogLogisticScale <- S7::new_class(
   "LogLogisticScale",
-  parent = LogLogistic,
+  parent = LogLogisticClass,
   properties = list(
     alpha = Parameter,
     beta = Parameter
@@ -58,7 +55,7 @@ LogLogisticScale <- S7::new_class(
   constructor = function(alpha, beta) {
     S7::new_object(
       S7::S7_object(),
-      name = "LogLogistic",
+      name = "Log-logistic",
       support = Real(min=0),
       alpha = Parameter("alpha", "scale", "\\alpha", alpha,Real(min=0)),
       beta  = Parameter("beta", "shape",  "\\beta",  beta, Real(min=0))
@@ -66,13 +63,13 @@ LogLogisticScale <- S7::new_class(
   }
 )
 
-S7::method(pdf_fn, LogLogistic) <- function(distribution) function(x, alpha, beta, log = FALSE) {
+S7::method(pdf_fn, LogLogisticClass) <- function(distribution) function(x, alpha, beta, log = FALSE) {
   lpdf <- log(beta) - log(alpha) + (beta-1) * (log(x) - log(alpha)) - 2 * log1p((x/alpha)^beta)
 
   if(log) return(lpdf) else exp(lpdf)
 }
 
-S7::method(cdf_fn, LogLogistic) <- function(distribution) function(q, alpha, beta, lower.tail = TRUE, log.p = FALSE) {
+S7::method(cdf_fn, LogLogisticClass) <- function(distribution) function(q, alpha, beta, lower.tail = TRUE, log.p = FALSE) {
   cdf <- 1 / (1+(q/alpha)^(-beta))
 
   if(!lower.tail) cdf <- 1-cdf
@@ -80,14 +77,14 @@ S7::method(cdf_fn, LogLogistic) <- function(distribution) function(q, alpha, bet
   if(log.p) return(log(cdf)) else return(cdf)
 }
 
-S7::method(qf_fn, LogLogistic) <- function(distribution) function(p, alpha, beta, lower.tail = TRUE, log.p = FALSE) {
+S7::method(qf_fn, LogLogisticClass) <- function(distribution) function(p, alpha, beta, lower.tail = TRUE, log.p = FALSE) {
   x <- stats::qlogis(p = p, location = log(alpha), scale = 1/beta, lower.tail = lower.tail, log.p = log.p)
   x <- exp(x)
 
   return(x)
 }
 
-S7::method(rng_fn, LogLogistic) <- function(distribution) function(n, alpha, beta) {
+S7::method(rng_fn, LogLogisticClass) <- function(distribution) function(n, alpha, beta) {
   x <- stats::rlogis(n, location = log(alpha), scale = 1/beta)
   x <- exp(x)
 

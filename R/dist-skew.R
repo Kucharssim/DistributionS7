@@ -1,5 +1,5 @@
 #' @title Skew distribution family
-#' @description Create an object of Skew family.
+#' @description Create an object of the Skew distribution family.
 #'
 #' @param xi location parameter.
 #' @param omega scale parameter.
@@ -7,19 +7,11 @@
 #' @param nu degrees of freedom parameter.
 #' @family distributions
 #' @import sn
-#' @name skew
-#' @export
-skew_normal <- function(xi, omega, alpha) SkewNormal(xi, omega, alpha)
-
-#' @rdname skew
-#' @export
-skew_cauchy <- function(xi, omega, alpha) SkewCauchy(xi, omega, alpha)
-#' @rdname skew
-#' @export
-skew_t      <- function(xi, omega, alpha, nu) SkewT (xi, omega, alpha, nu)
+#' @name skew-distributions
+NULL
 
 
-SkewDistribution <- S7::new_class(
+SkewClass <- S7::new_class(
   "SkewDistribution",
   parent = DistributionContinuous,
   properties = list(
@@ -30,15 +22,15 @@ SkewDistribution <- S7::new_class(
   abstract = TRUE
 )
 
-#' @rdname skew
+#' @rdname skew-distributions
 #' @export
 SkewNormal <- S7::new_class(
   "SkewNormal",
-  parent = SkewDistribution,
+  parent = SkewClass,
   constructor = function(xi, omega, alpha) {
     S7::new_object(
       S7::S7_object(),
-      name = "Skew Normal",
+      name = "Skew normal",
       support = Real(),
       xi = Parameter("xi", "location", "\\xi", xi, Real()),
       omega = Parameter("omega", "scale", "\\omega", omega, Real(min=0)),
@@ -47,11 +39,11 @@ SkewNormal <- S7::new_class(
   }
 )
 
-#' @rdname skew
+#' @rdname skew-distributions
 #' @export
 SkewCauchy <- S7::new_class(
   "SkewCauchy",
-  parent = SkewDistribution,
+  parent = SkewClass,
   constructor = function(xi, omega, alpha) {
     S7::new_object(
       S7::S7_object(),
@@ -64,16 +56,16 @@ SkewCauchy <- S7::new_class(
   }
 )
 
-#' @rdname skew
+#' @rdname skew-distributions
 #' @export
 SkewT <- S7::new_class(
   "SkewT",
-  parent = SkewDistribution,
+  parent = SkewClass,
   properties = list(nu = Parameter),
   constructor = function(xi, omega, alpha, nu) {
     S7::new_object(
       S7::S7_object(),
-      name = "Skew T",
+      name = "Skew t",
       support = Real(),
       xi = Parameter("xi", "location", "\\xi", xi, Real()),
       omega = Parameter("omega", "scale", "\\omega", omega, Real(min=0)),
@@ -123,7 +115,7 @@ S7::method(qf_fn,  SkewT) <- function(distribution) function(p, xi, omega, alpha
 }
 S7::method(rng_fn, SkewT) <- function(distribution) sn::rst
 
-S7::method(rargs, SkewDistribution) <- function(distribution) parameter_values(distribution)
+S7::method(rargs, SkewClass) <- function(distribution) parameter_values(distribution)
 
 S7::method(parameter_estimates, list(SkewNormal, Mom)) <- function(distribution, estimator, data) {
   estimates <- list()

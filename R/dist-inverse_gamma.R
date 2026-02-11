@@ -9,7 +9,7 @@
 #' @note Parameter meanings are on the inverse scale, e.g., `mu` is the mean of 1/x.
 #' @family distributions
 #' @export
-inverse_gamma <- function(alpha, theta, lambda, mu) {
+InverseGamma <- function(alpha, theta, lambda, mu) {
   parametrization <- rlang::check_exclusive(theta, lambda, mu)
   distribution <- switch(
     parametrization,
@@ -20,8 +20,8 @@ inverse_gamma <- function(alpha, theta, lambda, mu) {
   return(distribution)
 }
 
-InverseGamma <- S7::new_class(
-  "InverseGamma",
+InverseGammaClass <- S7::new_class(
+  "InverseGammaClass",
   parent = DistributionContinuous,
   properties = list(
     alpha = Parameter
@@ -29,18 +29,16 @@ InverseGamma <- S7::new_class(
   abstract=TRUE
 )
 
-#' @rdname inverse_gamma
-#' @export
 InverseGammaScale <- S7::new_class(
   "InverseGammaScale",
-  parent = InverseGamma,
+  parent = InverseGammaClass,
   properties = list(
     theta = Parameter
   ),
   constructor = function(alpha, theta) {
     S7::new_object(
       S7::S7_object(),
-      name = "InverseGamma",
+      name = "Inverse gamma",
       support = Real(min=0),
       alpha = Parameter("alpha", "shape", "\\alpha", alpha, Real(min=0)),
       theta = Parameter("theta", "scale", "\\theta", theta, Real(min=0))
@@ -48,18 +46,16 @@ InverseGammaScale <- S7::new_class(
   }
 )
 
-#' @rdname inverse_gamma
-#' @export
 InverseGammaRate <- S7::new_class(
   "InverseGammaRate",
-  parent = InverseGamma,
+  parent = InverseGammaClass,
   properties = list(
     lambda = Parameter
   ),
   constructor = function(alpha, lambda) {
     S7::new_object(
       S7::S7_object(),
-      name = "InverseGamma",
+      name = "Inverse gamma",
       support = Real(min=0),
       alpha  = Parameter("alpha", "shape", "\\alpha",  alpha,  Real(min=0)),
       lambda = Parameter("lambda", "rate", "\\lambda", lambda, Real(min=0))
@@ -67,18 +63,16 @@ InverseGammaRate <- S7::new_class(
   }
 )
 
-#' @rdname inverse_gamma
-#' @export
 InverseGammaMean <- S7::new_class(
   "InverseGammaMean",
-  parent = InverseGamma,
+  parent = InverseGammaClass,
   properties = list(
     mu = Parameter
   ),
   constructor = function(alpha, mu) {
     S7::new_object(
       S7::S7_object(),
-      name = "InverseGamma",
+      name = "Inverse gamma",
       support = Real(min=0),
       alpha  = Parameter("alpha", "shape", "\\alpha", alpha,  Real(min=0)),
       mu     = Parameter("mu",    "inverse mean",  "\\mu",    mu,     Real(min=0))
@@ -86,7 +80,7 @@ InverseGammaMean <- S7::new_class(
   }
 )
 
-S7::method(pdf_fn, InverseGamma) <- function(distribution) function(x, ..., log=FALSE) {
+S7::method(pdf_fn, InverseGammaClass) <- function(distribution) function(x, ..., log=FALSE) {
   xinv <- 1/x
   infinite <- is.infinite(xinv)
   lpdf <- numeric(length(x))
@@ -96,15 +90,15 @@ S7::method(pdf_fn, InverseGamma) <- function(distribution) function(x, ..., log=
   if(log) return(lpdf) else return(exp(lpdf))
 }
 
-S7::method(cdf_fn, InverseGamma) <- function(distribution) function(q, ..., lower.tail=TRUE) {
+S7::method(cdf_fn, InverseGammaClass) <- function(distribution) function(q, ..., lower.tail=TRUE) {
   stats::pgamma(1/q, ..., lower.tail=!lower.tail)
 }
 
-S7::method(qf_fn, InverseGamma)  <- function(distribution) function(p, ...) {
+S7::method(qf_fn, InverseGammaClass)  <- function(distribution) function(p, ...) {
   1/stats::qgamma(1-p, ...)
 }
 
-S7::method(rng_fn, InverseGamma) <- function(distribution) function(n, ...) {
+S7::method(rng_fn, InverseGammaClass) <- function(distribution) function(n, ...) {
   1/stats::rgamma(n, ...)
 }
 
@@ -120,7 +114,7 @@ S7::method(rargs, InverseGammaMean) <- function(distribution, ...) {
   return(list(shape=distribution@alpha@value, scale=distribution@mu@value/distribution@alpha@value))
 }
 
-S7::method(parameter_estimates, list(InverseGamma, Estimator)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(InverseGammaClass, Estimator)) <- function(distribution, estimator, data) {
   parameters <- recreate_parameters(distribution)
   distribution <- do.call(gamma, parameters)
   parameter_estimates(distribution, estimator, 1/data)

@@ -5,10 +5,6 @@
 #' @param beta scale parameter.
 #' @family distributions
 #' @export
-pareto <- function(alpha, beta) Pareto(alpha, beta)
-
-#' @rdname pareto
-#' @export
 Pareto <- S7::new_class(
   "Pareto",
   parent = DistributionContinuous,

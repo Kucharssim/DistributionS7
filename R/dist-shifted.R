@@ -4,11 +4,11 @@
 #' @param distribution An object of class [Distribution()].
 #' @param shift A shift parameter.
 #'
-#' @inheritParams log_normal
-#' @inheritParams gamma
-#' @inheritParams wald
-#' @inheritParams weibull
-#' @inheritParams exponential
+#' @inheritParams LogNormal
+#' @inheritParams Gamma
+#' @inheritParams Wald
+#' @inheritParams Weibull
+#' @inheritParams Exponential
 #'
 #' @note
 #' Estimating the shift parameter might not be a good idea, depending on the distribution. Distributions with their
@@ -17,12 +17,8 @@
 #' For convenience, additional distribution factories are added for distributions that are typical to parametrise with
 #' an additional shift parameter. For some, custom fitting methods are used to estimate the shift parameter.
 #'
-#' @seealso [log_normal()], [gamma()], [inverse_gamma()], [log_logistic()], [wald()], [weibull()], [exponential()].
+#' @seealso [LogNormal()], [Gamma()], [InverseGamma()], [LogLogistic()], [Wald()], [Weibull()], [Exponential()].
 #' @family distributions
-#' @export
-shifted <- function(distribution, shift = 0) Shifted(distribution, shift)
-
-#' @rdname shifted
 #' @export
 Shifted <- S7::new_class(
   "Shifted",
@@ -31,7 +27,7 @@ Shifted <- S7::new_class(
     distribution = DistributionContinuous,
     shift = Parameter
   ),
-  constructor = function(distribution, shift) {
+  constructor = function(distribution, shift=0) {
     if (!distribution@support@numeric) rlang::abort("Distribution cannot be shifted (shift can be already accomodated by its intrinsic parameters)")
 
     S7::new_object(
@@ -47,29 +43,29 @@ Shifted <- S7::new_class(
   }
 )
 
-#' @rdname shifted
+#' @rdname Shifted
 #' @export
-shifted_log_normal <- function(mu, sigma, shift=0) shifted(log_normal(mu, sigma), shift)
+ShiftedLogNormal <- function(mu, sigma, shift=0) Shifted(LogNormal(mu, sigma), shift)
 
-#' @rdname shifted
+#' @rdname Shifted
 #' @export
-shifted_gamma <- function(alpha, theta, lambda, mu, shift=0) shifted(gamma(alpha, theta, lambda, mu), shift)
+ShiftedGamma <- function(alpha, theta, lambda, mu, shift=0) Shifted(Gamma(alpha, theta, lambda, mu), shift)
 
-#' @rdname shifted
+#' @rdname Shifted
 #' @export
-shifted_inverse_gamma <- function(alpha, theta, lambda, mu, shift=0) shifted(inverse_gamma(alpha, theta, lambda, mu), shift)
+ShiftedInverseGamma <- function(alpha, theta, lambda, mu, shift=0) Shifted(InverseGamma(alpha, theta, lambda, mu), shift)
 
-#' @rdname shifted
+#' @rdname Shifted
 #' @export
-shifted_log_logistic <- function(mu, sigma, alpha, beta, shift=0) shifted(log_logistic(mu, sigma, alpha, beta), shift)
+ShiftedLogLogistic <- function(mu, sigma, alpha, beta, shift=0) Shifted(LogLogistic(mu, sigma, alpha, beta), shift)
 
-#' @rdname shifted
+#' @rdname Shifted
 #' @export
-shifted_wald <- function(mu, lambda, nu, alpha, sigma=fixed(1), shift=0) shifted(wald(mu, lambda, nu, alpha, sigma), shift)
+ShiftedWald <- function(mu, lambda, nu, alpha, sigma=fixed(1), shift=0) Shifted(Wald(mu, lambda, nu, alpha, sigma), shift)
 
-#' @rdname shifted
+#' @rdname Shifted
 #' @export
-shifted_weibull <- function(shape, scale, shift=0) shifted(weibull(shape, scale), shift)
+ShiftedWeibull <- function(shape, scale, shift=0) Shifted(weibull(shape, scale), shift)
 
 
 S7::method(pdf, Shifted) <- function(distribution, x, log = FALSE) {

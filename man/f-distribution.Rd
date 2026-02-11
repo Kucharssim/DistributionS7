@@ -2,16 +2,10 @@
 % Please edit documentation in R/dist-noncentral_f.R
 \name{f-distribution}
 \alias{f-distribution}
-\alias{central_f}
-\alias{noncentral_f}
 \alias{CentralF}
 \alias{NoncentralF}
 \title{F-distribution}
 \usage{
-central_f(nu1, nu2)
-
-noncentral_f(nu1, nu2, kappa)
-
 CentralF(nu1, nu2, kappa)
 
 NoncentralF(nu1, nu2, kappa)
@@ -28,35 +22,35 @@ Create an F-distribution object.
 }
 \seealso{
 Other distributions: 
-\code{\link{amoroso}()},
-\code{\link{beta}()},
-\code{\link{beta_prime}()},
-\code{\link{binomial}()},
-\code{\link{cauchy}()},
-\code{\link{chi_squared}()},
+\code{\link{Amoroso}()},
+\code{\link{Beta}()},
+\code{\link{BetaPrime}()},
+\code{\link{Binomial}()},
+\code{\link{Cauchy}()},
+\code{\link{ChiSquared}()},
+\code{\link{Exponential}()},
+\code{\link{Frechet}()},
+\code{\link{Gamma}()},
+\code{\link{Gompertz}()},
+\code{\link{Gumbel}()},
+\code{\link{InverseGamma}()},
+\code{\link{Laplace}()},
+\code{\link{LogLogistic}()},
+\code{\link{LogNormal}()},
+\code{\link{Logistic}()},
+\code{\link{NegativeBinomial}()},
+\code{\link{Normal}()},
+\code{\link{Pareto}()},
+\code{\link{Shifted}()},
+\code{\link{SkewedGeneralizedT}()},
+\code{\link{StretchedBeta}()},
+\code{\link{SymmetricGeneralizedNormal}()},
+\code{\link{Triangular}()},
+\code{\link{Uniform}()},
+\code{\link{Wald}()},
+\code{\link{Weibull}()},
 \code{\link{distributions}},
-\code{\link{exponential}()},
-\code{\link{frechet}()},
-\code{\link{gamma}()},
-\code{\link{gompertz}()},
-\code{\link{gumbel}()},
-\code{\link{inverse_gamma}()},
-\code{\link{laplace}()},
-\code{\link{log_logistic}()},
-\code{\link{log_normal}()},
-\code{\link{logistic}()},
-\code{\link{negative_binomial}()},
-\code{\link{normal}()},
-\code{\link{pareto}()},
-\code{\link{shifted}()},
-\code{\link{skew}},
-\code{\link{skewed_generalized_t}()},
-\code{\link{stretched_beta}()},
-\code{\link{symmetric_generalized_normal}()},
-\code{\link{t-distribution}},
-\code{\link{triangular}()},
-\code{\link{uniform}()},
-\code{\link{wald}()},
-\code{\link{weibull}()}
+\code{\link{skew-distributions}},
+\code{\link{t-distribution}}
 }
 \concept{distributions}

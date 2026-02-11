@@ -5,10 +5,6 @@
 #' @param beta scale parameter.
 #' @family distributions
 #' @export
-laplace <- function(mu, beta) Laplace(mu, beta)
-
-#' @rdname laplace
-#' @export
 Laplace <- S7::new_class(
   "Laplace",
   parent = DistributionContinuous,

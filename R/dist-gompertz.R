@@ -5,10 +5,6 @@
 #' @param beta scale parameter.
 #' @family distributions
 #' @export
-gompertz <- function(eta, beta) Gompertz(eta, beta)
-
-#' @rdname gompertz
-#' @export
 Gompertz <- S7::new_class(
   "Gompertz",
   parent = DistributionContinuous,

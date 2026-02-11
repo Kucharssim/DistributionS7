@@ -14,10 +14,6 @@
 
 #' @family distributions
 #' @export
-skewed_generalized_t <- function(mu, sigma, lambda, p, q) SkewedGeneralizedT(mu, sigma, lambda, p, q)
-
-#' @rdname skewed_generalized_t
-#' @export
 SkewedGeneralizedT <- S7::new_class(
   "SkewedGeneralizedT",
   parent = DistributionContinuous,

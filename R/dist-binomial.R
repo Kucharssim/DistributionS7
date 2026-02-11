@@ -5,10 +5,6 @@
 #' @param size Sample size parameter.
 #' @family distributions
 #' @export
-binomial <- function(prob, size) Binomial(prob, fixed(size))
-
-#' @rdname binomial
-#' @export
 Binomial <- S7::new_class(
   "Binomial",
   parent = DistributionDiscrete,

@@ -6,10 +6,6 @@
 #' @param theta theta parameter.
 #' @family distributions
 #' @export
-frechet <- function(alpha, sigma, theta) Frechet(alpha, sigma, theta)
-
-#' @rdname frechet
-#' @export
 Frechet <- S7::new_class(
   "Frechet",
   parent = DistributionContinuous,

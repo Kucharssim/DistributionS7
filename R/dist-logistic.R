@@ -5,10 +5,6 @@
 #' @param sigma scale parameter.
 #' @family distributions
 #' @export
-logistic <- function(mu, sigma) Logistic(mu, sigma)
-
-#' @rdname logistic
-#' @export
 Logistic <- S7::new_class(
   "Logistic",
   parent = DistributionContinuous,

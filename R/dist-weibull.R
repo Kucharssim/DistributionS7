@@ -5,10 +5,6 @@
 #' @param scale scale parameter.
 #' @family distributions
 #' @export
-weibull <- function(shape, scale) Weibull(shape, scale)
-
-#' @rdname weibull
-#' @export
 Weibull <- S7::new_class(
   "Weibull",
   parent = DistributionContinuous,

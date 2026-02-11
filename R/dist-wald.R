@@ -8,7 +8,7 @@
 #' @param sigma noise parameter.
 #' @family distributions
 #' @export
-wald <- function(mu, lambda, nu, alpha, sigma=fixed(1)) {
+Wald <- function(mu, lambda, nu, alpha, sigma=fixed(1)) {
   parametrization <- rlang::check_exclusive(mu, nu)
 
   distribution <- switch(
@@ -19,17 +19,15 @@ wald <- function(mu, lambda, nu, alpha, sigma=fixed(1)) {
   return(distribution)
 }
 
-Wald <- S7::new_class(
-  "Wald",
+WaldClass <- S7::new_class(
+  "WaldClass",
   parent = DistributionContinuous,
   abstract = TRUE
 )
 
-#' @rdname wald
-#' @export
 WaldMean <- S7::new_class(
   "WaldMean",
-  parent = Wald,
+  parent = WaldClass,
   properties = list(
     mu = Parameter,
     lambda = Parameter
@@ -45,11 +43,9 @@ WaldMean <- S7::new_class(
   }
 )
 
-#' @rdname wald
-#' @export
 WaldDrift <- S7::new_class(
   "WaldDrift",
-  parent = Wald,
+  parent = WaldClass,
   properties = list(
     nu = Parameter,
     alpha = Parameter,
@@ -67,11 +63,11 @@ WaldDrift <- S7::new_class(
   },
   validator = function(self) {
     is_fixed <- unlist(parameter_properties(self, "fixed"))
-    if (sum(is_fixed) == 0) rlang::abort("At least one of the three parameters `nu`, `alpha`, and `sigma` must be fixed")
+    if (sum(is_fixed) == 0) return("At least one of the three parameters `nu`, `alpha`, and `sigma` must be fixed")
   }
 )
 
-S7::method(pdf_fn, Wald) <- function(distribution) function(x, mu, lambda, log = FALSE) {
+S7::method(pdf_fn, WaldClass) <- function(distribution) function(x, mu, lambda, log = FALSE) {
   alpha <- sqrt(lambda)
   nu <- alpha / mu
 
@@ -81,7 +77,7 @@ S7::method(pdf_fn, Wald) <- function(distribution) function(x, mu, lambda, log =
   if (log) return(lpdf) else return(exp(lpdf))
 }
 
-S7::method(cdf_fn, Wald) <- function(distribution) function(q, mu, lambda, lower.tail = TRUE, log.p = FALSE) {
+S7::method(cdf_fn, WaldClass) <- function(distribution) function(q, mu, lambda, lower.tail = TRUE, log.p = FALSE) {
   lx <- sqrt(lambda / q)
   xmu <- q / mu
   elmu <- exp(2*lambda / mu)
@@ -95,7 +91,7 @@ S7::method(cdf_fn, Wald) <- function(distribution) function(q, mu, lambda, lower
   return(out)
 }
 
-S7::method(qf_fn, Wald) <- function(distribution) function(p, mu, lambda, lower.tail = TRUE, log.p = FALSE) {
+S7::method(qf_fn, WaldClass) <- function(distribution) function(p, mu, lambda, lower.tail = TRUE, log.p = FALSE) {
   if(log.p) p <- exp(p)
   if(!lower.tail) p <- 1-p
   zero <- p <= 0
@@ -115,7 +111,7 @@ S7::method(qf_fn, Wald) <- function(distribution) function(p, mu, lambda, lower.
   return(q)
 }
 
-S7::method(rng_fn, Wald) <- function(distribution) function(n, mu, lambda) {
+S7::method(rng_fn, WaldClass) <- function(distribution) function(n, mu, lambda) {
   nu <- rnorm(n)
   y <- nu^2
   x <- mu + mu^2*y / (2*lambda) - mu / (2*lambda) * sqrt(4*mu*lambda*y + mu^2*y^2)

@@ -7,7 +7,7 @@
 #' @param mu mean parameter.
 #' @family distributions
 #' @export
-gamma <- function(alpha, theta, lambda, mu) {
+Gamma <- function(alpha, theta, lambda, mu) {
   parametrization <- rlang::check_exclusive(theta, lambda, mu)
   distribution <- switch(
     parametrization,
@@ -19,8 +19,8 @@ gamma <- function(alpha, theta, lambda, mu) {
 }
 
 
-Gamma <- S7::new_class(
-  "Gamma",
+GammaClass <- S7::new_class(
+  "GammaClass",
   parent = DistributionContinuous,
   properties = list(
     alpha = Parameter
@@ -28,11 +28,9 @@ Gamma <- S7::new_class(
   abstract=TRUE
 )
 
-#' @rdname gamma
-#' @export
 GammaScale <- S7::new_class(
   "GammaScale",
-  parent = Gamma,
+  parent = GammaClass,
   properties = list(
     theta = Parameter
   ),
@@ -47,11 +45,9 @@ GammaScale <- S7::new_class(
   }
 )
 
-#' @rdname gamma
-#' @export
 GammaRate <- S7::new_class(
   "GammaRate",
-  parent = Gamma,
+  parent = GammaClass,
   properties = list(
     lambda = Parameter
   ),
@@ -66,11 +62,9 @@ GammaRate <- S7::new_class(
   }
 )
 
-#' @rdname gamma
-#' @export
 GammaMean <- S7::new_class(
   "GammaMean",
-  parent = Gamma,
+  parent = GammaClass,
   properties = list(
     mu = Parameter
   ),
@@ -85,13 +79,13 @@ GammaMean <- S7::new_class(
   }
 )
 
-S7::method(pdf_fn, Gamma) <- function(distribution) stats::dgamma
+S7::method(pdf_fn, GammaClass) <- function(distribution) stats::dgamma
 
-S7::method(cdf_fn, Gamma) <- function(distribution) stats::pgamma
+S7::method(cdf_fn, GammaClass) <- function(distribution) stats::pgamma
 
-S7::method(qf_fn, Gamma)  <- function(distribution) stats::qgamma
+S7::method(qf_fn, GammaClass)  <- function(distribution) stats::qgamma
 
-S7::method(rng_fn, Gamma) <- function(distribution) stats::rgamma
+S7::method(rng_fn, GammaClass) <- function(distribution) stats::rgamma
 
 S7::method(rargs, GammaScale) <- function(distribution, ...) {
   return(list(shape=distribution@alpha@value, scale=distribution@theta@value))

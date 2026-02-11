@@ -7,14 +7,6 @@
 #' @family distributions
 #' @name f-distribution
 #' @export
-central_f <- function(nu1, nu2) CentralF(nu1, nu2)
-
-#' @rdname f-distribution
-#' @export
-noncentral_f <- function(nu1, nu2, kappa) NoncentralF(nu1, nu2, kappa)
-
-#' @rdname f-distribution
-#' @export
 CentralF <- S7::new_class(
   "CentralF",
   parent = DistributionContinuous,
@@ -52,9 +44,6 @@ NoncentralF <- S7::new_class(
     )
   }
 )
-
-central_f <- function(nu1, nu2) CentralF(nu1, nu2)
-noncentral_f <- function(nu1, nu2, kappa) NoncentralF(nu1, nu2, kappa)
 
 S7::method(pdf_fn, CentralF) <- function(distribution) stats::df
 S7::method(cdf_fn, CentralF) <- function(distribution) stats::pf

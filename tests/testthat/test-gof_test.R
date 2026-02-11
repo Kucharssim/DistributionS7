@@ -1,5 +1,5 @@
 test_that("gof tests work", {
-  n <- normal(0, 1)
+  n <- Normal(0, 1)
   x <- rng(n, 1000)
 
   results <- gof_test(n, x, estimated=FALSE)

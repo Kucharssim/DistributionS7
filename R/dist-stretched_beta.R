@@ -7,10 +7,6 @@
 #' @param max maximum parameter.
 #' @family distributions
 #' @export
-stretched_beta <- function(alpha, beta, min=fixed(0), max=fixed(1)) StretchedBeta(alpha, beta, min, max)
-
-#' @rdname stretched_beta
-#' @export
 StretchedBeta <- S7::new_class(
   "StretchedBeta",
   parent = DistributionContinuous,

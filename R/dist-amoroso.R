@@ -8,10 +8,6 @@
 #'
 #' @family distributions
 #' @export
-amoroso <- function(a, theta, alpha, beta) Amoroso(a, theta, alpha, beta)
-
-#' @rdname amoroso
-#' @export
 Amoroso <- S7::new_class(
   "Amoroso",
   parent = DistributionContinuous,

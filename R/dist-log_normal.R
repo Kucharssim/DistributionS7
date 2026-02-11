@@ -5,10 +5,6 @@
 #' @param sigma log standard deviation parameter.
 #' @family distributions
 #' @export
-log_normal <- function(mu, sigma) LogNormal(mu, sigma)
-
-#' @rdname log_normal
-#' @export
 LogNormal <- S7::new_class(
   "LogNormal",
   parent = DistributionContinuous,
@@ -19,7 +15,7 @@ LogNormal <- S7::new_class(
   constructor = function(mu, sigma) {
     S7::new_object(
       S7::S7_object(),
-      name = "LogNormal",
+      name = "Log-normal",
       support = Real(min=0),
       mu = Parameter("mu", "log mean", "\\mu", mu, Real()),
       sigma = Parameter("sigma", "log std.deviation", "\\sigma", sigma, Real(0))
@@ -39,6 +35,6 @@ S7::method(rargs, LogNormal) <- function(distribution) {
 S7::method(parameter_estimates, list(LogNormal, Estimator)) <- function(distribution, estimator, data) {
   data <- log(data)
   parameters <- recreate_parameters(distribution)
-  distribution <- do.call(normal, parameters)
+  distribution <- do.call(Normal, parameters)
   parameter_estimates(distribution, estimator, data)
 }

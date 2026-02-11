@@ -5,26 +5,25 @@
 #' @param beta scale parameter.
 #' @family distributions
 #' @export
-exponential <- function(lambda, beta) {
+Exponential <- function(lambda, beta) {
   parametrization <- rlang::check_exclusive(lambda, beta)
   distribution <- switch(
     parametrization,
     lambda = ExponentialRate(lambda),
     beta = ExponentialScale(beta)
   )
+  return(distribution)
 }
 
-Exponential <- S7::new_class(
-  "Exponential",
+ExponentialClass <- S7::new_class(
+  "ExponentialClass",
   parent = DistributionContinuous,
   abstract = TRUE
 )
 
-#' @rdname exponential
-#' @export
 ExponentialRate <- S7::new_class(
   "ExponentialRate",
-  parent = Exponential,
+  parent = ExponentialClass,
   properties = list(
     lambda = Parameter
   ),
@@ -38,11 +37,9 @@ ExponentialRate <- S7::new_class(
   }
 )
 
-#' @rdname exponential
-#' @export
 ExponentialScale <- S7::new_class(
   "ExponentialScale",
-  parent = Exponential,
+  parent = ExponentialClass,
   properties = list(
     beta = Parameter
   ),
@@ -57,13 +54,13 @@ ExponentialScale <- S7::new_class(
 )
 
 
-S7::method(pdf_fn, Exponential) <- function(distribution) stats::dexp
+S7::method(pdf_fn, ExponentialClass) <- function(distribution) stats::dexp
 
-S7::method(cdf_fn, Exponential) <- function(distribution) stats::pexp
+S7::method(cdf_fn, ExponentialClass) <- function(distribution) stats::pexp
 
-S7::method(qf_fn, Exponential)  <- function(distribution) stats::qexp
+S7::method(qf_fn, ExponentialClass)  <- function(distribution) stats::qexp
 
-S7::method(rng_fn, Exponential) <- function(distribution) stats::rexp
+S7::method(rng_fn, ExponentialClass) <- function(distribution) stats::rexp
 
 S7::method(rargs, ExponentialRate) <- function(distribution) {
   return(list(rate = distribution@lambda@value))
@@ -81,7 +78,7 @@ S7::method(parameter_estimates, list(ExponentialScale, Mom)) <- function(distrib
   return(list(beta = mean(data)))
 }
 
-S7::method(parameter_estimates, list(Exponential, Mle)) <- function(distribution, estimator, data) {
+S7::method(parameter_estimates, list(ExponentialClass, Mle)) <- function(distribution, estimator, data) {
   parameter_estimates(distribution, Mom(), data)
 }
 

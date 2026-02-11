@@ -7,7 +7,7 @@
 #' @param k number of successes parameter.
 #' @family distributions
 #' @export
-negative_binomial <- function(mu, phi, p, k) {
+NegativeBinomial <- function(mu, phi, p, k) {
   parametrization <- rlang::check_exclusive(mu, p)
   rlang::check_exclusive(mu, k)
   rlang::check_exclusive(phi, k)
@@ -21,17 +21,15 @@ negative_binomial <- function(mu, phi, p, k) {
 }
 
 
-NegativeBinomial <- S7::new_class(
-  "NegativeBinomial",
+NegativeBinomialClass <- S7::new_class(
+  "NegativeBinomialClass",
   parent = DistributionDiscrete,
   abstract = TRUE
 )
 
-#' @rdname negative_binomial
-#' @export
 NegativeBinomialMean <- S7::new_class(
   "NegativeBinomialMean",
-  parent = NegativeBinomial,
+  parent = NegativeBinomialClass,
   properties = list(
     mu = Parameter,
     phi = Parameter
@@ -39,7 +37,7 @@ NegativeBinomialMean <- S7::new_class(
   constructor = function(mu, phi) {
     S7::new_object(
       S7::S7_object(),
-      name = "NegativeBinomial",
+      name = "Negative binomial",
       support = Int(min=0),
       mu = Parameter("mu", "mean", "\\mu", mu, Real(min=0)),
       phi = Parameter("phi", "dispersion", "\\phi", phi, Real(min=0))
@@ -47,11 +45,9 @@ NegativeBinomialMean <- S7::new_class(
   }
 )
 
-#' @rdname negative_binomial
-#' @export
 NegativeBinomialProb <- S7::new_class(
   "NegativeBinomialProb",
-  parent = NegativeBinomial,
+  parent = NegativeBinomialClass,
   properties = list(
     p = Parameter,
     k = Parameter
@@ -59,7 +55,7 @@ NegativeBinomialProb <- S7::new_class(
   constructor = function(p, k) {
     S7::new_object(
       S7::S7_object(),
-      name = "NegativeBinomial",
+      name = "Negative binomial",
       support = Int(min=0),
       p = Parameter("p", "probability of success", "p", p, Real(min=0, max=1)),
       k = Parameter("k", "number of successes", "k", k, Real(min=0))
@@ -67,13 +63,13 @@ NegativeBinomialProb <- S7::new_class(
   }
 )
 
-S7::method(pdf_fn, NegativeBinomial) <- function(distribution) stats::dnbinom
+S7::method(pdf_fn, NegativeBinomialClass) <- function(distribution) stats::dnbinom
 
-S7::method(cdf_fn, NegativeBinomial) <- function(distribution) stats::pnbinom
+S7::method(cdf_fn, NegativeBinomialClass) <- function(distribution) stats::pnbinom
 
-S7::method(qf_fn, NegativeBinomial)  <- function(distribution) stats::qnbinom
+S7::method(qf_fn, NegativeBinomialClass)  <- function(distribution) stats::qnbinom
 
-S7::method(rng_fn, NegativeBinomial) <- function(distribution) stats::rnbinom
+S7::method(rng_fn, NegativeBinomialClass) <- function(distribution) stats::rnbinom
 
 
 

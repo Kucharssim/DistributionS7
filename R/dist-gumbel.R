@@ -5,10 +5,6 @@
 #' @param beta scale parameter.
 #' @family distributions
 #' @export
-gumbel <- function(mu, beta) Gumbel(mu, beta)
-
-#' @rdname gumbel
-#' @export
 Gumbel <- S7::new_class(
   "Gumbel",
   parent = DistributionContinuous,

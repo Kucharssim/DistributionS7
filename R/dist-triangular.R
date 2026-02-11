@@ -6,10 +6,6 @@
 #' @param c mode parameter.
 #' @family distributions
 #' @export
-triangular <- function(a, b, c) Triangular(a, b, c)
-
-#' @rdname triangular
-#' @export
 Triangular <- S7::new_class(
   "Triangular",
   parent = DistributionContinuous,

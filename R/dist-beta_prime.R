@@ -5,10 +5,6 @@
 #' @param beta shape parameter
 #' @family distributions
 #' @export
-beta_prime <- function(alpha, beta) BetaPrime(alpha, beta)
-
-#' @rdname beta_prime
-#' @export
 BetaPrime <- S7::new_class(
   "BetaPrime",
   parent = DistributionContinuous,

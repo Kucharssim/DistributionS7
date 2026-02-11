@@ -1,6 +1,5 @@
 #' @title Normal distribution
 #' @description Create a normal distribution object.
-#' @name normal
 #'
 #' @param mu Mean.
 #' @param sigma Standard deviation.
@@ -9,10 +8,9 @@
 #'
 #' @importFrom nortest lillie.test
 #' @importFrom nortest sf.test
-#' @returns Object of class [NormalSigma()], [NormalSigma2()], or [NormalTau()].
 #' @family distributions
 #' @export
-normal <- function(mu, sigma, sigma2, tau) {
+Normal <- function(mu, sigma, sigma2, tau) {
   parametrization <- rlang::check_exclusive(sigma, sigma2, tau)
   distribution <- switch(
     parametrization,
@@ -24,21 +22,31 @@ normal <- function(mu, sigma, sigma2, tau) {
   return(distribution)
 }
 
-Normal <- S7::new_class(
-  "Normal",
+NormalClass <- S7::new_class(
+  "NormalClass",
   parent = DistributionContinuous,
-  properties = list(
-    mu = Parameter
-  ),
   abstract = TRUE
 )
 
-#' @rdname normal
+#' @rdname Normal
 #' @export
+StandardNormal <- S7::new_class(
+  "StandardNormal",
+  parent = NormalClass,
+  constructor = function() {
+    S7::new_object(
+      S7::S7_object(),
+      name = "Standard normal",
+      support = Real()
+    )
+  }
+)
+
 NormalSigma <- S7::new_class(
   "NormalSigma",
-  parent = Normal,
+  parent = NormalClass,
   properties = list(
+    mu = Parameter,
     sigma = Parameter
   ),
   constructor = function(mu, sigma) {
@@ -52,12 +60,11 @@ NormalSigma <- S7::new_class(
   }
 )
 
-#' @rdname normal
-#' @export
 NormalSigma2 <- S7::new_class(
   "NormalSigma2",
-  parent = Normal,
+  parent = NormalClass,
   properties = list(
+    mu = Parameter,
     sigma2 = Parameter
   ),
   constructor = function(mu, sigma2) {
@@ -71,11 +78,9 @@ NormalSigma2 <- S7::new_class(
   }
 )
 
-#' @rdname normal
-#' @export
 NormalTau <- S7::new_class(
   "NormalTau",
-  parent = Normal,
+  parent = NormalClass,
   properties = list(
     mu = Parameter,
     tau = Parameter
@@ -92,46 +97,26 @@ NormalTau <- S7::new_class(
 )
 
 
-S7::method(pdf_fn, Normal) <- function(distribution) stats::dnorm
+S7::method(pdf_fn, NormalClass) <- function(distribution) stats::dnorm
 
-S7::method(cdf_fn, Normal) <- function(distribution) stats::pnorm
+S7::method(cdf_fn, NormalClass) <- function(distribution) stats::pnorm
 
-S7::method(qf_fn, Normal)  <- function(distribution) stats::qnorm
+S7::method(qf_fn, NormalClass)  <- function(distribution) stats::qnorm
 
-S7::method(rng_fn, Normal) <- function(distribution) stats::rnorm
+S7::method(rng_fn, NormalClass) <- function(distribution) stats::rnorm
 
+S7::method(rargs, StandardNormal) <- function(distribution) return(list(mean=0, sd=1))
 
-S7::method(expectation, Normal) <- function(distribution, ...) distribution@mu@value
+S7::method(rargs, NormalSigma) <- function(distribution) {
+  return(list(mean = distribution@mu@value, sd = distribution@sigma@value))
+}
 
+S7::method(rargs, NormalSigma2) <- function(distribution) {
+  return(list(mean = distribution@mu@value, sd = sqrt(distribution@sigma2@value)))
+}
 
-S7::method(variance, NormalSigma)  <- function(distribution, ...) distribution@sigma@value^2
-
-S7::method(variance, NormalSigma2) <- function(distribution, ...) distribution@sigma2@value
-
-S7::method(variance, NormalTau)    <- function(distribution, ...) 1 / distribution@tau@value
-
-
-S7::method(std_dev, NormalSigma)  <- function(distribution, ...) distribution@sigma@value
-
-S7::method(std_dev, NormalSigma2) <- function(distribution, ...) sqrt(distribution@sigma2@value)
-
-S7::method(std_dev, NormalTau)    <- function(distribution, ...) sqrt(1/distribution@tau@value)
-
-
-S7::method(skewness, Normal) <- function(distribution, ...) 0
-
-S7::method(kurtosis, Normal) <- function(distribution, ...) 3
-
-S7::method(excess_kurtosis, Normal) <- function(distribution, ...) 0
-
-
-S7::method(rargs, Normal) <- function(distribution, ...) {
-  return(
-    list(
-      mean = expectation(distribution),
-      sd = std_dev(distribution)
-    )
-  )
+S7::method(rargs, NormalTau) <- function(distribution) {
+  return(list(mean = distribution@mu@value, sd = 1/sqrt(distribution@sigma2@value)))
 }
 
 S7::method(parameter_estimates, list(NormalSigma, Mle)) <- function(distribution, estimator, data) {
@@ -325,7 +310,7 @@ S7::method(parameter_inference, list(NormalTau, DefaultMethod)) <- function(dist
 }
 
 
-S7::method(gof_test, Normal) <- function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
+S7::method(gof_test, NormalClass) <- function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
   if(estimated && bootstrap@samples == 0) { # analytic normality tests
     results <- try(list(
       lillie_test          = nortest::lillie.test(data),
@@ -342,6 +327,13 @@ S7::method(gof_test, Normal) <- function(distribution, data, estimated=FALSE, bo
     return(results)
   }
 
+  distribution <- S7::super(distribution, DistributionContinuous)
+  gof_test(distribution = distribution, data = data, estimated = estimated, bootstrap = bootstrap)
+}
+
+S7::method(gof_test, StandardNormal) <- function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
+  if (estimated) rlang::inform("Ignoring `estimated=TRUE`; Standard normal is always fixed")
+  estimated <- FALSE
   distribution <- S7::super(distribution, DistributionContinuous)
   gof_test(distribution = distribution, data = data, estimated = estimated, bootstrap = bootstrap)
 }

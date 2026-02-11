@@ -5,10 +5,6 @@
 #' @param max maximum parameter.
 #' @family distributions
 #' @export
-uniform <- function(min, max) Uniform(min, max)
-
-#' @rdname uniform
-#' @export
 Uniform <- S7::new_class(
   "Uniform",
   parent = DistributionContinuous,
