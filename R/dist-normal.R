@@ -311,7 +311,7 @@ S7::method(parameter_inference, list(NormalTau, DefaultMethod)) <- function(dist
 
 
 S7::method(gof_test, NormalClass) <- function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
-  if(estimated && bootstrap@samples == 0) { # analytic normality tests
+  if(estimated && bootstrap@samples == 0 && nfree(distribution) == 2) { # analytic normality tests
     results <- try(list(
       lillie_test          = nortest::lillie.test(data),
       cvm_test             = nortest::cvm.test(data),
@@ -327,13 +327,6 @@ S7::method(gof_test, NormalClass) <- function(distribution, data, estimated=FALS
     return(results)
   }
 
-  distribution <- S7::super(distribution, DistributionContinuous)
-  gof_test(distribution = distribution, data = data, estimated = estimated, bootstrap = bootstrap)
-}
-
-S7::method(gof_test, StandardNormal) <- function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
-  if (estimated) rlang::inform("Ignoring `estimated=TRUE`; Standard normal is always fixed")
-  estimated <- FALSE
   distribution <- S7::super(distribution, DistributionContinuous)
   gof_test(distribution = distribution, data = data, estimated = estimated, bootstrap = bootstrap)
 }
