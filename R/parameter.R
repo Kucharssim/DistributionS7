@@ -42,7 +42,12 @@ Parameter <- S7::new_class(
       }
     ),
     support = Support,
-    fixed = S7::class_logical
+    fixed = S7::class_logical,
+    free = S7::new_property(
+      class = S7::class_logical,
+      getter = function(self) !self@fixed,
+      setter = function(self, value) { self@fixed <- !value; return(self) }
+    )
   ),
   constructor = function(key="", name=key, label=name, value, support, fixed) {
     if(missing(fixed)) {

@@ -17,7 +17,7 @@ Weibull <- S7::new_class(
       S7::S7_object(),
       name = "Weibull",
       support = Real(min=0),
-      shape = Parameter("shape", "shape", "\\text{k}", shape, Real(min=0)),
+      shape = Parameter("shape", "shape", "k", shape, Real(min=0)),
       scale = Parameter("scale", "scale", "\\lambda", scale, Real(min=0))
     )
   }

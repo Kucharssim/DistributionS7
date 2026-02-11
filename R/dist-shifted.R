@@ -38,7 +38,7 @@ Shifted <- S7::new_class(
         max = as.expression(call("+", distribution@support@max, quote(shift)))
       ),
       distribution = distribution,
-      shift = Parameter(key = "shift", name="shift", label="shift", value = shift, support = Real())
+      shift = Parameter(key = "shift", name="shift", label="\\text{shift}", value = shift, support = Real())
     )
   }
 )

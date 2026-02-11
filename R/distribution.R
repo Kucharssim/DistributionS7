@@ -219,14 +219,14 @@ parameter_properties <- S7::new_generic(
   "parameter_properties", "distribution",
   function(
     distribution,
-    property = c("key", "name", "label", "value", "uvalue", "derivative", "support", "fixed"),
+    property = c("key", "name", "label", "value", "uvalue", "derivative", "support", "fixed", "free"),
     which = "all") {
     S7::S7_dispatch()
   })
 
 S7::method(parameter_properties, Distribution) <- function(
     distribution,
-    property = c("key", "name", "label", "value", "uvalue", "derivative", "support", "fixed"),
+    property = c("key", "name", "label", "value", "uvalue", "derivative", "support", "fixed", "free"),
     which = "all") {
   property <- match.arg(property)
 
@@ -241,7 +241,8 @@ S7::method(parameter_properties, Distribution) <- function(
     uvalue     = lapply(pars, \(p) p@uvalue ),
     derivative = lapply(pars, \(p) p@derivative),
     support    = lapply(pars, \(p) p@support),
-    fixed      = lapply(pars, \(p) p@fixed  )
+    fixed      = lapply(pars, \(p) p@fixed  ),
+    free       = lapply(pars, \(p) p@free   )
   )
 
   return(output)
@@ -321,6 +322,26 @@ S7::method(recreate_parameters, Distribution) <- function(distribution) {
   return(parameters)
 }
 
+#' @rdname parameter-properties
+#' @export
+nfree <- S7::new_generic("nfree", "distribution", function(distribution) {
+  S7::S7_dispatch()
+})
+
+S7::method(nfree, Distribution) <- function(distribution) {
+  parameter_properties(distribution, "free") |> unlist() |> sum()
+}
+
+#' @rdname parameter-properties
+#' @export
+nfixed <- S7::new_generic("nfixed", "distribution", function(distribution) {
+  S7::S7_dispatch()
+})
+
+S7::method(nfixed, Distribution) <- function(distribution) {
+  parameter_properties(distribution, "fixed") |> unlist() |> sum()
+}
+
 # from support.R
 
 S7::method(support, Distribution) <- function(object) {
@@ -355,7 +376,7 @@ S7::method(as_latex, Distribution) <- function(distribution, digits=3) {
   pars <- list()
   for (key in keys) {
     lab <- labels[[key]]
-    if (!fixed[[key]]) lab <- sprintf("\\hat{%s}", lab)
+    if (!fixed[[key]]) lab <- sprintf("\\widehat{%s}", lab)
     pars[[key]] <- sprintf("%1$s = %2$s", lab, format(values[[key]], digits=digits))
   }
   pars <- paste(pars, collapse=", ")

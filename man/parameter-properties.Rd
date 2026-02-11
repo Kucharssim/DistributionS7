@@ -9,6 +9,8 @@
 \alias{parameter_uvalues}
 \alias{parameter_uvalues<-}
 \alias{recreate_parameters}
+\alias{nfree}
+\alias{nfixed}
 \title{Parameter properties}
 \usage{
 parameters(distribution, which = c("all", "free", "fixed"))
@@ -16,7 +18,7 @@ parameters(distribution, which = c("all", "free", "fixed"))
 parameter_properties(
   distribution,
   property = c("key", "name", "label", "value", "uvalue", "derivative", "support",
-    "fixed"),
+    "fixed", "free"),
   which = "all"
 )
 
@@ -29,6 +31,10 @@ parameter_uvalues(distribution, which = "all")
 parameter_uvalues(distribution) <- value
 
 recreate_parameters(distribution)
+
+nfree(distribution)
+
+nfixed(distribution)
 }
 \arguments{
 \item{distribution}{Object of class \code{\link[=Distribution]{Distribution()}}.}

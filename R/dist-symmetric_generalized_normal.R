@@ -21,7 +21,7 @@ SymmetricGeneralizedNormal <- S7::new_class(
   constructor = function(mu, alpha, beta) {
     S7::new_object(
       S7::S7_object(),
-      name = "Symmetric generalized normal (Subbotin)",
+      name = "Symmetric generalized normal",
       support = Real(),
       mu = Parameter("mu", "location", "\\mu", mu, Real()),
       alpha = Parameter("alpha", "scale", "\\alpha", alpha, Real(min = 0)),

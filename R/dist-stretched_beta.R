@@ -24,8 +24,8 @@ StretchedBeta <- S7::new_class(
       support = Real(min=expression(min), max=expression(max)),
       alpha = Parameter("alpha", "shape 1", "\\alpha", alpha, Real(min=0)),
       beta = Parameter("beta", "shape 2", "\\beta", beta, Real(min=0)),
-      min = Parameter("min", "minimum", "min", min, Real(), fixed=TRUE),
-      max = Parameter("min", "maximum", "max", max, Real(), fixed=TRUE)
+      min = Parameter("min", "minimum", "\\text{min}", min, Real(), fixed=TRUE),
+      max = Parameter("min", "maximum", "\\text{max}", max, Real(), fixed=TRUE)
     )
   },
   validator = function(self) {

@@ -28,7 +28,7 @@ ShiftedExponentialRate <- S7::new_class(
       name = "Shifted Exponential",
       support = Real(min=expression(shift)),
       lambda = Parameter("lambda", "rate", "\\lambda", lambda, Real(min=0)),
-      shift = Parameter("shift", "shift", "shift", shift, Real())
+      shift = Parameter("shift", "shift", "\\text{shift}", shift, Real())
     )
   }
 )
@@ -46,7 +46,7 @@ ShiftedExponentialScale <- S7::new_class(
       name = "Shifted Exponential",
       support = Real(min=expression(shift)),
       beta = Parameter("beta", "scale", "\\beta", beta, Real(min=0)),
-      shift = Parameter("shift", "shift", "shift", shift, Real())
+      shift = Parameter("shift", "shift", "\\text{shift}", shift, Real())
     )
   }
 )
