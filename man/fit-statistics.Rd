@@ -48,7 +48,7 @@ Fit statistics of a distribution.
 \details{
 Calling \code{\link[=information_criteria]{information_criteria()}} and \code{\link[=gof_test]{gof_test()}} is recommended.
 
-\code{\link[=information_criteria]{information_criteria()}} is valid only when the distribution has been already fitted to the data with \code{\link[=Mle]{Mle()}} (see \code{\link[=fit_distribution]{fit_distribution()}}).
+\code{\link[=information_criteria]{information_criteria()}} is valid only when the distribution has been already fitted to the data with \code{\link[=Mle]{Mle()}} (see \link{parameter-estimation}).
 
 \code{\link[=gof_test]{gof_test()}} will work if the distribution has not been fitted to the data (\code{estimated=FALSE}), in which case it will compute
 the Kolmogorov-Smirnov test and the simple hypothesis test Anderson-Darling and Cramer-von Mises.

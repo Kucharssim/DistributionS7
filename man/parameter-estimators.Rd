@@ -40,7 +40,7 @@ BiasCorrected(silent = FALSE)
 These classes encapsulate methods for parameter estimation.
 }
 \details{
-These classes are used for dispatching methods such as \code{\link[=fit_distribution]{fit_distribution()}}, \code{\link[=parameter_estimates]{parameter_estimates()}}, or as a subroutine for \code{\link[=InferenceMethod]{InferenceMethod()}}.
+These classes are used for dispatching methods such as \code{\link[=fit]{fit()}}, \code{\link[=parameter_estimates]{parameter_estimates()}}, or as a subroutine for \code{\link[=InferenceMethod]{InferenceMethod()}}.
 
 \code{\link[=Mme]{Mme()}} specifies method of moments estimator, \code{\link[=Mle]{Mle()}}
 specifies maximum likelihood estimator, and \code{\link[=BiasCorrected]{BiasCorrected()}} specifies some version of bias corrected estimators

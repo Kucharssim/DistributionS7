@@ -10,7 +10,7 @@
 #' @details
 #' Calling [information_criteria()] and [gof_test()] is recommended.
 #'
-#' [information_criteria()] is valid only when the distribution has been already fitted to the data with [Mle()] (see [fit_distribution()]).
+#' [information_criteria()] is valid only when the distribution has been already fitted to the data with [Mle()] (see [parameter-estimation]).
 #'
 #' [gof_test()] will work if the distribution has not been fitted to the data (`estimated=FALSE`), in which case it will compute
 #' the Kolmogorov-Smirnov test and the simple hypothesis test Anderson-Darling and Cramer-von Mises.
@@ -34,6 +34,7 @@ gof_test <- S7::new_generic("gof_test", "distribution", function(distribution, d
   S7::S7_dispatch()
 })
 
+
 #' @rdname fit-statistics
 #' @export
 log_lik <- S7::new_generic("log_lik", "distribution", function(distribution, data) {
@@ -44,8 +45,7 @@ log_lik <- S7::new_generic("log_lik", "distribution", function(distribution, dat
 S7::method(log_lik, Distribution) <- function(distribution, data) {
   result <- likelihood(distribution, x=data, log=TRUE)
 
-  fixed <- parameter_properties(distribution, "fixed") |> unlist()
-  attr(result, "df") <- sum(!fixed)
+  attr(result, "df") <- nfree(distribution)
   attr(result, "nobs") <- length(data)
   class(result) <- c("log_lik", "logLik")
 

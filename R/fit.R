@@ -15,7 +15,7 @@
 #'
 #' @details
 #'
-#' These classes are used for dispatching methods such as [fit_distribution()], [parameter_estimates()], or as a subroutine for [InferenceMethod()].
+#' These classes are used for dispatching methods such as [fit()], [parameter_estimates()], or as a subroutine for [InferenceMethod()].
 #'
 #' [Mme()] specifies method of moments estimator, [Mle()]
 #' specifies maximum likelihood estimator, and [BiasCorrected()] specifies some version of bias corrected estimators
@@ -88,6 +88,7 @@ BiasCorrected <- S7::new_class(
 #' Methods for estimating parameters of a distribution.
 #'
 #' @param distribution Object of class [Distribution()].
+#' @param object Object of class [Distribution()].
 #' @param estimator Object of class [Estimator()].
 #' @param data numeric vector.
 #' @param inference_method Object of class [InferenceMethod()].
@@ -95,11 +96,11 @@ BiasCorrected <- S7::new_class(
 #' @returns
 #' [parameter_estimates()] returns a named list with parameter values.
 #' [parameter_inference()] returns a data.frame with parameter estimates, optionally SE and CI or other summaries.
-#' [parameter_start()] and [fit_distribution()] return an object of class [Distribution()].
+#' [parameter_start()] and [fit()] return an object of class [Distribution()].
 #'
 #' @note
-#' [fit_distribution()] is recommended if you want to fit a distribution to the data. In addition to estimating the parameters,
-#' it also validates the distribution object and checks if the final parameter values are compatible with the data.
+#' [fit()] is recommended if you want to fit a distribution to the data. In addition to estimating the parameters,
+#' it also validates the final distribution object.
 #'
 #' @name parameter-estimation
 NULL
@@ -388,8 +389,14 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
 
 # helper functions ----
 
+#' @importFrom generics fit
+#' @export
+generics::fit
+
 #' @rdname parameter-estimation
 #' @export
+fit.Distribution <- function(object, estimator=Mle(), data) fit_distribution(object, estimator, data)
+
 fit_distribution <- S7::new_generic("fit_distribution", c("distribution", "estimator"), function(distribution, estimator, data) {
   data <- stats::na.omit(data)
   S7::S7_dispatch()

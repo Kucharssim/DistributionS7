@@ -5,7 +5,7 @@
 \alias{parameter_estimates}
 \alias{parameter_start}
 \alias{parameter_inference}
-\alias{fit_distribution}
+\alias{fit.Distribution}
 \title{Parameter estimation}
 \usage{
 parameter_estimates(distribution, estimator, data)
@@ -14,7 +14,7 @@ parameter_start(distribution, data)
 
 parameter_inference(distribution, inference_method, data)
 
-fit_distribution(distribution, estimator, data)
+\method{fit}{Distribution}(object, estimator = Mle(), data)
 }
 \arguments{
 \item{distribution}{Object of class \code{\link[=Distribution]{Distribution()}}.}
@@ -24,16 +24,18 @@ fit_distribution(distribution, estimator, data)
 \item{data}{numeric vector.}
 
 \item{inference_method}{Object of class \code{\link[=InferenceMethod]{InferenceMethod()}}.}
+
+\item{object}{Object of class \code{\link[=Distribution]{Distribution()}}.}
 }
 \value{
 \code{\link[=parameter_estimates]{parameter_estimates()}} returns a named list with parameter values.
 \code{\link[=parameter_inference]{parameter_inference()}} returns a data.frame with parameter estimates, optionally SE and CI or other summaries.
-\code{\link[=parameter_start]{parameter_start()}} and \code{\link[=fit_distribution]{fit_distribution()}} return an object of class \code{\link[=Distribution]{Distribution()}}.
+\code{\link[=parameter_start]{parameter_start()}} and \code{\link[=fit]{fit()}} return an object of class \code{\link[=Distribution]{Distribution()}}.
 }
 \description{
 Methods for estimating parameters of a distribution.
 }
 \note{
-\code{\link[=fit_distribution]{fit_distribution()}} is recommended if you want to fit a distribution to the data. In addition to estimating the parameters,
-it also validates the distribution object and checks if the final parameter values are compatible with the data.
+\code{\link[=fit]{fit()}} is recommended if you want to fit a distribution to the data. In addition to estimating the parameters,
+it also validates the final distribution object.
 }
