@@ -53,16 +53,16 @@ Parameter <- S7::new_class(
     if(missing(fixed)) {
       fixed <- is.fixed(value)
     } else if(fixed && !is.fixed(value)) {
-      rlang::inform(rlang::englue("Parameter `{key}` was fixed by default. Set `distribution@{key}@fixed <- FALSE` if you are sure you want to estimate it, and you know what you are doing."))
+      rlang::inform(rlang::englue("Parameter `{key}` was fixed by default."))
     }
     attr(value, "fixed") <- NULL
 
     S7::new_object(S7::S7_object(), key=key, name=name, label=label, value=value, support=support, fixed=fixed)
   },
   validator = function(self) {
-    if (length(self@value) != 1) return("Parameter value must be of length 1")
-    if (self@support@min > self@value) return("Parameter value is smaller than the minimum of the parameter support")
-    if (self@support@max < self@value) return("Parameter value is larger than the maximum of the parameter support")
+    if (length(self@value) != 1) return(rlang::englue("{self@key}@value must be of length 1."))
+    if (self@support@min > self@value) return(rlang::englue("{self@key}@value ({self@value}) must be larger than {self@key}@support@min ({self@support@min})."))
+    if (self@support@max < self@value) return(rlang::englue("{self@key}@value ({self@value}) must be smaller than {self@key}@support@max ({self@support@max})."))
   },
 )
 

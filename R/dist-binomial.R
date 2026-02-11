@@ -22,7 +22,7 @@ Binomial <- S7::new_class(
     )
   },
   validator = function(self) {
-    assertthat::assert_that(self@size@fixed)
+    if (self@size@free) return("`size` must be fixed.")
     return(NULL)
   }
 )

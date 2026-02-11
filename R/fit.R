@@ -232,7 +232,10 @@ InferenceMethod <- S7::new_class(
     estimator = Estimator,
     ci_level = S7::new_property(
       class = S7::class_double,
-      validator = function(value) { assertthat::assert_that(value > 0, value < 1); return(NULL) },
+      validator = function(value) {
+        if (value > 1) return("`ci_level` must be smaller than 1.")
+        if (value < 0) return("`ci_level` must be larger than 0.")
+      },
       default = 0.95
     ),
     alpha = S7::new_property(getter = function(self) 1-self@ci_level),

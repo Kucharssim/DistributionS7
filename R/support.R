@@ -25,12 +25,12 @@ Support <- S7::new_class(
   properties = list(
     min = S7::new_property(
       class = S7::class_numeric | S7::class_expression,
-      validator = function(value) if (length(value) != 1) "must be of length 1",
+      validator = function(value) if (length(value) != 1) return("must be of length 1"),
       default = -Inf
     ),
     max = S7::new_property(
       class = S7::class_numeric | S7::class_expression,
-      validator = function(value) if (length(value) != 1) "must be of length 1",
+      validator = function(value) if (length(value) != 1) return("must be of length 1"),
       default = Inf
     ),
     numeric = S7::new_property(

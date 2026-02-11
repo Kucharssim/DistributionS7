@@ -25,14 +25,13 @@ StretchedBeta <- S7::new_class(
       alpha = Parameter("alpha", "shape 1", "\\alpha", alpha, Real(min=0)),
       beta = Parameter("beta", "shape 2", "\\beta", beta, Real(min=0)),
       min = Parameter("min", "minimum", "\\text{min}", min, Real(), fixed=TRUE),
-      max = Parameter("min", "maximum", "\\text{max}", max, Real(), fixed=TRUE)
+      max = Parameter("max", "maximum", "\\text{max}", max, Real(), fixed=TRUE)
     )
   },
   validator = function(self) {
-    assertthat::assert_that(self@min@value < self@max@value)
-    assertthat::assert_that(self@min@fixed)
-    assertthat::assert_that(self@max@fixed)
-    return(NULL)
+    if (self@min@value >= self@max@value) return("`min` must be smaller than `max`.")
+    if (self@min@free) return("`min` must be fixed.")
+    if (self@max@free) return("`max` must be fixed.")
   }
 )
 

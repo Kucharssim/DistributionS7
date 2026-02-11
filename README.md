@@ -28,16 +28,13 @@ library(DistributionS7)
 #> Attaching package: 'DistributionS7'
 #> The following objects are masked from 'package:stats':
 #> 
-#>     binomial, qf
+#>     Gamma, qf
 #> The following object is masked from 'package:grDevices':
 #> 
 #>     pdf
-#> The following objects are masked from 'package:base':
-#> 
-#>     beta, gamma
 
 # create a distribution object
-n <- normal(0, 1)
+n <- Normal(0, 1)
 
 # sample from a distribution (and distort to make the distribution not fitting well)
 x <- rng(n, 100) * 0.3 + 1
@@ -45,9 +42,9 @@ x <- rng(n, 100) * 0.3 + 1
 # goodness-of-fit tests
 gof_test(n, x, estimated=FALSE)
 #>              test  statistic      p_value
-#> ks_test   ks_test  0.6595587 3.280012e-38
-#> cvm_test cvm_test 15.1462604 0.000000e+00
-#> ad_test   ad_test 71.7494937 6.000000e-06
+#> ks_test   ks_test  0.6398649 5.478287e-36
+#> cvm_test cvm_test 15.2805061 0.000000e+00
+#> ad_test   ad_test 72.9246153 6.000000e-06
 
 # fit to data using maximum likelihood
 n <- fit_distribution(n, Mle(), x)
@@ -55,20 +52,20 @@ n <- fit_distribution(n, Mle(), x)
 # get uncertainty around parameter estimates using normal theory intervals
 parameter_inference(n, NormalTheory(), x)
 #>         key   label  estimate         se     lower    upper
-#> mu       mu    \\mu 0.9603700 0.02866496 0.9041877 1.016552
-#> sigma sigma \\sigma 0.2866496 0.02026917 0.2495527 0.329261
+#> mu       mu    \\mu 0.9705081 0.02906247 0.9135468 1.027470
+#> sigma sigma \\sigma 0.2906247 0.02055025 0.2530134 0.333827
 
 # fit indices of the fitted distribution
 gof_test(n, x, estimated=TRUE)
 #>                                      test  statistic   p_value
-#> lillie_test                   lillie_test 0.05901829 0.5318607
-#> cvm_test                         cvm_test 0.05764614 0.4028020
-#> ad_test                           ad_test 0.43365370 0.2964786
-#> shapiro_wilk_test       shapiro_wilk_test 0.98147289 0.1728587
-#> shapiro_francia_test shapiro_francia_test 0.98612874 0.3226297
+#> lillie_test                   lillie_test 0.04763650 0.8344792
+#> cvm_test                         cvm_test 0.03141533 0.8253144
+#> ad_test                           ad_test 0.24730958 0.7472024
+#> shapiro_wilk_test       shapiro_wilk_test 0.98870400 0.5614682
+#> shapiro_francia_test shapiro_francia_test 0.99142378 0.6879283
 information_criteria(n, x)
 #>   n_par n_obs   log_lik      aic      bic
-#> 1     2   100 -16.94437 37.88875 43.09909
+#> 1     2   100 -18.32159 40.64317 45.85351
 
 # compare data to distribution
 plot_empirical(n, x, ci=TRUE)

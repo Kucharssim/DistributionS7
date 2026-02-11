@@ -35,7 +35,7 @@ You can install the development version of DistributionS7 from [GitHub](https://
 library(DistributionS7)
 
 # create a distribution object
-n <- normal(0, 1)
+n <- Normal(0, 1)
 
 # sample from a distribution (and distort to make the distribution not fitting well)
 x <- rng(n, 100) * 0.3 + 1

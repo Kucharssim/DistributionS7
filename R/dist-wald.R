@@ -62,8 +62,7 @@ WaldDrift <- S7::new_class(
     )
   },
   validator = function(self) {
-    is_fixed <- unlist(parameter_properties(self, "fixed"))
-    if (sum(is_fixed) == 0) return("At least one of the three parameters `nu`, `alpha`, and `sigma` must be fixed")
+    if (nfixed(self) == 0) return("At least one of the three parameters `nu`, `alpha`, and `sigma` must be fixed")
   }
 )
 
