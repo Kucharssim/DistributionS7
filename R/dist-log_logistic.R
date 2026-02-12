@@ -102,7 +102,7 @@ S7::method(rargs, LogLogisticScale) <- function(distribution) {
 S7::method(parameter_estimates, list(LogLogisticLocation, Estimator)) <- function(distribution, estimator, data) {
   data <- log(data)
   parameters <- recreate_parameters(distribution)
-  distribution <- do.call(logistic, parameters)
+  distribution <- do.call(Logistic, parameters)
 
   parameter_estimates(distribution, estimator, data)
 }
@@ -110,7 +110,7 @@ S7::method(parameter_estimates, list(LogLogisticLocation, Estimator)) <- functio
 S7::method(parameter_estimates, list(LogLogisticScale, Estimator)) <- function(distribution, estimator, data) {
   data <- log(data)
   parameters <- recreate_parameters(distribution)
-  distribution <- logistic(
+  distribution <- Logistic(
     mu = log(parameters[["alpha"]]),
     sigma = 1/parameters[["beta"]]
   )

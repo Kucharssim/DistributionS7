@@ -116,6 +116,6 @@ S7::method(rargs, InverseGammaMean) <- function(distribution, ...) {
 
 S7::method(parameter_estimates, list(InverseGammaClass, Estimator)) <- function(distribution, estimator, data) {
   parameters <- recreate_parameters(distribution)
-  distribution <- do.call(gamma, parameters)
+  distribution <- do.call(Gamma, parameters)
   parameter_estimates(distribution, estimator, 1/data)
 }

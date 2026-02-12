@@ -162,9 +162,9 @@ S7::method(fit_distribution, list(Shifted, Mle)) <- function(distribution, estim
   if(!is.null(estimates[["shift"]])) {
     shift <- estimates["shift"]
     estimates[["shift"]] <- NULL
+    parameter_values(distribution) <- shift
   }
   parameter_values(distribution@distribution) <- estimates
-  parameter_values(distribution) <- shift
 
 
   # make a new dist object - this ensures all properties are valid
@@ -175,7 +175,7 @@ S7::method(fit_distribution, list(Shifted, Mle)) <- function(distribution, estim
   shift <- distribution@shift@value
   if (distribution@shift@fixed) shift <- fixed(shift)
 
-  distribution <- shifted(distribution@distribution, shift=shift)
+  distribution <- Shifted(distribution@distribution, shift=shift)
   return(distribution)
 }
 
