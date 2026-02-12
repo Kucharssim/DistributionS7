@@ -8,18 +8,6 @@
 #' @family distributions
 #' @name t-distribution
 #' @export
-noncentral_student_t <- function(nu, kappa, mu, sigma) NoncentralStudentT(nu=nu, kappa=kappa, mu=mu, sigma=sigma)
-
-#' @rdname t-distribution
-#' @export
-noncentral_t <- function(nu, kappa) NoncentralStudentT(nu=nu, kappa=kappa, mu=fixed(0), sigma=fixed(1))
-
-#' @rdname t-distribution
-#' @export
-student_t <- function(nu, mu, sigma) NoncentralStudentT(nu=nu, kappa=fixed(0), mu=mu, sigma=sigma)
-
-#' @rdname t-distribution
-#' @export
 StandardT <- S7::new_class(
   "StandardT",
   parent = DistributionContinuous,
@@ -58,7 +46,7 @@ NoncentralT <- S7::new_class(
   "NoncentralT",
   parent = StandardT,
   properties = list(kappa = Parameter),
-  constructor = function(nu, kappa, mu, sigma) {
+  constructor = function(nu, kappa) {
     S7::new_object(
       S7::S7_object(),
       name = "Noncentral t",

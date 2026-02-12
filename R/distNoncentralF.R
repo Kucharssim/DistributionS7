@@ -14,7 +14,7 @@ CentralF <- S7::new_class(
     nu1 = Parameter,
     nu2 = Parameter
   ),
-  constructor = function(nu1, nu2, kappa) {
+  constructor = function(nu1, nu2) {
     S7::new_object(
       S7::S7_object(),
       name = "Noncentral F",

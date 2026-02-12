@@ -1,88 +1,3 @@
-# point estimation ----
-
-#' @title Estimators of distribution parameters.
-#' @description
-#' These classes encapsulate methods for parameter estimation.
-#'
-#' @name parameter-estimators
-#'
-#' @param silent logical; Should we suppress info messages during fitting.
-#' @param optim logical; Should we force generic numerical optimization, even if there is a specific method to find the estimates for the particular distribution?
-#' @param constrained logical; Should numerical optimization be done on the constrained or on the unconstrained parameter space?
-#' @param method character; passed to [stats::optim()].
-#' @param start method/function, list, or object of \code{S7} class \code{Estimator}. See details.
-#' @param control list; passed to [stats::optim()].
-#'
-#' @details
-#'
-#' These classes are used for dispatching methods such as [fit()], [parameter_estimates()], or as a subroutine for [InferenceMethod()].
-#'
-#' [Mme()] specifies method of moments estimator, [Mle()]
-#' specifies maximum likelihood estimator, and [BiasCorrected()] specifies some version of bias corrected estimators
-#' (this is highly dependent on the type of distribution).
-#'
-#' [Mle()] is the default method that is implemented for any distribution. If there are no closed-form solutions for the MLE,
-#' then numerical optimization of the log likelihood is used.
-#'
-#' \code{start} is used for initialization of the distribution parameters for numerical optimization.
-#' By default, the routine calls [parameter_start()], which for selected distributions attempts to use some heuristics to find
-#' reasonable starting values, otherwise call \code{parameteter_estimates(distribution, Mme(), data)} to start the parameters
-#' with method of moments estimation. In the absence of an implementation of either of the methods for a particular distribution,
-#' the starting parameter values default to the values set by the distribution.
-#' One can pass an arbitrary method/function with arguments \code{distribution}, \code{data}, to implement a custom parameter value initialization.
-#' Otherwise, one can also pass a named list to overwrite the parameter values before starting the optimization.
-#'
-NULL
-
-#' @rdname parameter-estimators
-#' @export
-Estimator <- S7::new_class(
-  name = "Estimator",
-  abstract = TRUE,
-  properties = list(
-    silent = S7::new_property(class = S7::class_logical, default=FALSE)
-  )
-)
-
-#' @rdname parameter-estimators
-#' @export
-Mme <- S7::new_class(
-  name = "Mme",
-  parent = Estimator
-)
-
-#' @rdname parameter-estimators
-#' @export
-Mle <- S7::new_class(
-  name = "Mle",
-  parent = Estimator,
-  properties = list(
-    optim = S7::class_logical,
-    constrained = S7::class_logical,
-    method = S7::class_character,
-    start = Estimator | S7::class_function | S7::class_list,
-    control = S7::class_list
-  ),
-  constructor = function(optim=FALSE, constrained=FALSE, method=if(constrained) "L-BFGS-B" else "BFGS", start=parameter_start, control=list(), silent=FALSE) {
-    S7::new_object(
-      S7::S7_object(),
-      optim=optim,
-      constrained=constrained,
-      method=method,
-      start=start,
-      control=control,
-      silent=silent
-    )
-  }
-)
-
-#' @rdname parameter-estimators
-#' @export
-BiasCorrected <- S7::new_class(
-  name = "BiasCorrected",
-  parent = Estimator
-)
-
 #' @title Parameter estimation
 #' @description
 #' Methods for estimating parameters of a distribution.
@@ -106,7 +21,36 @@ BiasCorrected <- S7::new_class(
 #' @name parameter-estimation
 NULL
 
-## point estimation generics ----
+
+#' @importFrom generics fit
+#' @export
+generics::fit
+
+#' @rdname parameter-estimation
+#' @export
+fit.Distribution <- function(object, estimator=Mle(), data, ...) fit_distribution(object, estimator, data)
+
+fit_distribution <- S7::new_generic("fit_distribution", c("distribution", "estimator"), function(distribution, estimator, data) {
+  data <- stats::na.omit(data)
+  S7::S7_dispatch()
+})
+
+S7::method(fit_distribution, list(Distribution, Estimator)) <- function(distribution, estimator, data) {
+  estimates <- parameter_estimates(distribution, estimator, data)
+  parameter_values(distribution) <- estimates
+
+
+  # make a new dist object - this ensures all properties are valid
+  dist_class <- S7::S7_class(distribution)
+  parameters <- recreate_parameters(distribution)
+  distribution <- do.call(dist_class, parameters)
+
+  # check if data is inside of the support of the distribution
+  assertthat::assert_that(all(inside(distribution, data)), msg = "data are outside of the distribution support")
+  return(distribution)
+}
+
+
 #' @rdname parameter-estimation
 #' @export
 parameter_estimates <- S7::new_generic("parameter_estimates", c("distribution","estimator"), function(distribution, estimator, data) {
@@ -206,129 +150,6 @@ S7::method(parameter_start, Distribution) <- function(distribution, data) {
 }
 
 
-# inference ----
-
-#' @title Parameter inference methods
-#' @description
-#' These classes encapsulate methods for parameter inference. This is yet experimental; methods for [Bootstrap()] and [ProfileLikelihood()] are not implemented at all.
-#' [DefaultMethod()] will currently default to [NormalTheory()], *which is not a good default for some distributions!*
-#' @name parameter-inference
-#'
-#' @param estimator Object of class [Estimator()].
-#' @param ci_level numeric; confidence level.
-#' @param args list; optional arguments for the method.
-#' @param constrained logical; should the CIs be computed on the unconstrained space (and then transformed),
-#' or should be computed directly on the constrained space.
-#' @param control list; passed to [stats::optimHess].
-#' @param samples integer; How many samples to take.
-#' @param callback function; Optional function to exectute on every iteration.
-#'
-#' @seealso [parameter_inference()]
-NULL
-
-#' @rdname parameter-inference
-#' @export
-InferenceMethod <- S7::new_class(
-  name = "InferenceMethod",
-  properties = list(
-    estimator = Estimator,
-    ci_level = S7::new_property(
-      class = S7::class_double,
-      validator = function(value) {
-        if (value > 1) return("`ci_level` must be smaller than 1.")
-        if (value < 0) return("`ci_level` must be larger than 0.")
-      },
-      default = 0.95
-    ),
-    alpha = S7::new_property(getter = function(self) 1-self@ci_level),
-    lower = S7::new_property(getter = function(self) self@alpha/2),
-    upper = S7::new_property(getter = function(self) 1-self@alpha/2)
-  ),
-  constructor = function(estimator = Mle(), ci_level = 0.95) {
-    S7::new_object(
-      S7::S7_object(),
-      estimator = estimator,
-      ci_level = ci_level
-    )
-  }
-)
-
-#' @rdname parameter-inference
-#' @export
-DefaultMethod <- S7::new_class(
-  name = "DefaultMethod",
-  parent = InferenceMethod,
-  properties = list(
-    args = S7::class_list
-  ),
-  constructor = function(estimator = Mle(), ci_level = 0.95, args = list()) {
-    S7::new_object(
-      S7::S7_object(),
-      estimator = estimator,
-      ci_level = ci_level,
-      args = args
-    )
-  }
-)
-
-#' @rdname parameter-inference
-#' @export
-NormalTheory <- S7::new_class(
-  name = "NormalTheory",
-  parent = InferenceMethod,
-  properties = list(
-    constrained = S7::class_logical,
-    control = S7::class_list
-  ),
-  constructor = function(estimator = Mle(), ci_level = 0.95, constrained = FALSE, control = list()) {
-    S7::new_object(
-      S7::S7_object(),
-      estimator = estimator,
-      ci_level = ci_level,
-      constrained = constrained,
-      control = control
-    )
-  }
-)
-
-#' @rdname parameter-inference
-#' @usage ProfileLikelihood(estimator=Mle(), ci_level=0.95)
-#' @export
-ProfileLikelihood <- S7::new_class(
-  name = "Profile",
-  parent = InferenceMethod,
-  constructor = function(estimator = Mle(), ci_level = 0.95) {
-    S7::new_object(
-      S7::S7_object(),
-      estimator = estimator,
-      ci_level = ci_level
-    )
-  }
-)
-
-#' @rdname parameter-inference
-#' @usage Bootstrap(estimator=Mle(), ci_level=0.95, samples=1000L, callback=function() {})
-#' @export
-Bootstrap <- S7::new_class(
-  name = "Bootstrap",
-  parent = InferenceMethod,
-  properties = list(
-    samples = S7::class_integer,
-    callback = S7::class_function
-  ),
-  constructor = function(estimator = Mle(), ci_level = 0.95, samples = 1000L, callback = function() {}) {
-    S7::new_object(
-      S7::S7_object(),
-      estimator = estimator,
-      ci_level = ci_level,
-      samples = samples,
-      callback = callback
-    )
-  }
-)
-
-## inference generics ----
-
 #' @rdname parameter-estimation
 #' @export
 parameter_inference <- S7::new_generic("parameter_inference", c("distribution", "inference_method"), function(distribution, inference_method, data){
@@ -388,36 +209,7 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
   return(estimates_table(distribution, estimates=estimates, se=se, lower=lower, upper=upper))
 }
 
-# helper functions ----
-
-#' @importFrom generics fit
-#' @export
-generics::fit
-
-#' @rdname parameter-estimation
-#' @export
-fit.Distribution <- function(object, estimator=Mle(), data, ...) fit_distribution(object, estimator, data)
-
-fit_distribution <- S7::new_generic("fit_distribution", c("distribution", "estimator"), function(distribution, estimator, data) {
-  data <- stats::na.omit(data)
-  S7::S7_dispatch()
-})
-
-S7::method(fit_distribution, list(Distribution, Estimator)) <- function(distribution, estimator, data) {
-  estimates <- parameter_estimates(distribution, estimator, data)
-  parameter_values(distribution) <- estimates
-
-
-  # make a new dist object - this ensures all properties are valid
-  dist_class <- S7::S7_class(distribution)
-  parameters <- recreate_parameters(distribution)
-  distribution <- do.call(dist_class, parameters)
-
-  # check if data is inside of the support of the distribution
-  assertthat::assert_that(all(inside(distribution, data)), msg = "data are outside of the distribution support")
-  return(distribution)
-}
-
+# helpers----
 vcov <- function(distribution, data, constrained, control) {
   if (constrained) {
     start <- parameter_values(distribution, which="free")

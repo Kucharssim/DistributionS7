@@ -7,6 +7,7 @@ ShiftedExponential <- function(lambda, beta, shift=0) {
     lambda = ShiftedExponentialRate(lambda, shift),
     beta = ShiftedExponentialScale(beta, shift)
   )
+  return(distribution)
 }
 
 ShiftedExponentialClass <- S7::new_class(
