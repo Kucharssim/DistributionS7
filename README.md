@@ -42,9 +42,9 @@ x <- rng(n, 100) * 0.3 + 1
 # goodness-of-fit tests
 gof_test(n, x, estimated=FALSE)
 #>              test  statistic      p_value
-#> ks_test   ks_test  0.6556809 9.096591e-38
-#> cvm_test cvm_test 15.5909272 0.000000e+00
-#> ad_test   ad_test 74.5152049 6.000000e-06
+#> ks_test   ks_test  0.6446443 1.604742e-36
+#> cvm_test cvm_test 14.7052995 0.000000e+00
+#> ad_test   ad_test 69.6388496 6.000000e-06
 
 # fit to data (maximum likelihood by default)
 n <- fit(n, data=x)
@@ -52,37 +52,29 @@ n <- fit(n, data=x)
 # get uncertainty around parameter estimates using normal theory intervals
 parameter_inference(n, NormalTheory(), x)
 #>         key   label  estimate         se     lower     upper
-#> mu       mu    \\mu 0.9861917 0.02934783 0.9286710 1.0437124
-#> sigma sigma \\sigma 0.2934783 0.02075203 0.2554977 0.3371048
+#> mu       mu    \\mu 0.9491470 0.03048872 0.8893902 1.0089038
+#> sigma sigma \\sigma 0.3048872 0.02155877 0.2654301 0.3502097
 
 # fit indices of the fitted distribution
 gof_test(n, x, estimated=TRUE)
 #>                                      test  statistic   p_value
-#> lillie_test                   lillie_test 0.07453232 0.1875239
-#> cvm_test                         cvm_test 0.09264333 0.1400276
-#> ad_test                           ad_test 0.51361252 0.1888669
-#> shapiro_wilk_test       shapiro_wilk_test 0.98748664 0.4711598
-#> shapiro_francia_test shapiro_francia_test 0.98913316 0.5088190
+#> lillie_test                   lillie_test 0.05428551 0.6644937
+#> cvm_test                         cvm_test 0.03436303 0.7790073
+#> ad_test                           ad_test 0.29816661 0.5812252
+#> shapiro_wilk_test       shapiro_wilk_test 0.98762523 0.4809980
+#> shapiro_francia_test shapiro_francia_test 0.99008937 0.5808850
 information_criteria(n, x)
 #>   n_par n_obs   log_lik      aic      bic
-#> 1     2   100 -19.29869 42.59738 47.80772
+#> 1     2   100 -23.11251 50.22503 55.43537
 
 # compare data to distribution
-plot_empirical(n, x, ci=TRUE)
-#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-#> ℹ Please use `linewidth` instead.
-#> ℹ The deprecated feature was likely used in the DistributionS7 package.
-#>   Please report the issue to the authors.
-#> This warning is displayed once every 8 hours.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
-#> Warning: `expand_scale()` was deprecated in ggplot2 3.3.0.
-#> ℹ Please use `expansion()` instead.
-#> ℹ The deprecated feature was likely used in the DistributionS7 package.
-#>   Please report the issue to the authors.
-#> This warning is displayed once every 8 hours.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
+plot_hist(n, x) + ggplot2::ggtitle("Histogram vs. Normal Density")
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+``` r
+plot_qq(n, x, ci=TRUE) + ggplot2::ggtitle("Q-Q plot") 
+```
+
+<img src="man/figures/README-unnamed-chunk-3-2.png" width="100%" />

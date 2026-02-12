@@ -54,6 +54,7 @@ gof_test(n, x, estimated=TRUE)
 information_criteria(n, x)
 
 # compare data to distribution
-plot_empirical(n, x, ci=TRUE)
+plot_hist(n, x) + ggplot2::ggtitle("Histogram vs. Normal Density")
+plot_qq(n, x, ci=TRUE) + ggplot2::ggtitle("Q-Q plot") 
 ```
 
