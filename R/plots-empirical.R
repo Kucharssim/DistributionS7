@@ -79,20 +79,25 @@ S7::method(plot_hist, DistributionContinuous) <- function(distribution, data, ..
 
   bin_width_type <- jaspGraphs::jaspHistogramBinWidth(data, binWidthType = bin_width_type, numberOfBins = number_of_bins)
   h <- graphics::hist(data, plot=FALSE, breaks=bin_width_type)
+  d <- pdf(distribution, data)
 
-  y_breaks <- jaspGraphs::getPrettyAxisBreaks(c(0, h[["density"]]*1.05))
+  y_breaks <- jaspGraphs::getPrettyAxisBreaks(c(0, h[["density"]], d), bounds=TRUE)
   y_labs   <- jaspGraphs::axesLabeller(y_breaks)
-  x_breaks <- jaspGraphs::getPrettyAxisBreaks(data)
+  y_range  <- range(y_breaks)
+  x_breaks <- jaspGraphs::getPrettyAxisBreaks(data, bounds=TRUE)
   x_labs   <- jaspGraphs::axesLabeller(x_breaks)
+  x_range  <- range(x_breaks)
 
   plot <- ggplot2::ggplot(data = data.frame(x = data), ggplot2::aes(x = x)) +
     ggplot2::geom_histogram(mapping = ggplot2::aes(x=x, y=ggplot2::after_stat(density)), breaks=h[["breaks"]], fill="grey", col="black", linewidth=0.7) +
     ggplot2::geom_rug() +
-    stat_pdf(distribution, xlim = range(data), geom="line", linewidth = 1.5, inherit.aes = FALSE) +
-    ggplot2::scale_x_continuous(name = name,               breaks = x_breaks, labels = x_labs) +
-    ggplot2::scale_y_continuous(name = gettext("Density"), breaks = y_breaks, labels = y_labs) +
+    stat_pdf(distribution, xlim = range(x_range), geom="line", linewidth = 1.5, inherit.aes = FALSE) +
+    ggplot2::scale_x_continuous(name = name,               limits = x_range, breaks = x_breaks, labels = x_labs) +
+    ggplot2::scale_y_continuous(name = gettext("Density"), limits = y_range, breaks = y_breaks, labels = y_labs) +
     jaspGraphs::themeJaspRaw() +
     jaspGraphs::geom_rangeframe()
+
+  return(plot)
 }
 
 S7::method(plot_qq, DistributionContinuous) <- function(distribution, data, ..., ci=FALSE, ci_level=0.95) {
@@ -126,17 +131,21 @@ S7::method(plot_qq, DistributionContinuous) <- function(distribution, data, ...,
     ci_layer <- NULL
   }
 
-  y_breaks <- jaspGraphs::getPrettyAxisBreaks(as.vector(as.matrix(df)))
+  y_breaks <- jaspGraphs::getPrettyAxisBreaks(as.vector(as.matrix(df)), bounds=TRUE)
   y_labs   <- jaspGraphs::axesLabeller(y_breaks)
-  x_breaks <- jaspGraphs::getPrettyAxisBreaks(theoretical)
+  y_range  <- range(y_breaks)
+  x_breaks <- jaspGraphs::getPrettyAxisBreaks(theoretical, bounds=TRUE)
   x_labs   <- jaspGraphs::axesLabeller(x_breaks)
+  x_range  <- range(x_breaks)
 
   plot <- ggplot2::ggplot(data = df, ggplot2::aes(sample = sample)) +
     ci_layer +
-    ggplot2::geom_line(mapping = ggplot2::aes(x = theoretical, y = theoretical), size = 1) +
+    ggplot2::geom_line(mapping = ggplot2::aes(x = theoretical, y = theoretical), linewidth = 1) +
     ggplot2::geom_point(mapping = ggplot2::aes(x = theoretical, y = sample), shape=21, fill = "grey", size=3) +
-    ggplot2::scale_x_continuous(name = gettext("Theoretical"), breaks = x_breaks, labels = x_labs) +
-    ggplot2::scale_y_continuous(name = gettext("Sample"),      breaks = y_breaks, labels = y_labs) +
+    ggplot2::scale_x_continuous(
+      name = gettext("Theoretical"), limits = x_range, breaks = x_breaks, labels = x_labs) +
+    ggplot2::scale_y_continuous(
+      name = gettext("Sample"),      limits = y_range, breaks = y_breaks, labels = y_labs) +
     jaspGraphs::themeJaspRaw() +
     jaspGraphs::geom_rangeframe()
 
@@ -146,14 +155,15 @@ S7::method(plot_qq, DistributionContinuous) <- function(distribution, data, ...,
 S7::method(plot_ecdf, DistributionContinuous) <- function(distribution, data, ..., name) {
   if (missing(name)) name <- deparse1(substitute(data))
 
-  x_breaks <- jaspGraphs::getPrettyAxisBreaks(data)
+  x_breaks <- jaspGraphs::getPrettyAxisBreaks(data, bounds=TRUE)
   x_labs   <- jaspGraphs::axesLabeller(x_breaks)
+  x_range  <- range(x_breaks)
 
   plot <- ggplot2::ggplot(data = data.frame(x = data), ggplot2::aes(x = x)) +
-    ggplot2::stat_ecdf(geom = "step") +
     ggplot2::geom_rug() +
-    stat_cdf(distribution, xlim = range(data), geom="line", linewidth = 1.5, inherit.aes = FALSE) +
-    ggplot2::scale_x_continuous(breaks=x_breaks, labels=x_labs) +
+    stat_cdf(distribution, xlim = x_range, geom="line", linewidth = 1.5, inherit.aes = FALSE, alpha = 0.8) +
+    ggplot2::stat_ecdf(geom = "step", pad = TRUE, linewidth = 1.0, alpha = 0.8) +
+    ggplot2::scale_x_continuous(limits = x_range, breaks=x_breaks, labels=x_labs) +
     ggplot2::scale_y_continuous(limits = 0:1) +
     ggplot2::ylab(gettext("Cumulative Probability")) +
     ggplot2::xlab(name) +
@@ -192,8 +202,8 @@ S7::method(plot_pp, DistributionContinuous) <- function(distribution, data, ...,
     ci_layer +
     jaspGraphs::geom_abline2(slope = 1, intercept = 0, linewidth = 1) +
     ggplot2::geom_point(mapping = ggplot2::aes(x = theoretical, y = sample), shape=21, fill = "grey", size=3) +
-    ggplot2::scale_x_continuous(name = gettext("Theoretical"), limits = 0:1, expand = ggplot2::expand_scale(mult = 0, add = c(0.05, 0.1))) +
-    ggplot2::scale_y_continuous(name = gettext("Sample"),      limits = 0:1, expand = ggplot2::expand_scale(mult = 0, add = c(0.05, 0.1))) +
+    ggplot2::scale_x_continuous(name = gettext("Theoretical"), limits = 0:1) +
+    ggplot2::scale_y_continuous(name = gettext("Sample"),      limits = 0:1) +
     jaspGraphs::themeJaspRaw() +
     jaspGraphs::geom_rangeframe()
 

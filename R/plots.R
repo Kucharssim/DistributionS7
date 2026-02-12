@@ -10,7 +10,7 @@ S7::method(plot_distribution, Distribution) <- function(distribution, type=c("al
     pdf = plot_pdf(distribution, ...),
     cdf = plot_cdf(distribution, ...),
     qf  = plot_qf (distribution, ...),
-    all = list(plot_pdf(x, ...), plot_cdf(x, ...), plot_qf(x, ...))
+    all = list(plot_pdf(distribution, ...), plot_cdf(distribution, ...), plot_qf(distribution, ...))
   )
 
   if(type != "all") {
