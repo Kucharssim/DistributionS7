@@ -78,11 +78,11 @@ S7::method(rargs, ShiftedExponentialScale) <- function(distribution) {
 
 S7::method(parameter_estimates, list(ShiftedExponentialRate, Mle)) <- function(distribution, estimator, data) {
   estimates <- list()
-  if (!distribution@shift@fixed) {
+  if (distribution@shift@free) {
     shift <- min(data)
     estimates[["shift"]] <- shift
   } else {
-    shift <- distribution@shift@fixed
+    shift <- distribution@shift@value
   }
 
   if (!distribution@lambda@fixed) {
@@ -93,14 +93,14 @@ S7::method(parameter_estimates, list(ShiftedExponentialRate, Mle)) <- function(d
 
 S7::method(parameter_estimates, list(ShiftedExponentialScale, Mle)) <- function(distribution, estimator, data) {
   estimates <- list()
-  if (!distribution@shift@fixed) {
+  if (distribution@shift@free) {
     shift <- min(data)
     estimates[["shift"]] <- shift
   } else {
-    shift <- distribution@shift@fixed
+    shift <- distribution@shift@value
   }
 
-  if (!distribution@lambda@fixed) {
+  if (!distribution@beta@fixed) {
     estimates[["beta"]] <- mean(data-shift)
   }
   return(estimates)
