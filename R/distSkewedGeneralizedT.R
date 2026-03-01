@@ -21,8 +21,8 @@ SkewedGeneralizedT <- S7::new_class(
     mu = Parameter,
     sigma = Parameter,
     lambda = Parameter,
-    pp = Parameter,
-    qq = Parameter
+    p = Parameter,
+    q = Parameter
   ),
   constructor = function(mu, sigma, lambda, p, q) {
     S7::new_object(
@@ -32,8 +32,8 @@ SkewedGeneralizedT <- S7::new_class(
       mu = Parameter("mu", "location", "\\mu", mu, Real()),
       sigma = Parameter("sigma", "scale", "\\sigma", sigma, Real(min=0)),
       lambda = Parameter("lambda", "skew", "\\lambda", lambda, Real(min=-1, max=1)),
-      pp = Parameter("pp", "kurtosis", "p", p, Real(min=0)),
-      qq = Parameter("qq", "kurtosis", "q", q, Real(min=0))
+      p = Parameter("p", "kurtosis", "p", p, Real(min=0)),
+      q = Parameter("q", "kurtosis", "q", q, Real(min=0))
     )
   }
 )
@@ -54,15 +54,21 @@ S7::method(rng_fn, SkewedGeneralizedT) <- function(distribution) function(n, mu,
   sgt::rsgt(n, mu, sigma, lambda, pp, qq, mean.cent = FALSE, var.adj = FALSE)
 }
 
-S7::method(rargs, SkewedGeneralizedT) <- function(distribution) parameter_values(distribution)
+S7::method(rargs, SkewedGeneralizedT) <- function(distribution) {
+  pars <- parameter_values(distribution)
+  pars[["pp"]] <- pars[["p"]]
+  pars[["qq"]] <- pars[["q"]]
+  pars[["p"]] <- pars[["q"]] <- NULL
+  return(pars)
+}
 
 S7::method(parameter_start, SkewedGeneralizedT) <- function(distribution, data) {
   start = list()
   if (!distribution@mu@fixed)     start[["mu"]] <- median(data)
   if (!distribution@sigma@fixed)  start[["sigma"]] <- stats::IQR(data, type = 8)/2
   if (!distribution@lambda@fixed) start[["lambda"]] <- 0
-  if (!distribution@pp@fixed)     start[["pp"]] <- 2
-  if (!distribution@qq@fixed)     start[["qq"]] <- 2
+  if (!distribution@p@fixed)      start[["p"]] <- 2
+  if (!distribution@q@fixed)      start[["q"]] <- 2
 
   parameter_values(distribution) <- start
   return(distribution)
