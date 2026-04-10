@@ -39,3 +39,19 @@ test_that("gof tests work", {
   testthat::expect_equal(results[5, "statistic"], sf[["statistic"]], ignore_attr=TRUE)
   testthat::expect_equal(results[5, "p_value"],   sf[["p.value"]],   ignore_attr=TRUE)
 })
+
+testthat::test_that("bootstrapping works", {
+  dist <- ShiftedWald(1, 2, shift=1)
+  x <- withr::with_seed(3492, rexp(2000, 2)) + 1
+  dist <- fit(dist, x, estimator = Mle())
+
+
+  results <- gof_test(
+    dist, x, estimated = TRUE, 
+    bootstrap = Bootstrap(estimator=Mle(), samples=100L)
+  )
+
+  testthat::expect_lt(results["ks_test",  "p_value"], 0.1)
+  testthat::expect_lt(results["cvm_test", "p_value"], 0.1)
+  testthat::expect_lt(results["ad_test",  "p_value"], 0.1)
+})
