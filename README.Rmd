@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
   [![R-CMD-check](https://github.com/Kucharssim/DistributionS7/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Kucharssim/DistributionS7/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/Kucharssim/DistributionS7/graph/badge.svg)](https://app.codecov.io/gh/Kucharssim/DistributionS7)
 <!-- badges: end -->
 
 The goal of DistributionS7 is to provide convenient functionality to work with probability distributions.

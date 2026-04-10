@@ -6,6 +6,8 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/Kucharssim/DistributionS7/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Kucharssim/DistributionS7/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/Kucharssim/DistributionS7/graph/badge.svg)](https://app.codecov.io/gh/Kucharssim/DistributionS7)
 <!-- badges: end -->
 
 The goal of DistributionS7 is to provide convenient functionality to
@@ -42,30 +44,30 @@ x <- rng(n, 100) * 0.3 + 1
 # goodness-of-fit tests
 gof_test(n, x, estimated=FALSE)
 #>              test  statistic      p_value
-#> ks_test   ks_test  0.6446443 1.604742e-36
-#> cvm_test cvm_test 14.7052995 0.000000e+00
-#> ad_test   ad_test 69.6388496 6.000000e-06
+#> ks_test   ks_test  0.6650199 7.718926e-39
+#> cvm_test cvm_test 16.4580581 0.000000e+00
+#> ad_test   ad_test 79.5624914 6.000000e-06
 
 # fit to data (maximum likelihood by default)
 n <- fit(n, data=x)
 
 # get uncertainty around parameter estimates using normal theory intervals
 parameter_inference(n, NormalTheory(), x)
-#>         key   label  estimate         se     lower     upper
-#> mu       mu    \\mu 0.9491470 0.03048872 0.8893902 1.0089038
-#> sigma sigma \\sigma 0.3048872 0.02155877 0.2654301 0.3502097
+#>         key   label estimate         se     lower     upper
+#> mu       mu    \\mu 1.013083 0.02740160 0.9593769 1.0667892
+#> sigma sigma \\sigma 0.274016 0.01937584 0.2385541 0.3147494
 
 # fit indices of the fitted distribution
 gof_test(n, x, estimated=TRUE)
 #>                                      test  statistic   p_value
-#> lillie_test                   lillie_test 0.05428551 0.6644937
-#> cvm_test                         cvm_test 0.03436303 0.7790073
-#> ad_test                           ad_test 0.29816661 0.5812252
-#> shapiro_wilk_test       shapiro_wilk_test 0.98762523 0.4809980
-#> shapiro_francia_test shapiro_francia_test 0.99008937 0.5808850
+#> lillie_test                   lillie_test 0.06468284 0.3831233
+#> cvm_test                         cvm_test 0.06811919 0.2929871
+#> ad_test                           ad_test 0.39604571 0.3642612
+#> shapiro_wilk_test       shapiro_wilk_test 0.98592495 0.3694724
+#> shapiro_francia_test shapiro_francia_test 0.98307424 0.1966320
 information_criteria(n, x)
 #>   n_par n_obs   log_lik      aic      bic
-#> 1     2   100 -23.11251 50.22503 55.43537
+#> 1     2   100 -12.43697 28.87394 34.08428
 
 # compare data to distribution
 plot_hist(n, x) + ggplot2::ggtitle("Histogram vs. Normal Density")
