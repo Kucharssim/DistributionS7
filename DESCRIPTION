@@ -1,7 +1,7 @@
 Package: DistributionS7
 Type: Package
 Title: Probability distributions with a S7 class system
-Version: 0.1.1
+Version: 0.1.2
 Author: Šimon Kucharský
 Maintainer: Šimon Kucharský <s.kucharsky@jasp-stats.com>
 Description: An interface for working with probability distributions via the S7 class system. 
