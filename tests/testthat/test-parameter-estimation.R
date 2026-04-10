@@ -1,6 +1,6 @@
 testthat::test_that("parameter_estimates works", {
   dist <- Normal(mu=0, sigma2=2)
-  x <- rng(dist, 100)
+  x <- withr::with_seed(93235, rng(dist, 100))
   x_bar <- mean(x)
 
   # analytic
