@@ -42,7 +42,7 @@ S7::method(pdf_fn, StretchedBeta) <- function(distribution) function(x, alpha, b
 
 S7::method(cdf_fn, StretchedBeta) <- function(distribution) function(q, alpha, beta, min, max, lower.tail=TRUE, log.p=FALSE) {
   q <- (q-min)/(max-min)
-  stats::qbeta(q, alpha, beta, lower.tail = lower.tail, log.p = log.p)
+  stats::pbeta(q, alpha, beta, lower.tail = lower.tail, log.p = log.p)
 }
 
 S7::method(qf_fn, StretchedBeta) <- function(distribution) function(p, alpha, beta, min, max, lower.tail=TRUE, log.p=FALSE) {

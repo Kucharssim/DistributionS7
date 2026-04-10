@@ -46,7 +46,7 @@ S7::method(qf_fn, Pareto) <- function(distribution) function(p, alpha, beta, low
   return(q)
 }
 
-S7::method(rng_fn, Pareto) <- function(distribution) function(n, mu, beta) {
+S7::method(rng_fn, Pareto) <- function(distribution) function(n, alpha, beta) {
   p <- runif(n, 0, 1)
   x <- qf(distribution, p)
   return(x)
