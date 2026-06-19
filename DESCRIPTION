@@ -62,7 +62,6 @@ Imports:
   nortest,
   ggplot2,
   ggrepel,
-  jaspGraphs,
   patchwork,
   sn,
   gnorm,
@@ -70,8 +69,6 @@ Imports:
   generics
 Depends:
   R (>= 4.1.0)
-Remotes:
-  jasp-stats/jaspGraphs
 Suggests: 
   testthat (>= 3.0.0),
   withr

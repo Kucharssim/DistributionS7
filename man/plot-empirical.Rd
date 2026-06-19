@@ -19,14 +19,7 @@ plot_empirical(
   ci_level = 0.95
 )
 
-plot_hist(
-  distribution,
-  data,
-  ...,
-  name,
-  bin_width_type = "doane",
-  number_of_bins = NA
-)
+plot_hist(distribution, data, ..., name, breaks = "Sturges")
 
 plot_qq(distribution, data, ..., ci = FALSE, ci_level = 0.95)
 
@@ -49,9 +42,7 @@ plot_pp(distribution, data, ..., ci = FALSE, ci_level = 0.95)
 
 \item{ci_level}{Numeric; Confidence level of confidence bands.}
 
-\item{bin_width_type}{Character; Passed to \code{\link[jaspGraphs:jaspHistogramBinWidth]{jaspGraphs::jaspHistogramBinWidth()}}.}
-
-\item{number_of_bins}{Integer; Passed to \code{\link[jaspGraphs:jaspHistogramBinWidth]{jaspGraphs::jaspHistogramBinWidth()}}.}
+\item{breaks}{Passed to \code{\link[graphics:hist]{graphics::hist()}}.}
 }
 \description{
 Plot a distribution against data.
