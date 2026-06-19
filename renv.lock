@@ -1375,7 +1375,6 @@
       "License": "GPL",
       "Encoding": "UTF-8",
       "LazyData": "true",
-      "RoxygenNote": "7.3.3",
       "Imports": [
         "cli",
         "ggplot2 (>= 3.0.0)",
@@ -1394,12 +1393,13 @@
         "vdiffr"
       ],
       "Roxygen": "list(markdown = TRUE)",
+      "Config/roxygen2/version": "8.0.0",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "jasp-stats",
       "RemoteRepo": "jaspGraphs",
       "RemoteRef": "master",
-      "RemoteSha": "cbe943517ac21078d0a502bcfaf8ae5e11756a05"
+      "RemoteSha": "cac753920e984d3628cace64538c00acd3622a58"
     },
     "jquerylib": {
       "Package": "jquerylib",

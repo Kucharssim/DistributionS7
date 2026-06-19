@@ -49,9 +49,9 @@ plot_pp(distribution, data, ..., ci = FALSE, ci_level = 0.95)
 
 \item{ci_level}{Numeric; Confidence level of confidence bands.}
 
-\item{bin_width_type}{Character; Passed to \code{\link[jaspGraphs:jaspHistogram]{jaspGraphs::jaspHistogramBinWidth()}}.}
+\item{bin_width_type}{Character; Passed to \code{\link[jaspGraphs:jaspHistogramBinWidth]{jaspGraphs::jaspHistogramBinWidth()}}.}
 
-\item{number_of_bins}{Integer; Passed to \code{\link[jaspGraphs:jaspHistogram]{jaspGraphs::jaspHistogramBinWidth()}}.}
+\item{number_of_bins}{Integer; Passed to \code{\link[jaspGraphs:jaspHistogramBinWidth]{jaspGraphs::jaspHistogramBinWidth()}}.}
 }
 \description{
 Plot a distribution against data.

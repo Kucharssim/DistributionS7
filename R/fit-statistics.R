@@ -153,18 +153,21 @@ S7::method(ad_test, DistributionContinuous) <- function(distribution, data, esti
 S7::method(gof_test, DistributionContinuous) <- function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
   results <- list()
 
-  # for bootstrapping, we only need simple hypothesis tests...
-  estimated <- estimated && bootstrap@samples == 0
-
   if (estimated && nfree(distribution) == 0) {
     rlang::inform("Ignoring `estimated=TRUE`; distribution has no free parameters...")
     estimated <- FALSE
   }
 
-
-  if (!estimated) results[["ks_test"]] <- ks_test(distribution, data)
-  results[["cvm_test"]] <- cvm_test(distribution, data, estimated)
-  results[["ad_test"]]  <- ad_test (distribution, data, estimated)
+  if (bootstrap@samples == 0L) {
+    if (!estimated) results[["ks_test"]] <- ks_test(distribution, data)
+    results[["cvm_test"]] <- cvm_test(distribution, data, estimated)
+    results[["ad_test"]]  <- ad_test (distribution, data, estimated)
+  } else {
+    # when doing bootstrap, we only need simple hypothesis tests
+    results[["ks_test"]]  <- ks_test (distribution, data)
+    results[["cvm_test"]] <- cvm_test(distribution, data, FALSE)
+    results[["ad_test"]]  <- ad_test (distribution, data, FALSE)
+  }
   results <- do.call(rbind, results)
 
   if (bootstrap@samples > 0L) {
@@ -184,7 +187,7 @@ S7::method(gof_test, DistributionContinuous) <- function(distribution, data, est
       expr = boot_fn(distribution=distribution, data=data, estimated=estimated, bootstrap=bootstrap)
       )
     # compare to observed to get boostrapped p-vals
-    results[["p_value"]] <- sweep(statistics, 1, results[["statistic"]], ">") |> rowMeans()
+    results[["p_value"]] <- sweep(statistics, 1, results[["statistic"]], ">=") |> rowMeans(na.rm = TRUE)
   }
 
   return(results)
