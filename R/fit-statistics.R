@@ -175,8 +175,20 @@ S7::method(gof_test, DistributionContinuous) <- function(distribution, data, est
     boot_fn <- function(distribution, data, estimated, bootstrap) {
       n <- length(data)
       data_boot <- rng(distribution, n)
-      if (estimated) distribution <- try(fit_distribution(distribution, bootstrap@estimator, data_boot), silent=TRUE)
-      if (inherits(distribution, "try-error")) return(rep(NA, 3))
+      if (estimated) {
+        estimator <- bootstrap@estimator
+        fitted <- try(fit_distribution(distribution, estimator, data_boot), silent=TRUE)
+        if (inherits(fitted, "try-error")) {
+          estimator@start <- parameter_values(distribution)
+          fitted <- try(fit_distribution(distribution, estimator, data_boot), silent=TRUE)
+        }
+        if (!inherits(fitted, "try-error")) {
+          distribution <- fitted
+        } else {
+          bootstrap@callback()
+          return(rep(NA, 3))
+        }
+      }
       res <- gof_test(distribution, data_boot, estimated=FALSE, bootstrap=Bootstrap(samples=0L))
       bootstrap@callback()
       return(res[["statistic"]])
@@ -188,6 +200,10 @@ S7::method(gof_test, DistributionContinuous) <- function(distribution, data, est
       )
     # compare to observed to get boostrapped p-vals
     results[["p_value"]] <- sweep(statistics, 1, results[["statistic"]], ">=") |> rowMeans(na.rm = TRUE)
+    attr(results, "bootstrap") <- list(
+      samples = bootstrap@samples,
+      valid = valid <- sum(!is.na(statistics[1,]))
+    )
   }
 
   return(results)
