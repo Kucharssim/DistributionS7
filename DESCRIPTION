@@ -48,6 +48,7 @@ Collate:
   'distSkewedGeneralizedT.R'
   'distStretchedBeta.R'
   'distSymmetricGeneralizedNormal.R'
+  'distShash.R'
   'distWald.R'
   'distWeibull.R'
   'distShifted.R'
