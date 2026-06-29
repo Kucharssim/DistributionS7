@@ -34,6 +34,7 @@ Other distributions:
 \code{\link[=Logistic]{Logistic()}},
 \code{\link[=NegativeBinomial]{NegativeBinomial()}},
 \code{\link[=Normal]{Normal()}},
+\code{\link[=Shash]{Shash()}},
 \code{\link[=Shifted]{Shifted()}},
 \code{\link[=SkewedGeneralizedT]{SkewedGeneralizedT()}},
 \code{\link[=StretchedBeta]{StretchedBeta()}},

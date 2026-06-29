@@ -41,6 +41,7 @@ Other distributions:
 \code{\link[=Logistic]{Logistic()}},
 \code{\link[=NegativeBinomial]{NegativeBinomial()}},
 \code{\link[=Pareto]{Pareto()}},
+\code{\link[=Shash]{Shash()}},
 \code{\link[=Shifted]{Shifted()}},
 \code{\link[=SkewedGeneralizedT]{SkewedGeneralizedT()}},
 \code{\link[=StretchedBeta]{StretchedBeta()}},

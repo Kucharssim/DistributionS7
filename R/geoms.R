@@ -33,7 +33,11 @@ StatPdf <- ggplot2::ggproto(
     }
 
     density <- pdf(dist, x_vals, log)
-    intercept <- cdf(dist, x_vals) - density*x_vals
+    intercept <- try(cdf(dist, x_vals) - density*x_vals, silent = TRUE)
+    if (inherits(intercept, "try-error")) {
+      rlang::warn("Distribution does not support cdf() for intercept stat calculation; using NA instead")
+      intercept <- NA
+    }
     data.frame(x = x_vals, density = density, intercept = intercept)
   }
 )

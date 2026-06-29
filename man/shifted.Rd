@@ -83,6 +83,7 @@ Other distributions:
 \code{\link[=NegativeBinomial]{NegativeBinomial()}},
 \code{\link[=Normal]{Normal()}},
 \code{\link[=Pareto]{Pareto()}},
+\code{\link[=Shash]{Shash()}},
 \code{\link[=SkewedGeneralizedT]{SkewedGeneralizedT()}},
 \code{\link[=StretchedBeta]{StretchedBeta()}},
 \code{\link[=SymmetricGeneralizedNormal]{SymmetricGeneralizedNormal()}},
