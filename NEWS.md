@@ -1,3 +1,6 @@
+# DistributionS7 0.1.4
+* Added the Shash distribution.
+
 # DistributionS7 0.1.3
 
 * Removed dependency on `jaspGraphs`.

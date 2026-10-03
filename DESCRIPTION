@@ -1,7 +1,7 @@
 Package: DistributionS7
 Type: Package
 Title: Probability distributions with a S7 class system
-Version: 0.1.3
+Version: 0.1.4
 Author: Šimon Kucharský
 Maintainer: Šimon Kucharský <s.kucharsky@jasp-stats.com>
 Description: An interface for working with probability distributions via the S7 class system. 
@@ -67,11 +67,14 @@ Imports:
   sn,
   gnorm,
   sgt,
-  generics
+  generics,
+  Rdpack
+RdMacros: Rdpack
 Depends:
   R (>= 4.1.0)
 Suggests: 
   testthat (>= 3.0.0),
-  withr
+  withr,
+  gamlss.dist
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0

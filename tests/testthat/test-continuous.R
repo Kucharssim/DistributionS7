@@ -210,6 +210,38 @@ testthat::test_that("`SymmetricGeneralizedNormal` distribution functions work", 
   testthat::expect_equal(qf(dist, cdf(dist, x)), x)
 })
 
+testthat::test_that("`Shash` distribution functions work", {
+  dist <- Shash(mu=1, sigma=2, epsilon=0.5, delta=1.5)
+  x <- rng(dist, 10)
+
+  testthat::expect_equal(qf(dist, cdf(dist, x)), x)
+  testthat::expect_equal(qf(dist, cdf(dist, x, lower.tail=FALSE), lower.tail=FALSE), x)
+
+  # reduces to normal with epsilon = 0 and delta = 1
+  dist <- Shash(mu=1, sigma=2, epsilon=0, delta=1)
+  testthat::expect_equal(pdf(dist, x), dnorm(x, mean=1, sd=2))
+  testthat::expect_equal(cdf(dist, x), pnorm(x, mean=1, sd=2))
+})
+
+testthat::test_that("`Shash` distribution matches `gamlss.dist::SHASHo`", {
+  testthat::skip_if_not_installed("gamlss.dist")
+
+  for (epsilon in c(-1, 0, 0.5)) {
+    for (delta in c(0.5, 1, 2)) {
+      dist <- Shash(mu=1, sigma=2, epsilon=epsilon, delta=delta)
+      x <- rng(dist, 10)
+      p <- c(0.01, 0.25, 0.5, 0.75, 0.99)
+
+      testthat::expect_equal(pdf(dist, x), gamlss.dist::dSHASHo(x, mu=1, sigma=2, nu=epsilon, tau=delta))
+      testthat::expect_equal(pdf(dist, x, log=TRUE), gamlss.dist::dSHASHo(x, mu=1, sigma=2, nu=epsilon, tau=delta, log=TRUE))
+      testthat::expect_equal(cdf(dist, x), gamlss.dist::pSHASHo(x, mu=1, sigma=2, nu=epsilon, tau=delta))
+      testthat::expect_equal(cdf(dist, x, lower.tail=FALSE), gamlss.dist::pSHASHo(x, mu=1, sigma=2, nu=epsilon, tau=delta, lower.tail=FALSE))
+      testthat::expect_equal(qf(dist, p), gamlss.dist::qSHASHo(p, mu=1, sigma=2, nu=epsilon, tau=delta))
+      testthat::expect_equal(qf(dist, p, lower.tail=FALSE), gamlss.dist::qSHASHo(p, mu=1, sigma=2, nu=epsilon, tau=delta, lower.tail=FALSE))
+    }
+  }
+})
+
 testthat::test_that("`Wald` distribution (mean parametrization) functions work", {
   dist <- Wald(mu=2, lambda=3)
   x <- rng(dist, 10)

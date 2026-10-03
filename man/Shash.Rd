@@ -2,7 +2,7 @@
 % Please edit documentation in R/distShash.R
 \name{Shash}
 \alias{Shash}
-\title{Shash distribution}
+\title{Sinh-arcsinh distribution}
 \usage{
 Shash(mu, sigma, epsilon, delta)
 }
@@ -11,12 +11,15 @@ Shash(mu, sigma, epsilon, delta)
 
 \item{sigma}{scale parameter.}
 
-\item{epsilon}{skewness parameter.}
+\item{epsilon}{skewness parameter. Positive values give right skew.}
 
 \item{delta}{tailweight parameter.}
 }
 \description{
-Create a Shash distribution object.
+Create a sinh-arcsinh (Shash) distribution object \insertCite{jones2009sinh}{DistributionS7}.
+}
+\references{
+\insertAllCited{}
 }
 \seealso{
 Other distributions:
