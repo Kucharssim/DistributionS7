@@ -1,16 +1,66 @@
-plot_distribution <- S7::new_generic("plot", "distribution")
-plot_pdf <- S7::new_generic("plot_pdf", "distribution")
-plot_cdf <- S7::new_generic("plot_cdf", "distribution")
-plot_qf  <- S7::new_generic("plot_qf",  "distribution")
+#' @title Theoretical plots
+#' @description
+#' Plot the probability density, cumulative distribution, and quantile function of a distribution.
+#'
+#' @param distribution Object of class [Distribution()].
+#' @param type Character; which plots to plot.
+#' @param xlim Numeric vector of length 2; limits of the x axis. If missing, the limits are derived from the support
+#'   of the distribution:
+#'   - bounded from both sides: the entire support;
+#'   - bounded from one side: the bound, and the quantile such that the range covers 99% of the distribution;
+#'   - unbounded: the central 99% of the distribution.
+#'
+#'   The derived limits are then expanded by 5% of their range on each side. Limits supplied by the user are used as is.
+#' @param density Data frame with a numeric column `x` and an optional column `color`; points at which to show the
+#'   density. In `plot_pdf()`, the density is shown as a label at the curve. In `plot_cdf()` and `plot_qf()`, the
+#'   density is shown as the slope of a tangent, listed in the legend. A numeric vector is treated as column `x`.
+#' @param probability Data frame with numeric columns `xmin` and `xmax` and an optional column `color`; intervals
+#'   whose probability to show. Intervals are shown as shaded areas truncated to `xlim`, labelled with their
+#'   (untruncated) probability.
+#' @param ... Not used.
+#'
+#' @details
+#' Colors in the `color` columns are used as is. Missing colors are filled from the default ggplot2 hue palette.
+#'
+#' @return A [ggplot2::ggplot()] object; for `plot_distribution(type = "all")` a [patchwork::wrap_plots()] object.
+#'
+#' @name plot-distribution
+#' @export
+plot_distribution <- S7::new_generic("plot_distribution", "distribution", function(distribution, type=c("all", "pdf", "cdf", "qf"), ..., xlim, density=NULL, probability=NULL) {
+  S7::S7_dispatch()
+})
 
-S7::method(plot_distribution, Distribution) <- function(distribution, type=c("all", "pdf", "cdf", "qf"), ...) {
+#' @rdname plot-distribution
+#' @export
+plot_pdf <- S7::new_generic("plot_pdf", "distribution", function(distribution, ..., xlim, density=NULL, probability=NULL) {
+  S7::S7_dispatch()
+})
+
+#' @rdname plot-distribution
+#' @export
+plot_cdf <- S7::new_generic("plot_cdf", "distribution", function(distribution, ..., xlim, density=NULL, probability=NULL) {
+  S7::S7_dispatch()
+})
+
+#' @rdname plot-distribution
+#' @export
+plot_qf  <- S7::new_generic("plot_qf",  "distribution", function(distribution, ..., xlim, density=NULL, probability=NULL) {
+  S7::S7_dispatch()
+})
+
+S7::method(plot_distribution, Distribution) <- function(distribution, type=c("all", "pdf", "cdf", "qf"), ..., xlim, density=NULL, probability=NULL) {
   type <- rlang::arg_match(type, multiple=FALSE)
+  # a missing xlim stays missing when passed on
   plot <- switch(
     type,
-    pdf = plot_pdf(distribution, ...),
-    cdf = plot_cdf(distribution, ...),
-    qf  = plot_qf (distribution, ...),
-    all = list(plot_pdf(distribution, ...), plot_cdf(distribution, ...), plot_qf(distribution, ...))
+    pdf = plot_pdf(distribution, xlim=xlim, density=density, probability=probability),
+    cdf = plot_cdf(distribution, xlim=xlim, density=density, probability=probability),
+    qf  = plot_qf (distribution, xlim=xlim, density=density, probability=probability),
+    all = list(
+      plot_pdf(distribution, xlim=xlim, density=density, probability=probability),
+      plot_cdf(distribution, xlim=xlim, density=density, probability=probability),
+      plot_qf (distribution, xlim=xlim, density=density, probability=probability)
+    )
   )
 
   if(type == "all") {
@@ -26,18 +76,21 @@ S7::method(plot_distribution, Distribution) <- function(distribution, type=c("al
 }
 
 S7::method(plot_pdf, DistributionContinuous) <- function(distribution, ..., xlim, density=NULL, probability=NULL) {
+  probability <- prepare_probability(probability)
+  density <- prepare_density(density)
 
   plot <- ggplot2::ggplot() +
-    ggplot2::xlim(x_range(distribution, xlim))
+    x_scale(distribution, xlim) +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_colour_identity()
 
   if (!is.null(probability)) {
-    probability[[".group"]] <- seq_len(nrow(probability))
     plot <- plot +
       stat_pdf(distribution, data=probability,
-               mapping=ggplot2::aes(xmin=xmin, xmax=xmax, group=.group),
-               geom="ribbon", fill="steelblue", alpha=0.8) +
+               mapping=ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, fill=.color),
+               geom="ribbon", alpha=0.8) +
       stat_cdf_interval(distribution, data=probability,
-                        mapping=ggplot2::aes(xmin=xmin, xmax=xmax, group=.group,
+                        mapping=ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, fill=.color,
                                              label=ggplot2::after_stat(sprintf("%.3f", probability))
                                              )
       )
@@ -47,18 +100,26 @@ S7::method(plot_pdf, DistributionContinuous) <- function(distribution, ..., xlim
     stat_pdf(distribution, geom="line", linewidth=1.5)
 
   if (!is.null(density)) {
-    df_density <- data.frame(x=density)
+    # place the label on the side where the density decreases away from the point, so that it does not cross the curve:
+    # upper left if the density is increasing, upper right if decreasing, above if at a mode
+    h <- 1e-6 * pmax(1, abs(density[["x"]]))
+    slope <- pdf(distribution, density[["x"]] + h) - pdf(distribution, density[["x"]] - h)
+    density[[".hjust"]] <- ifelse(slope > 0, 1.1, ifelse(slope < 0, -0.1, 0.5))
+
     plot <- plot +
-      stat_pdf(distribution, data=df_density,
-               mapping = ggplot2::aes(x=x, y=0, yend=ggplot2::after_stat(density)),
+      stat_pdf(distribution, data=density,
+               mapping = ggplot2::aes(x=x, y=0, yend=ggplot2::after_stat(density), group=.group, colour=.color),
                geom = "segment", linetype=2) +
-      stat_pdf(distribution, data=df_density,
-               mapping = ggplot2::aes(x=x),
-               size = 3, shape = 21, colour = "black", fill = "grey", alpha = NA, stroke = 0.5) +
-      stat_pdf(distribution, data=df_density,
-               mapping = ggplot2::aes(x=x, label=ggplot2::after_stat(sprintf("%.3f", density))),
-               geom = ggrepel::GeomTextRepel
-               )
+      stat_pdf(distribution, data=density,
+               mapping = ggplot2::aes(x=x, group=.group, fill=.color),
+               size = 3, shape = 21, colour = "black", alpha = NA, stroke = 0.5) +
+      stat_pdf(distribution, data=density,
+               mapping = ggplot2::aes(x=x, group=.group, colour=.color, hjust=.hjust,
+                                      label=ggplot2::after_stat(sprintf("%.3f", density))),
+               geom = "label", vjust = -0.4, fill = "white"
+               ) +
+      # leave room for labels placed above the curve
+      ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.05, 0.15)))
   }
 
   plot <- plot + ggplot2::ylab(gettext("Density")) + ggplot2::xlab(gettext("X"))
@@ -67,34 +128,68 @@ S7::method(plot_pdf, DistributionContinuous) <- function(distribution, ..., xlim
   return(plot)
 }
 
-S7::method(plot_cdf, DistributionContinuous) <- function(distribution, ..., xlim, density=NULL, probability=NULL) {
+S7::method(plot_cdf, DistributionContinuous) <- function(distribution, ..., xlim, density=NULL, probability=NULL, .inverse_slope=FALSE) {
+  probability <- prepare_probability(probability)
+  density <- prepare_density(density)
 
   plot <- ggplot2::ggplot() +
-    ggplot2::xlim(x_range(distribution, xlim))
+    x_scale(distribution, xlim) +
+    ggplot2::scale_fill_identity() +
+    slope_scale(distribution, density, .inverse_slope)
+
+  if (!is.null(probability)) {
+    # probability of an interval is the rise of the cdf between xmin and xmax:
+    # shade the area between the left edge and the cdf, and mark the rise on the left edge
+    plot <- plot +
+      stat_cdf(distribution, data=probability,
+               mapping = ggplot2::aes(xmin=ggplot2::stage(xmin, after_stat=xleft),
+                                      xmax=ggplot2::stage(xmax, after_stat=x),
+                                      group=.group, fill=.color, y=ggplot2::after_stat(probability)),
+               geom = "ribbon", orientation = "y", alpha = 0.4) +
+      stat_cdf_interval(distribution, data=probability,
+                        mapping = ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, colour=.color,
+                                               x=ggplot2::after_stat(xleft), xend=ggplot2::after_stat(xminplot),
+                                               y=ggplot2::after_stat(pmin_visible), yend=ggplot2::after_stat(pmin_visible)),
+                        geom = "segment", linetype = 2, show.legend = FALSE, na.rm = TRUE) +
+      stat_cdf_interval(distribution, data=probability,
+                        mapping = ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, colour=.color,
+                                               x=ggplot2::after_stat(xleft), xend=ggplot2::after_stat(xmaxplot),
+                                               y=ggplot2::after_stat(pmax_visible), yend=ggplot2::after_stat(pmax_visible)),
+                        geom = "segment", linetype = 2, show.legend = FALSE, na.rm = TRUE) +
+      stat_cdf_interval(distribution, data=probability,
+                        mapping = ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, colour=.color,
+                                               x=ggplot2::after_stat(xleft), xend=ggplot2::after_stat(xleft),
+                                               y=ggplot2::after_stat(pmin), yend=ggplot2::after_stat(pmax)),
+                        geom = "segment", linewidth = 2, show.legend = FALSE)
+  }
 
   if (!is.null(density)) {
-    df_density <- data.frame(x=density, g=seq_along(density))
     plot <- plot +
-      stat_pdf(distribution, data = df_density,
-               mapping = ggplot2::aes(x=x, group=g, color=factor(g)), geom="abline") +
-      ggplot2::scale_color_discrete(name="Slope (density)", labels=sprintf("%.3f", pdf(distribution, density)))
+      stat_pdf(distribution, data = density,
+               mapping = ggplot2::aes(x=x, group=.group, colour=.color), geom="abline", show.legend = TRUE)
   }
 
   plot <- plot +
     stat_cdf(distribution, geom="line", linewidth=1.5)
 
   if (!is.null(probability)) {
-    df_probability <- data.frame(x=probability)
     plot <- plot +
-      stat_cdf(distribution, data=df_probability,
-               mapping = ggplot2::aes(x=x, y=0, yend=ggplot2::after_stat(probability)),
-               geom = "segment", linetype=2) +
-      stat_cdf(distribution, data=df_probability,
-               mapping = ggplot2::aes(x=x),
-               size = 3, shape = 21, colour = "black", fill = "grey", alpha = NA, stroke = 0.5) +
-      stat_cdf(distribution, data=df_probability,
-               mapping = ggplot2::aes(x=x, label=ggplot2::after_stat(sprintf("%.3f", probability))),
-               geom = ggrepel::GeomTextRepel
+      stat_cdf_interval(distribution, data=probability,
+                        mapping = ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, fill=.color,
+                                               x=ggplot2::after_stat(x_center_cdf), y=ggplot2::after_stat(y_center_cdf),
+                                               label=ggplot2::after_stat(sprintf("%.3f", probability))))
+  }
+
+  if (!is.null(density)) {
+    plot <- plot +
+      stat_cdf(distribution, data=density,
+               mapping = ggplot2::aes(x=x, group=.group, fill=.color),
+               size = 3, shape = 21, colour = "black", alpha = NA, stroke = 0.5) +
+      ggplot2::theme(
+        legend.position = "inside",
+        legend.position.inside = c(1, 0),
+        legend.justification.inside = c(1, 0),
+        legend.margin = ggplot2::margin(5, 5, 5, 5)
       )
   }
 
@@ -103,20 +198,95 @@ S7::method(plot_cdf, DistributionContinuous) <- function(distribution, ..., xlim
   return(plot)
 }
 
-S7::method(plot_qf, DistributionContinuous) <- function(distribution, ..., xlim) {
-  plot <- plot_cdf(distribution, xlim=xlim, ...)
+S7::method(plot_qf, DistributionContinuous) <- function(distribution, ..., xlim, density=NULL, probability=NULL) {
+  plot <- plot_cdf(distribution, xlim=xlim, density=density, probability=probability, .inverse_slope=TRUE)
   plot <- plot + ggplot2::coord_flip()
 
   return(plot)
 }
 
+# colours are used as is; the legend lists only the tangents, labelled by their slope
+slope_scale <- function(distribution, density, inverse=FALSE) {
+  if (is.null(density)) return(ggplot2::scale_colour_identity())
+
+  slope <- pdf(distribution, density[["x"]])
+  if (inverse) slope <- 1/slope
+
+  breaks <- unique(density[[".color"]])
+  labels <- vapply(breaks, function(color) {
+    paste(sprintf("%.3f", slope[density[[".color"]] == color]), collapse = ", ")
+  }, character(1), USE.NAMES = FALSE)
+
+  ggplot2::scale_colour_identity(name = gettext("Slope"), guide = "legend", breaks = breaks, labels = labels)
+}
+
+x_scale <- function(distribution, xlim) {
+  # keep out-of-bounds values so that the stats can truncate positions themselves
+  # while computing values (e.g., probabilities) from the original inputs
+  ggplot2::scale_x_continuous(limits = x_range(distribution, xlim), oob = scales::oob_keep)
+}
+
+prepare_probability <- function(probability) {
+  if (is.null(probability)) return(NULL)
+
+  if (!is.data.frame(probability) || !all(c("xmin", "xmax") %in% colnames(probability)))
+    cli::cli_abort("{.arg probability} must be a data frame with columns {.field xmin} and {.field xmax}")
+  if (!is.numeric(probability[["xmin"]]) || !is.numeric(probability[["xmax"]]))
+    cli::cli_abort("Columns {.field xmin} and {.field xmax} of {.arg probability} must be numeric")
+  if (anyNA(probability[["xmin"]]) || anyNA(probability[["xmax"]]))
+    cli::cli_abort("Columns {.field xmin} and {.field xmax} of {.arg probability} must not contain missing values")
+  if (any(probability[["xmin"]] > probability[["xmax"]]))
+    cli::cli_abort("Minimum of an interval must be smaller than the maximum of an interval")
+
+  prepare_color(probability)
+}
+
+prepare_density <- function(density) {
+  if (is.null(density)) return(NULL)
+
+  if (is.numeric(density)) density <- data.frame(x = density)
+
+  if (!is.data.frame(density) || !"x" %in% colnames(density))
+    cli::cli_abort("{.arg density} must be a data frame with column {.field x}")
+  if (!is.numeric(density[["x"]]) || anyNA(density[["x"]]))
+    cli::cli_abort("Column {.field x} of {.arg density} must be numeric without missing values")
+
+  prepare_color(density)
+}
+
+prepare_color <- function(data) {
+  n <- nrow(data)
+  color <- if ("color" %in% colnames(data)) as.character(data[["color"]]) else rep(NA_character_, n)
+  palette <- scales::hue_pal()(n)
+  color[is.na(color)] <- palette[is.na(color)]
+
+  data[[".group"]] <- seq_len(n)
+  data[[".color"]] <- color
+  data
+}
 
 x_range <- S7::new_generic("x_range", "distribution")
 
 S7::method(x_range, DistributionContinuous) <- function(distribution, xlim, coverage=0.99) {
   if(missing(xlim)) {
-    tail <- (1-coverage) / 2
-    xlim <- qf(distribution, c(tail, 1-tail))
+    # bounded sides span up to the bound, unbounded sides cover the specified coverage
+    s <- support(distribution)
+    lower_bounded <- is.finite(s@min)
+    upper_bounded <- is.finite(s@max)
+
+    if (lower_bounded && upper_bounded) {
+      xlim <- c(s@min, s@max)
+    } else if (lower_bounded) {
+      xlim <- c(s@min, qf(distribution, coverage))
+    } else if (upper_bounded) {
+      xlim <- c(qf(distribution, 1-coverage), s@max)
+    } else {
+      tail <- (1-coverage) / 2
+      xlim <- qf(distribution, c(tail, 1-tail))
+    }
+
+    # expand slightly, e.g., to show that the density drops to zero beyond the bounds of the support
+    xlim <- xlim + c(-1, 1) * 0.05 * diff(xlim)
   }
 
   return(xlim)

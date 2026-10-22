@@ -8,7 +8,6 @@ Description: An interface for working with probability distributions via the S7 
     Plot the distribution, fit the distribution to data, compute fit statistics, and more.
 License: GPL (>= 2)
 Encoding: UTF-8
-LazyData: true
 Collate:
   'support.R'
   'parameter.R'
@@ -59,10 +58,11 @@ Imports:
   S7,
   assertthat,
   rlang,
+  cli,
+  scales,
   goftest,
   nortest,
   ggplot2,
-  ggrepel,
   patchwork,
   sn,
   gnorm,
