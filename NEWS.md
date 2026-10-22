@@ -1,3 +1,7 @@
+# DitributionS7 0.1.5
+## Added
+* Theoretical plots are now exported for continuous distributions.
+
 # DistributionS7 0.1.4
 * Added the Shash distribution.
 

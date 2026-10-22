@@ -159,16 +159,27 @@ parameter_inference <- S7::new_generic("parameter_inference", c("distribution", 
 
 S7::method(parameter_inference, list(Distribution, DefaultMethod)) <- function(distribution, inference_method, data) {
   rlang::inform(message = "Computing normal theory SE and CIs...")
-  inference_method <- do.call(NormalTheory, inference_method@args)
+  # forward the estimator and ci_level, unless overriden in args
+  args <- utils::modifyList(
+    list(estimator = inference_method@estimator, ci_level = inference_method@ci_level),
+    inference_method@args
+  )
+  inference_method <- do.call(NormalTheory, args)
   parameter_inference(distribution, inference_method, data)
 }
 
 S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(distribution, inference_method, data) {
+  if (!S7::S7_inherits(inference_method@estimator, Mle)) {
+    rlang::warn(sprintf(
+      "Normal theory standard errors and confidence intervals assume maximum likelihood estimates; they may be invalid for %s estimates.",
+      S7::S7_class(inference_method@estimator)@name
+    ))
+  }
   estimates <- parameter_estimates(distribution, inference_method@estimator, data)
   # in case we want to dynamically change support of pars
   distribution <- parameter_start(distribution, data)
   parameter_values(distribution) <- estimates
-  vcov <- vcov(distribution, data, inference_method@constrained, inference_method@control)
+  vcov <- compute_vcov(distribution, data, inference_method@constrained, inference_method@control)
 
   npar <- length(estimates)
   keys <- names(estimates)
@@ -210,7 +221,7 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
 }
 
 # helpers----
-vcov <- function(distribution, data, constrained, control) {
+compute_vcov <- function(distribution, data, constrained, control) {
   if (constrained) {
     start <- parameter_values(distribution, which="free")
 

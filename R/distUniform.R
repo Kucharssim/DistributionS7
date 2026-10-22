@@ -85,6 +85,7 @@ S7::method(parameter_inference, list(Uniform, DefaultMethod)) <- function(distri
 
   fixed <- parameter_properties(distribution, "fixed") |> unlist()
 
+  se       <- rep(NA_real_, sum(!fixed)) |> setNames(keys)
   lower    <- numeric(length = sum(!fixed)) |> setNames(keys)
   upper    <- numeric(length = sum(!fixed)) |> setNames(keys)
 
@@ -97,5 +98,5 @@ S7::method(parameter_inference, list(Uniform, DefaultMethod)) <- function(distri
     upper[["max"]] <- mm[2] + offset * r
   }
 
-  return(estimates_table(distribution, estimates=estimates, lower=lower, upper=upper))
+  return(estimates_table(distribution, estimates=estimates, se=se, lower=lower, upper=upper))
 }

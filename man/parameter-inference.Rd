@@ -43,6 +43,10 @@ or should be computed directly on the constrained space.}
 \description{
 These classes encapsulate methods for parameter inference. This is yet experimental; methods for \code{\link[=Bootstrap]{Bootstrap()}} and \code{\link[=ProfileLikelihood]{ProfileLikelihood()}} are not implemented at all.
 \code{\link[=DefaultMethod]{DefaultMethod()}} will currently default to \code{\link[=NormalTheory]{NormalTheory()}}, \emph{which is not a good default for some distributions!}
+
+\code{\link[=NormalTheory]{NormalTheory()}} uses the observed Fisher information evaluated at the estimates, and is therefore valid only for
+maximum likelihood estimates (\code{\link[=Mle]{Mle()}}); using other estimators triggers a warning. With \code{constrained = TRUE},
+the confidence intervals are computed directly on the parameter space and may extend outside of the parameter support.
 }
 \seealso{
 \code{\link[=parameter_inference]{parameter_inference()}}

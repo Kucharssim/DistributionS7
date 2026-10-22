@@ -70,3 +70,37 @@ testthat::test_that("parameter_inference works", {
   result <- parameter_inference(dist, NormalTheory(estimator=Mle(optim=TRUE)), data=x)
   testthat::expect_snapshot(result)
 })
+testthat::test_that("DefaultMethod forwards estimator and ci_level to NormalTheory", {
+  dist <- Wald(mu=1, lambda=2)
+  x <- withr::with_seed(34698, rng(dist, 20))
+
+  testthat::expect_equal(
+    suppressMessages(parameter_inference(dist, DefaultMethod(ci_level=0.9, args=list(constrained=TRUE)), data=x)),
+    parameter_inference(dist, NormalTheory(ci_level=0.9, constrained=TRUE), data=x)
+  )
+  testthat::expect_equal(
+    suppressMessages(parameter_inference(dist, DefaultMethod(estimator=Mle(optim=TRUE, silent=TRUE)), data=x)),
+    parameter_inference(dist, NormalTheory(estimator=Mle(optim=TRUE, silent=TRUE)), data=x)
+  )
+})
+
+testthat::test_that("NormalTheory warns for non-MLE estimators", {
+  dist <- Gamma(alpha=2, theta=1)
+  x <- withr::with_seed(2025, rng(dist, 50))
+
+  testthat::expect_warning(
+    parameter_inference(dist, NormalTheory(estimator=Mme()), data=x),
+    "maximum likelihood"
+  )
+})
+
+testthat::test_that("inference method classes are consistent", {
+  testthat::expect_error(NormalTheory(ci_level=1))
+  testthat::expect_error(NormalTheory(ci_level=0))
+  testthat::expect_equal(S7::S7_class(ProfileLikelihood())@name, "ProfileLikelihood")
+
+  dist <- Uniform(min=0, max=1)
+  x <- withr::with_seed(2025, rng(dist, 20))
+  result <- parameter_inference(dist, DefaultMethod(), data=x)
+  testthat::expect_named(result, c("key", "label", "estimate", "se", "lower", "upper"))
+})

@@ -2,6 +2,10 @@
 #' @description
 #' These classes encapsulate methods for parameter inference. This is yet experimental; methods for [Bootstrap()] and [ProfileLikelihood()] are not implemented at all.
 #' [DefaultMethod()] will currently default to [NormalTheory()], *which is not a good default for some distributions!*
+#'
+#' [NormalTheory()] uses the observed Fisher information evaluated at the estimates, and is therefore valid only for
+#' maximum likelihood estimates ([Mle()]); using other estimators triggers a warning. With `constrained = TRUE`,
+#' the confidence intervals are computed directly on the parameter space and may extend outside of the parameter support.
 #' @name parameter-inference
 #'
 #' @param estimator Object of class [Estimator()].
@@ -25,8 +29,8 @@ InferenceMethod <- S7::new_class(
     ci_level = S7::new_property(
       class = S7::class_double,
       validator = function(value) {
-        if (value > 1) return("`ci_level` must be smaller than 1.")
-        if (value < 0) return("`ci_level` must be larger than 0.")
+        if (value >= 1) return("`ci_level` must be smaller than 1.")
+        if (value <= 0) return("`ci_level` must be larger than 0.")
       },
       default = 0.95
     ),
@@ -85,7 +89,7 @@ NormalTheory <- S7::new_class(
 #' @usage ProfileLikelihood(estimator=Mle(), ci_level=0.95)
 #' @export
 ProfileLikelihood <- S7::new_class(
-  name = "Profile",
+  name = "ProfileLikelihood",
   parent = InferenceMethod,
   constructor = function(estimator = Mle(), ci_level = 0.95) {
     S7::new_object(
