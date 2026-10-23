@@ -306,7 +306,7 @@ testthat::test_that("`NoncentralStudentT` distribution functions work", {
 
 testthat::test_that("`SkewNormal` distribution functions work", {
   dist <- SkewNormal(xi=1, omega=2, alpha=3)
-  x <- rng(dist, 10)
+  x <- withr::with_seed(2345, rng(dist, 10))
   attributes(x) <- NULL
 
   testthat::expect_equal(pdf(dist, x), sn::dsn(x, xi=dist@xi@value, omega=dist@omega@value, alpha=dist@alpha@value))
@@ -316,7 +316,7 @@ testthat::test_that("`SkewNormal` distribution functions work", {
 
 testthat::test_that("`SkewCauchy` distribution functions work", {
   dist <- SkewCauchy(xi=1, omega=2, alpha=3)
-  x <- rng(dist, 10)
+  x <- withr::with_seed(2345, rng(dist, 10))
   attributes(x) <- NULL
 
   testthat::expect_equal(pdf(dist, x), sn::dsc(x, xi=dist@xi@value, omega=dist@omega@value, alpha=dist@alpha@value))
