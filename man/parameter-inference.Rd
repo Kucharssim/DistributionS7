@@ -22,7 +22,8 @@ NormalTheory(
 
 ProfileLikelihood(estimator=Mle(), ci_level=0.95)
 
-Bootstrap(estimator=Mle(), ci_level=0.95, samples=1000L, callback=function() {})
+Bootstrap(estimator=Mle(), ci_level=0.95, samples=1000L,
+  type=c("parametric", "nonparametric"), ci_method=c("percentile", "basic"), callback=function() {})
 }
 \arguments{
 \item{estimator}{Object of class \code{\link[=Estimator]{Estimator()}}.}
@@ -38,15 +39,32 @@ or should be computed directly on the constrained space.}
 
 \item{samples}{integer; How many samples to take.}
 
+\item{type}{character; type of bootstrap, either \code{"parametric"} (simulate from the fitted distribution) or
+\code{"nonparametric"} (resample the data with replacement).}
+
+\item{ci_method}{character; type of bootstrap confidence intervals, either \code{"percentile"} or \code{"basic"}.}
+
 \item{callback}{function; Optional function to exectute on every iteration.}
 }
 \description{
-These classes encapsulate methods for parameter inference. This is yet experimental; methods for \code{\link[=Bootstrap]{Bootstrap()}} and \code{\link[=ProfileLikelihood]{ProfileLikelihood()}} are not implemented at all.
+These classes encapsulate methods for parameter inference. This is yet experimental; methods for \code{\link[=ProfileLikelihood]{ProfileLikelihood()}} are not implemented at all.
 \code{\link[=DefaultMethod]{DefaultMethod()}} will currently default to \code{\link[=NormalTheory]{NormalTheory()}}, \emph{which is not a good default for some distributions!}
 
 \code{\link[=NormalTheory]{NormalTheory()}} uses the observed Fisher information evaluated at the estimates, and is therefore valid only for
 maximum likelihood estimates (\code{\link[=Mle]{Mle()}}); using other estimators triggers a warning. With \code{constrained = TRUE},
 the confidence intervals are computed directly on the parameter space and may extend outside of the parameter support.
+
+\code{\link[=Bootstrap]{Bootstrap()}} re-estimates the parameters on \code{samples} bootstrap data sets, drawn either from the distribution
+fitted to the data (\code{type = "parametric"}), or by resampling the data with replacement (\code{type = "nonparametric"}).
+The standard errors are the standard deviations of the bootstrap estimates. Confidence intervals (\code{ci_method}) are either
+\code{"percentile"} intervals (quantiles of the bootstrap estimates), or \code{"basic"} intervals
+(\eqn{2\hat{\theta} - q_{1-\alpha/2}, 2\hat{\theta} - q_{\alpha/2}}). Percentile intervals are invariant to monotone
+transformations and therefore always respect the parameter support; basic intervals are computed on the unconstrained
+parameter space and transformed back, so that they also respect the parameter support.
+Bootstrap samples on which the estimation fails are dropped with a warning. The bootstrap estimates are returned in
+the \code{"bootstrap"} attribute of the output of \code{\link[=parameter_inference]{parameter_inference()}}.
+Note that the bootstrap is unreliable for parameters that determine the bounds of the support of the distribution
+(e.g., the minimum and maximum of \code{\link[=Uniform]{Uniform()}}).
 }
 \seealso{
 \code{\link[=parameter_inference]{parameter_inference()}}

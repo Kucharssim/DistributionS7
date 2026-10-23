@@ -15,8 +15,10 @@
 #' [gof_test()] will work if the distribution has not been fitted to the data (`estimated=FALSE`), in which case it will compute
 #' the Kolmogorov-Smirnov test and the simple hypothesis test Anderson-Darling and Cramer-von Mises.
 #' When `estimated=TRUE`, the method will compute composite hypothesis test Anderson-Darling and Cramer-von Mises.
-#' Alternatively, one can specify a [Bootstrap()] method, which will perform a parametric bootstrap. Note that when `estimated=TRUE`,
-#' the [Estimator()] that was used for fitting the distribution should be also passed in the [Bootstrap()] option.
+#' Alternatively, one can specify a [Bootstrap()] method with `samples > 0`, which will perform a parametric bootstrap
+#' (`type = "nonparametric"` is overridden with a warning as only parametric bootstrap is implemented).
+#' Note that when `estimated=TRUE`, the same [Estimator()] that was used for fitting the distribution should be also passed in the
+#' [Bootstrap()] option.
 #'
 #' @importFrom goftest ad.test
 #' @importFrom goftest cvm.test
@@ -31,6 +33,10 @@ information_criteria <- S7::new_generic("information_criteria", "distribution", 
 #' @export
 gof_test <- S7::new_generic("gof_test", "distribution", function(distribution, data, estimated=FALSE, bootstrap=Bootstrap(samples=0L)) {
   data <- stats::na.omit(data)
+  if (bootstrap@samples > 0L && bootstrap@type != "parametric") {
+    rlang::warn("Goodness of fit tests require simulating from the hypothesized distribution; using parametric bootstrap instead.")
+    bootstrap@type <- "parametric"
+  }
   S7::S7_dispatch()
 })
 

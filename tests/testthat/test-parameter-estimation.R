@@ -104,3 +104,53 @@ testthat::test_that("inference method classes are consistent", {
   result <- parameter_inference(dist, DefaultMethod(), data=x)
   testthat::expect_named(result, c("key", "label", "estimate", "se", "lower", "upper"))
 })
+
+testthat::test_that("Bootstrap class is validated", {
+  testthat::expect_error(Bootstrap(type="jackknife"))
+  testthat::expect_error(Bootstrap(ci_method="bca"))
+  testthat::expect_equal(Bootstrap()@type, "parametric")
+  testthat::expect_equal(Bootstrap()@ci_method, "percentile")
+  testthat::expect_equal(Bootstrap(ci_method="basic")@ci_method, "basic")
+})
+
+testthat::test_that("nonparametric bootstrap inference works", {
+  dist <- Normal(mu=0, sigma=1)
+  x <- withr::with_seed(2025, rnorm(50, 1, 2))
+  method <- Bootstrap(samples=200L, type="nonparametric")
+
+  result <- withr::with_seed(1, parameter_inference(dist, method, data=x))
+  boot <- attr(result, "bootstrap")
+
+  testthat::expect_equal(result$estimate, unlist(parameter_estimates(dist, Mle(), x)), ignore_attr=TRUE)
+  testthat::expect_true(all(result$lower < result$estimate & result$estimate < result$upper))
+  testthat::expect_equal(boot$valid, 200)
+  testthat::expect_equal(dim(boot$estimates), c(200, 2))
+  testthat::expect_equal(
+    result$lower,
+    apply(boot$estimates, 2, stats::quantile, probs=0.025, names=FALSE),
+    ignore_attr=TRUE
+  )
+  testthat::expect_equal(result$se, apply(boot$estimates, 2, stats::sd), ignore_attr=TRUE)
+
+  # reproducible
+  testthat::expect_equal(withr::with_seed(1, parameter_inference(dist, method, data=x)), result)
+})
+
+testthat::test_that("basic bootstrap intervals respect the parameter support", {
+  dist <- Exponential(lambda=1)
+  x <- withr::with_seed(2025, rexp(15, 5))
+
+  result <- withr::with_seed(1, parameter_inference(dist, Bootstrap(samples=200L, ci_method="basic"), data=x))
+  testthat::expect_gt(result$lower, 0)
+  testthat::expect_lt(result$lower, result$upper)
+})
+
+testthat::test_that("bootstrap calls the callback on every sample", {
+  dist <- Exponential(lambda=1)
+  x <- withr::with_seed(2025, rexp(15, 5))
+
+  counter <- 0
+  method <- Bootstrap(samples=25L, type="nonparametric", callback=function() counter <<- counter + 1)
+  withr::with_seed(1, parameter_inference(dist, method, data=x))
+  testthat::expect_equal(counter, 25)
+})

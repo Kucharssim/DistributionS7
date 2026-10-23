@@ -55,3 +55,11 @@ testthat::test_that("bootstrapping works", {
   testthat::expect_lt(results["cvm_test", "p_value"], 0.1)
   testthat::expect_lt(results["ad_test",  "p_value"], 0.1)
 })
+testthat::test_that("gof_test overrides nonparametric bootstrap with a warning", {
+  dist <- Normal(mu=0, sigma=1)
+  x <- withr::with_seed(1, rnorm(20))
+  testthat::expect_warning(
+    withr::with_seed(1, gof_test(dist, x, bootstrap = Bootstrap(samples=10L, type="nonparametric"))),
+    "parametric bootstrap"
+  )
+})

@@ -220,6 +220,73 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
   return(estimates_table(distribution, estimates=estimates, se=se, lower=lower, upper=upper))
 }
 
+S7::method(parameter_inference, list(Distribution, Bootstrap)) <- function(distribution, inference_method, data) {
+  if (inference_method@samples < 1L) rlang::abort("Bootstrap requires at least one sample.")
+
+  estimator <- inference_method@estimator
+  estimator@silent <- TRUE
+
+  fitted <- fit_distribution(distribution, estimator, data)
+  estimates <- parameter_values(fitted, which="free")
+  keys <- names(estimates)
+
+  # warm start optimization from the estimates on the full data
+  warm_estimator <- estimator
+  if (S7::S7_inherits(estimator, Mle)) warm_estimator@start <- estimates
+
+  boot_fn <- function() {
+    data_boot <- bootstrap_data(inference_method, fitted, data)
+    result <- try(parameter_estimates(fitted, warm_estimator, data_boot), silent=TRUE)
+    if (inherits(result, "try-error"))
+      result <- try(parameter_estimates(fitted, estimator, data_boot), silent=TRUE)
+    inference_method@callback()
+
+    if (inherits(result, "try-error")) return(rep(NA_real_, length(keys)))
+    unlist(result)[keys]
+  }
+
+  draws <- replicate(inference_method@samples, boot_fn())
+  draws <- matrix(draws, ncol=length(keys), byrow=length(keys) > 1, dimnames=list(NULL, keys))
+
+  failed <- !stats::complete.cases(draws)
+  if (all(failed)) rlang::abort("Estimation failed on all bootstrap samples.")
+  if (any(failed))
+    rlang::warn(sprintf("%i of %i bootstrap samples failed and were dropped.", sum(failed), length(failed)))
+  valid_draws <- draws[!failed, , drop=FALSE]
+
+  se <- apply(valid_draws, 2, stats::sd)
+  probs <- c(inference_method@lower, inference_method@upper)
+  lower <- setNames(numeric(length(keys)), keys)
+  upper <- setNames(numeric(length(keys)), keys)
+
+  for (key in keys) {
+    if (inference_method@ci_method == "percentile") {
+      # percentile intervals are invariant to monotone transformations, so they respect the parameter support
+      limits <- stats::quantile(valid_draws[, key], probs, names=FALSE)
+    } else {
+      # basic intervals are computed on the unconstrained space and transformed back
+      par <- S7::prop(fitted, key)
+      uestimate <- unconstrain(par, estimates[[key]])
+      udraws <- unconstrain(par, valid_draws[, key])
+      ulimits <- 2 * uestimate - stats::quantile(udraws, rev(probs), names=FALSE)
+      limits <- sort(constrain(par, ulimits))
+    }
+    lower[[key]] <- limits[1]
+    upper[[key]] <- limits[2]
+  }
+
+  result <- estimates_table(fitted, estimates=estimates, se=se, lower=lower, upper=upper)
+  attr(result, "bootstrap") <- list(
+    samples = inference_method@samples,
+    valid = sum(!failed),
+    type = inference_method@type,
+    ci_method = inference_method@ci_method,
+    estimates = draws
+  )
+
+  return(result)
+}
+
 # helpers----
 compute_vcov <- function(distribution, data, constrained, control) {
   if (constrained) {
