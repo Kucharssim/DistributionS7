@@ -184,7 +184,7 @@ S7::method(gof_test, DistributionContinuous) <- function(distribution, data, est
       if (estimated) {
         estimator <- bootstrap@estimator
         fitted <- try(fit_distribution(distribution, estimator, data_boot), silent=TRUE)
-        if (inherits(fitted, "try-error")) {
+        if (inherits(fitted, "try-error") && S7::S7_inherits(estimator, Mle)) {
           estimator@start <- parameter_values(distribution)
           fitted <- try(fit_distribution(distribution, estimator, data_boot), silent=TRUE)
         }

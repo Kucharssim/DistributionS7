@@ -116,7 +116,7 @@ S7::method(rargs, NormalSigma2) <- function(distribution) {
 }
 
 S7::method(rargs, NormalTau) <- function(distribution) {
-  return(list(mean = distribution@mu@value, sd = 1/sqrt(distribution@sigma2@value)))
+  return(list(mean = distribution@mu@value, sd = 1/sqrt(distribution@tau@value)))
 }
 
 S7::method(parameter_estimates, list(NormalSigma, Mle)) <- function(distribution, estimator, data) {
@@ -174,7 +174,8 @@ S7::method(parameter_estimates, list(NormalSigma, BiasCorrected)) <- function(di
   estimates <- parameter_estimates(distribution, Mle(), data)
   if (!is.null(estimates[["sigma"]])) {
     n <- length(data)
-    df <- n-1
+    # with known mean, the mle of the variance is already unbiased
+    df <- if (is.fixed(distribution@mu)) n else n-1
     sigma2 <- estimates[["sigma"]]^2
     estimates[["sigma"]] <- sqrt(sigma2 * n / df)
   }
@@ -186,7 +187,8 @@ S7::method(parameter_estimates, list(NormalSigma2, BiasCorrected)) <- function(d
   estimates <- parameter_estimates(distribution, Mle(), data)
   if (!is.null(estimates[["sigma2"]])) {
     n <- length(data)
-    df <- n-1
+    # with known mean, the mle of the variance is already unbiased
+    df <- if (is.fixed(distribution@mu)) n else n-1
     sigma2 <- estimates[["sigma2"]]
     estimates[["sigma2"]] <- sigma2 * n / df
   }
@@ -198,7 +200,8 @@ S7::method(parameter_estimates, list(NormalTau, BiasCorrected)) <- function(dist
   estimates <- parameter_estimates(distribution, Mle(), data)
   if (!is.null(estimates[["tau"]])) {
     n <- length(data)
-    df <- n-1
+    # with known mean, the mle of the variance is already unbiased
+    df <- if (is.fixed(distribution@mu)) n else n-1
     sigma2 <- 1/estimates[["tau"]]
     estimates[["tau"]] <- 1 / (sigma2 * n / df)
   }

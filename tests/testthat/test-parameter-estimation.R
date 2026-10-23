@@ -154,3 +154,52 @@ testthat::test_that("bootstrap calls the callback on every sample", {
   withr::with_seed(1, parameter_inference(dist, method, data=x))
   testthat::expect_equal(counter, 25)
 })
+
+testthat::test_that("bias corrected exponential rate is unbiased", {
+  dist <- Exponential(lambda=2)
+  x <- withr::with_seed(2025, rexp(10, 2))
+  testthat::expect_equal(parameter_estimates(dist, BiasCorrected(), x), list(lambda = 9/sum(x)))
+
+  estimates <- withr::with_seed(1, replicate(2000, parameter_estimates(dist, BiasCorrected(), rexp(10, 2))[["lambda"]]))
+  testthat::expect_equal(mean(estimates), 2, tolerance=0.03)
+})
+
+testthat::test_that("exponential default inference gives exact chi-squared intervals", {
+  x <- withr::with_seed(2025, rexp(20, 2))
+  n <- length(x)
+  q <- stats::qchisq(c(0.025, 0.975), df=2*n)
+
+  for (estimator in list(Mle(), Mme(), BiasCorrected())) {
+    result <- testthat::expect_no_warning(
+      parameter_inference(Exponential(lambda=1), DefaultMethod(estimator=estimator), x)
+    )
+    testthat::expect_equal(c(result$lower, result$upper), q / (2*sum(x)))
+
+    result <- testthat::expect_no_warning(
+      parameter_inference(Exponential(beta=1), DefaultMethod(estimator=estimator), x)
+    )
+    testthat::expect_equal(c(result$lower, result$upper), 2*sum(x) / rev(q))
+  }
+
+  covered <- withr::with_seed(1, replicate(1000, {
+    result <- parameter_inference(Exponential(lambda=1), DefaultMethod(), rexp(10, 2))
+    result$lower <= 2 && 2 <= result$upper
+  }))
+  testthat::expect_equal(mean(covered), 0.95, tolerance=0.03)
+})
+
+testthat::test_that("bias corrected normal variance with fixed mean is not corrected", {
+  dist <- Normal(mu=fixed(1), sigma2=2)
+  x <- withr::with_seed(2025, rnorm(15, 1, sqrt(2)))
+  testthat::expect_equal(parameter_estimates(dist, BiasCorrected(), x), list(sigma2 = mean((x-1)^2)))
+})
+
+testthat::test_that("log-logistic fails clearly for unsupported estimators", {
+  x <- withr::with_seed(2025, rexp(20))
+  testthat::expect_error(parameter_estimates(LogLogistic(mu=0, sigma=1), BiasCorrected(), x), "LogLogistic")
+  testthat::expect_error(parameter_estimates(LogLogistic(alpha=1, beta=1), BiasCorrected(), x), "LogLogistic")
+})
+
+testthat::test_that("normal precision parametrization evaluates", {
+  testthat::expect_equal(pdf(Normal(mu=0, tau=2), 0.3), stats::dnorm(0.3, 0, 1/sqrt(2)))
+})

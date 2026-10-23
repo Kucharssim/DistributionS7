@@ -7,6 +7,14 @@
 * Plots no longer set position scales; the plotted range is added as data (`ggplot2::expand_limits()`), and the theoretical curves follow the final limits of the x scale. Any position scale can be added to the plots without re-creating limits.
 * `stat_pdf()`, `stat_cdf()`, and `stat_cdf_interval()` take the range to compute over as the parameter `xlim` (like `ggplot2::stat_function()`), instead of `xmin`/`xmax` aesthetics.
 * `plot_hist()` now covers all histogram bins and the full density curve.
+* `BiasCorrected()` for the Exponential rate is now the unbiased `(n-1)/sum(x)` (was `(n-2)/sum(x)`).
+* `parameter_inference()` with `DefaultMethod()` for the Exponential distribution computes exact chi-squared intervals instead of normal theory intervals, and no longer warns for estimators other than `Mle()`.
+* Log-logistic `parameter_estimates()` supports only `Mme()` and `Mle()`, and fails with a clear error for other estimators.
+
+## Fixed
+* `BiasCorrected()` for the Normal distribution no longer applies the degrees of freedom correction when the mean is fixed. The documentation states that only the variance estimate is unbiased.
+* Bootstrap `gof_test()` no longer errors when re-fitting fails with an estimator that has no `start` (e.g., `BiasCorrected()` or `Mme()`).
+* `Normal(mu, tau)` can evaluate the pdf, cdf, quantile function and random numbers.
 
 # DistributionS7 0.1.4
 * Added the Shash distribution.

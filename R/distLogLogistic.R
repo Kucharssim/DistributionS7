@@ -99,7 +99,8 @@ S7::method(rargs, LogLogisticScale) <- function(distribution) {
   parameter_values(distribution)
 }
 
-S7::method(parameter_estimates, list(LogLogisticLocation, Estimator)) <- function(distribution, estimator, data) {
+# estimation is delegated to the logistic distribution of log(data), which implements only Mme and Mle
+loglogistic_location_estimates <- function(distribution, estimator, data) {
   data <- log(data)
   parameters <- recreate_parameters(distribution)
   distribution <- do.call(Logistic, parameters)
@@ -107,7 +108,7 @@ S7::method(parameter_estimates, list(LogLogisticLocation, Estimator)) <- functio
   parameter_estimates(distribution, estimator, data)
 }
 
-S7::method(parameter_estimates, list(LogLogisticScale, Estimator)) <- function(distribution, estimator, data) {
+loglogistic_scale_estimates <- function(distribution, estimator, data) {
   data <- log(data)
   parameters <- recreate_parameters(distribution)
   distribution <- Logistic(
@@ -121,3 +122,8 @@ S7::method(parameter_estimates, list(LogLogisticScale, Estimator)) <- function(d
 
   return(estimates)
 }
+
+S7::method(parameter_estimates, list(LogLogisticLocation, Mme)) <- loglogistic_location_estimates
+S7::method(parameter_estimates, list(LogLogisticLocation, Mle)) <- loglogistic_location_estimates
+S7::method(parameter_estimates, list(LogLogisticScale, Mme)) <- loglogistic_scale_estimates
+S7::method(parameter_estimates, list(LogLogisticScale, Mle)) <- loglogistic_scale_estimates

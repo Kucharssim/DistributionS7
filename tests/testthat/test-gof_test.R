@@ -63,3 +63,20 @@ testthat::test_that("gof_test overrides nonparametric bootstrap with a warning",
     "parametric bootstrap"
   )
 })
+
+testthat::test_that("gof_test bootstrap survives failed refits with estimators without start", {
+  dist <- Normal(mu=0, sigma=1)
+  x <- withr::with_seed(1, rnorm(20))
+  fit_distribution_orig <- fit_distribution
+  calls <- 0
+  testthat::local_mocked_bindings(fit_distribution = function(distribution, estimator, data) {
+    calls <<- calls + 1
+    if (calls %% 2 == 1) stop("refit failed")
+    fit_distribution_orig(distribution, estimator, data)
+  })
+
+  results <- withr::with_seed(1, gof_test(
+    dist, x, estimated=TRUE, bootstrap=Bootstrap(estimator=BiasCorrected(), samples=10L)
+  ))
+  testthat::expect_equal(attr(results, "bootstrap")$valid, 5)
+})

@@ -17,7 +17,9 @@
 #'
 #' [Mme()] specifies method of moments estimator, [Mle()]
 #' specifies maximum likelihood estimator, and [BiasCorrected()] specifies some version of bias corrected estimators
-#' (this is highly dependent on the type of distribution).
+#' (this is highly dependent on the type of distribution). For example, for [Normal()] the estimate of the variance is
+#' unbiased, but the estimates of the standard deviation and of the precision are its square root and reciprocal, and are
+#' therefore not unbiased. For [Exponential()], the estimates of both the rate and the scale are unbiased.
 #'
 #' [Mle()] is the default method that is implemented for any distribution. If there are no closed-form solutions for the MLE,
 #' then numerical optimization of the log likelihood is used.
