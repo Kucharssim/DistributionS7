@@ -14,6 +14,7 @@
 #' @param density Data frame with a numeric column `x` and an optional column `color`; points at which to show the
 #'   density. In `plot_pdf()`, the density is shown as a label at the curve. In `plot_cdf()` and `plot_qf()`, the
 #'   density is shown as the slope of a tangent, listed in the legend. A numeric vector is treated as column `x`.
+#'   Points outside of `xlim` are not drawn.
 #' @param probability Data frame with numeric columns `xmin` and `xmax` and an optional column `color`; intervals
 #'   whose probability to show. Intervals are shown as shaded areas truncated to `xlim`, labelled with their
 #'   (untruncated) probability.
@@ -21,6 +22,10 @@
 #'
 #' @details
 #' Colors in the `color` columns are used as is. Missing colors are filled from the default ggplot2 hue palette.
+#'
+#' The plots do not set position scales: `xlim` is added as data (via [ggplot2::expand_limits()]), and the curves are
+#' computed over the final limits of the x scale. Any position scale (e.g., [ggplot2::scale_x_continuous()]) can
+#' therefore be added to the plots; widening the limits of the x scale extends the curves.
 #'
 #' @return A [ggplot2::ggplot()] object; for `plot_distribution(type = "all")` a [patchwork::wrap_plots()] object.
 #'
@@ -76,24 +81,23 @@ S7::method(plot_distribution, Distribution) <- function(distribution, type=c("al
 }
 
 S7::method(plot_pdf, DistributionContinuous) <- function(distribution, ..., xlim, density=NULL, probability=NULL) {
+  xlim <- x_range(distribution, xlim)
   probability <- prepare_probability(probability)
-  density <- prepare_density(density)
+  density <- prepare_density(density, xlim)
 
+  # the x range is data that trains the x scale; the curves follow the (final) limits of the x scale
   plot <- ggplot2::ggplot() +
-    x_scale(distribution, xlim) +
+    ggplot2::expand_limits(x = xlim) +
     ggplot2::scale_fill_identity() +
     ggplot2::scale_colour_identity()
 
-  if (!is.null(probability)) {
+  for (i in seq_len(NROW(probability))) {
+    interval <- c(probability[["xmin"]][i], probability[["xmax"]][i])
+    color <- probability[[".color"]][i]
     plot <- plot +
-      stat_pdf(distribution, data=probability,
-               mapping=ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, fill=.color),
-               geom="ribbon", alpha=0.8) +
-      stat_cdf_interval(distribution, data=probability,
-                        mapping=ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, fill=.color,
-                                             label=ggplot2::after_stat(sprintf("%.3f", probability))
-                                             )
-      )
+      stat_pdf(distribution, xlim=interval, geom="ribbon", fill=color, alpha=0.8) +
+      stat_cdf_interval(distribution, xlim=interval, fill=color,
+                        mapping=ggplot2::aes(label=ggplot2::after_stat(sprintf("%.3f", probability))))
   }
 
   plot <- plot +
@@ -119,48 +123,43 @@ S7::method(plot_pdf, DistributionContinuous) <- function(distribution, ..., xlim
                geom = "label", vjust = -0.4, fill = "white"
                ) +
       # leave room for labels placed above the curve
-      ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.05, 0.15)))
+      ggplot2::expand_limits(y = c(0, 1.15 * max(pdf(distribution, density[["x"]]))))
   }
 
-  plot <- plot + ggplot2::ylab(gettext("Density")) + ggplot2::xlab(gettext("X"))
-
+  plot <- plot + ggplot2::labs(x = gettext("X"), y = gettext("Density"))
 
   return(plot)
 }
 
 S7::method(plot_cdf, DistributionContinuous) <- function(distribution, ..., xlim, density=NULL, probability=NULL, .inverse_slope=FALSE) {
+  xlim <- x_range(distribution, xlim)
   probability <- prepare_probability(probability)
-  density <- prepare_density(density)
+  density <- prepare_density(density, xlim)
 
+  # the x range is data that trains the x scale; the curves follow the (final) limits of the x scale
   plot <- ggplot2::ggplot() +
-    x_scale(distribution, xlim) +
+    ggplot2::expand_limits(x = xlim) +
     ggplot2::scale_fill_identity() +
     slope_scale(distribution, density, .inverse_slope)
 
-  if (!is.null(probability)) {
+  for (i in seq_len(NROW(probability))) {
     # probability of an interval is the rise of the cdf between xmin and xmax:
     # shade the area between the left edge and the cdf, and mark the rise on the left edge
+    interval <- c(probability[["xmin"]][i], probability[["xmax"]][i])
+    color <- probability[[".color"]][i]
     plot <- plot +
-      stat_cdf(distribution, data=probability,
-               mapping = ggplot2::aes(xmin=ggplot2::stage(xmin, after_stat=xleft),
-                                      xmax=ggplot2::stage(xmax, after_stat=x),
-                                      group=.group, fill=.color, y=ggplot2::after_stat(probability)),
-               geom = "ribbon", orientation = "y", alpha = 0.4) +
-      stat_cdf_interval(distribution, data=probability,
-                        mapping = ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, colour=.color,
-                                               x=ggplot2::after_stat(xleft), xend=ggplot2::after_stat(xminplot),
-                                               y=ggplot2::after_stat(pmin_visible), yend=ggplot2::after_stat(pmin_visible)),
-                        geom = "segment", linetype = 2, show.legend = FALSE, na.rm = TRUE) +
-      stat_cdf_interval(distribution, data=probability,
-                        mapping = ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, colour=.color,
-                                               x=ggplot2::after_stat(xleft), xend=ggplot2::after_stat(xmaxplot),
-                                               y=ggplot2::after_stat(pmax_visible), yend=ggplot2::after_stat(pmax_visible)),
-                        geom = "segment", linetype = 2, show.legend = FALSE, na.rm = TRUE) +
-      stat_cdf_interval(distribution, data=probability,
-                        mapping = ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, colour=.color,
-                                               x=ggplot2::after_stat(xleft), xend=ggplot2::after_stat(xleft),
-                                               y=ggplot2::after_stat(pmin), yend=ggplot2::after_stat(pmax)),
-                        geom = "segment", linewidth = 2, show.legend = FALSE)
+      stat_cdf(distribution, xlim=interval, fill=color, alpha=0.4, geom="ribbon", orientation="y",
+               mapping = ggplot2::aes(y=ggplot2::after_stat(probability),
+                                      xmin=ggplot2::after_stat(xleft), xmax=ggplot2::after_stat(x))) +
+      stat_cdf_interval(distribution, xlim=interval, colour=color, geom="segment", linetype=2, na.rm=TRUE,
+                        mapping = ggplot2::aes(x=ggplot2::after_stat(xleft), xend=ggplot2::after_stat(xminplot),
+                                               y=ggplot2::after_stat(pmin_visible), yend=ggplot2::after_stat(pmin_visible))) +
+      stat_cdf_interval(distribution, xlim=interval, colour=color, geom="segment", linetype=2, na.rm=TRUE,
+                        mapping = ggplot2::aes(x=ggplot2::after_stat(xleft), xend=ggplot2::after_stat(xmaxplot),
+                                               y=ggplot2::after_stat(pmax_visible), yend=ggplot2::after_stat(pmax_visible))) +
+      stat_cdf_interval(distribution, xlim=interval, colour=color, geom="segment", linewidth=2,
+                        mapping = ggplot2::aes(x=ggplot2::after_stat(xleft), xend=ggplot2::after_stat(xleft),
+                                               y=ggplot2::after_stat(pmin), yend=ggplot2::after_stat(pmax)))
   }
 
   if (!is.null(density)) {
@@ -172,11 +171,11 @@ S7::method(plot_cdf, DistributionContinuous) <- function(distribution, ..., xlim
   plot <- plot +
     stat_cdf(distribution, geom="line", linewidth=1.5)
 
-  if (!is.null(probability)) {
+  for (i in seq_len(NROW(probability))) {
+    interval <- c(probability[["xmin"]][i], probability[["xmax"]][i])
     plot <- plot +
-      stat_cdf_interval(distribution, data=probability,
-                        mapping = ggplot2::aes(xmin=xmin, xmax=xmax, group=.group, fill=.color,
-                                               x=ggplot2::after_stat(x_center_cdf), y=ggplot2::after_stat(y_center_cdf),
+      stat_cdf_interval(distribution, xlim=interval, fill=probability[[".color"]][i],
+                        mapping = ggplot2::aes(x=ggplot2::after_stat(x_center_cdf), y=ggplot2::after_stat(y_center_cdf),
                                                label=ggplot2::after_stat(sprintf("%.3f", probability))))
   }
 
@@ -193,7 +192,7 @@ S7::method(plot_cdf, DistributionContinuous) <- function(distribution, ..., xlim
       )
   }
 
-  plot <- plot + ggplot2::ylab(gettext("Cumulative probability")) + ggplot2::xlab(gettext("X"))
+  plot <- plot + ggplot2::labs(x = gettext("X"), y = gettext("Cumulative probability"))
 
   return(plot)
 }
@@ -220,12 +219,6 @@ slope_scale <- function(distribution, density, inverse=FALSE) {
   ggplot2::scale_colour_identity(name = gettext("Slope"), guide = "legend", breaks = breaks, labels = labels)
 }
 
-x_scale <- function(distribution, xlim) {
-  # keep out-of-bounds values so that the stats can truncate positions themselves
-  # while computing values (e.g., probabilities) from the original inputs
-  ggplot2::scale_x_continuous(limits = x_range(distribution, xlim), oob = scales::oob_keep)
-}
-
 prepare_probability <- function(probability) {
   if (is.null(probability)) return(NULL)
 
@@ -241,7 +234,7 @@ prepare_probability <- function(probability) {
   prepare_color(probability)
 }
 
-prepare_density <- function(density) {
+prepare_density <- function(density, xlim) {
   if (is.null(density)) return(NULL)
 
   if (is.numeric(density)) density <- data.frame(x = density)
@@ -251,7 +244,13 @@ prepare_density <- function(density) {
   if (!is.numeric(density[["x"]]) || anyNA(density[["x"]]))
     cli::cli_abort("Column {.field x} of {.arg density} must be numeric without missing values")
 
-  prepare_color(density)
+  density <- prepare_color(density)
+
+  # points are data and would widen the x range; points outside of the plot are not drawn
+  density <- density[xlim[1] <= density[["x"]] & density[["x"]] <= xlim[2], , drop=FALSE]
+  if (nrow(density) == 0) return(NULL)
+
+  density
 }
 
 prepare_color <- function(data) {

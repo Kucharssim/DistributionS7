@@ -75,19 +75,17 @@ S7::method(plot_hist, DistributionContinuous) <- function(distribution, data, ..
   if (missing(name)) name <- deparse1(substitute(data))
 
   h <- graphics::hist(data, plot=FALSE, breaks=breaks)
-  d <- pdf(distribution, data)
 
-  y_breaks <- pretty(c(0, h[["density"]], d))
-  y_range  <- range(y_breaks)
-  x_breaks <- pretty(data)
-  x_range  <- range(x_breaks)
+  # the x range covers the data and all histogram bins; the density follows the (final) limits of the x scale,
+  # and the y scale is trained on both the bins and the density
+  x_range <- range(pretty(c(data, h[["breaks"]])))
 
   plot <- ggplot2::ggplot(data = data.frame(x = data), ggplot2::aes(x = x)) +
     ggplot2::geom_histogram(mapping = ggplot2::aes(x=x, y=ggplot2::after_stat(density)), breaks=h[["breaks"]], fill="grey", col="black", linewidth=0.7) +
     ggplot2::geom_rug() +
-    stat_pdf(distribution, xlim = range(x_range), geom="line", linewidth = 1.5, inherit.aes = FALSE) +
-    ggplot2::scale_x_continuous(name = name,               limits = x_range, breaks = x_breaks) +
-    ggplot2::scale_y_continuous(name = gettext("Density"), limits = y_range, breaks = y_breaks)
+    stat_pdf(distribution, geom="line", linewidth = 1.5, inherit.aes = FALSE) +
+    ggplot2::expand_limits(x = x_range, y = 0) +
+    ggplot2::labs(x = name, y = gettext("Density"))
 
   return(plot)
 }
@@ -123,19 +121,15 @@ S7::method(plot_qq, DistributionContinuous) <- function(distribution, data, ...,
     ci_layer <- NULL
   }
 
-  y_breaks <- pretty(as.vector(as.matrix(df)))
-  y_range  <- range(y_breaks)
-  x_breaks <- pretty(theoretical)
-  x_range  <- range(x_breaks)
+  y_range  <- range(pretty(as.vector(as.matrix(df))))
+  x_range  <- range(pretty(theoretical))
 
   plot <- ggplot2::ggplot(data = df, ggplot2::aes(sample = sample)) +
     ci_layer +
     ggplot2::geom_line(mapping = ggplot2::aes(x = theoretical, y = theoretical), linewidth = 1) +
     ggplot2::geom_point(mapping = ggplot2::aes(x = theoretical, y = sample), shape=21, fill = "grey", size=3) +
-    ggplot2::scale_x_continuous(
-      name = gettext("Theoretical"), limits = x_range, breaks = x_breaks) +
-    ggplot2::scale_y_continuous(
-      name = gettext("Sample"),      limits = y_range, breaks = y_breaks)
+    ggplot2::expand_limits(x = x_range, y = y_range) +
+    ggplot2::labs(x = gettext("Theoretical"), y = gettext("Sample"))
 
   return(plot)
 }
@@ -143,17 +137,14 @@ S7::method(plot_qq, DistributionContinuous) <- function(distribution, data, ...,
 S7::method(plot_ecdf, DistributionContinuous) <- function(distribution, data, ..., name) {
   if (missing(name)) name <- deparse1(substitute(data))
 
-  x_breaks <- pretty(data)
-  x_range  <- range(x_breaks)
+  x_range <- range(pretty(data))
 
   plot <- ggplot2::ggplot(data = data.frame(x = data), ggplot2::aes(x = x)) +
     ggplot2::geom_rug() +
-    stat_cdf(distribution, xlim = x_range, geom="line", linewidth = 1.5, inherit.aes = FALSE, alpha = 0.8) +
+    stat_cdf(distribution, geom="line", linewidth = 1.5, inherit.aes = FALSE, alpha = 0.8) +
     ggplot2::stat_ecdf(geom = "step", pad = TRUE, linewidth = 1.0, alpha = 0.8) +
-    ggplot2::scale_x_continuous(limits = x_range, breaks=x_breaks) +
-    ggplot2::scale_y_continuous(limits = 0:1) +
-    ggplot2::ylab(gettext("Cumulative Probability")) +
-    ggplot2::xlab(name)
+    ggplot2::expand_limits(x = x_range, y = c(0, 1)) +
+    ggplot2::labs(x = name, y = gettext("Cumulative Probability"))
 
   return(plot)
 }
@@ -189,8 +180,8 @@ S7::method(plot_pp, DistributionContinuous) <- function(distribution, data, ...,
       data = data.frame(x = 0, y = 0, xend = 1, yend = 1), 
       mapping = ggplot2::aes(x = x, y = y, xend = xend, yend = yend), linewidth = 1) + 
     ggplot2::geom_point(mapping = ggplot2::aes(x = theoretical, y = sample), shape=21, fill = "grey", size=3) +
-    ggplot2::scale_x_continuous(name = gettext("Theoretical"), limits = 0:1) +
-    ggplot2::scale_y_continuous(name = gettext("Sample"),      limits = 0:1)
+    ggplot2::expand_limits(x = c(0, 1), y = c(0, 1)) +
+    ggplot2::labs(x = gettext("Theoretical"), y = gettext("Sample"))
 
   return(plot)
 }

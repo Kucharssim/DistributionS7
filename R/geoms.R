@@ -3,18 +3,21 @@
 #' ggplot2 layers that compute the density (`stat_pdf()`), the cumulative probability (`stat_cdf()`), and the
 #' probability of intervals (`stat_cdf_interval()`) of a [Distribution()].
 #'
-#' Positions are truncated to the limits of the x scale, but values (e.g., probabilities of intervals) are computed
-#' from the original inputs.
+#' Like [ggplot2::stat_function()], the stats compute the distribution over the limits of the x scale, or over `xlim`
+#' if supplied. `xlim` is intersected with the limits of the x scale (`-Inf` and `Inf` extend to the edge of the plot),
+#' and layers whose `xlim` lies entirely outside of the x scale are not drawn. Because `xlim` is a parameter rather
+#' than an aesthetic, it neither trains nor is censored by the x scale. Values (e.g., probabilities of intervals) are
+#' computed from the original `xlim`.
 #'
 #' @inheritParams ggplot2::layer
 #' @param dist Object of class [Distribution()].
-#' @param ... Other arguments passed on to the stat (e.g., `n`, `xlim`, `coverage`, `log`, `log.p`) or to the geom.
+#' @param ... Other arguments passed on to the stat (e.g., `xlim`, `n`, `log`, `log.p`) or to the geom.
 #'
 #' @section Aesthetics:
 #' `stat_pdf()` and `stat_cdf()` evaluate the distribution at `x` if supplied. Otherwise they evaluate it on a grid
-#' of `n` points between `xmin` and `xmax` (if supplied), or across the x scale.
+#' of `n` points across `xlim` or the x scale.
 #'
-#' `stat_cdf_interval()` requires `xmin` and `xmax`; intervals that lie entirely outside of the x scale are dropped.
+#' `stat_cdf_interval()` takes the interval as `xlim` (default: the support of the distribution).
 #'
 #' @section Computed variables:
 #' `stat_pdf()`:
@@ -44,38 +47,16 @@ NULL
 StatPdf <- ggplot2::ggproto(
   "StatPdf", ggplot2::Stat,
   default_aes = ggplot2::aes(
-    x=NULL,xmin=NULL,xmax=NULL,
+    x=NULL,
     y = ggplot2::after_stat(density), ymin = ggplot2::after_stat(0), ymax = ggplot2::after_stat(density),
     slope = ggplot2::after_stat(density), intercept = ggplot2::after_stat(intercept)),
   compute_group = function(data, scales, dist, log=FALSE, n=101, xlim=NULL, coverage=0.99) {
     if ("x" %in% colnames(data)) {
       x_vals <- data$x
     } else {
-      if ("xmin" %in% colnames(data) && "xmax" %in% colnames(data)) {
-        xmin <- data[["xmin"]]
-        xmax <- data[["xmax"]]
-      } else if (!is.null(xlim)) {
-        xmin <- xlim[1]
-        xmax <- xlim[2]
-      } else if (!is.null(scales$x)) {
-        xlim <- scales$x$get_limits()
-        xmin <- xlim[1]
-        xmax <- xlim[2]
-      } else {
-        tail <- (1-coverage) / 2
-        xmin <- qf(dist, tail)
-        xmax <- qf(dist, 1-tail)
-      }
-
-      xlim <- scales$x$get_limits()
-
-      # intervals that lie entirely outside of the plot are not drawn
-      if (xmin > xlim[2] || xmax < xlim[1]) return(data.frame())
-
-      if (!is.finite(xmin) || xmin < xlim[1]) xmin <- xlim[1]
-      if (!is.finite(xmax) || xmax > xlim[2]) xmax <- xlim[2]
-
-      x_vals <- seq(xmin, xmax, length.out = n)
+      range <- stat_range(scales, xlim, dist, coverage)
+      if (is.null(range)) return(data.frame())
+      x_vals <- seq(range[1], range[2], length.out = n)
     }
 
     density <- pdf(dist, x_vals, log)
@@ -109,37 +90,20 @@ stat_pdf <- function(dist, mapping = NULL, data = NULL, geom = "point",
 #' @export
 StatCdf <- ggplot2::ggproto(
   "StatCdf", ggplot2::Stat,
-  default_aes = ggplot2::aes(xmin=NULL, xmax=NULL, y=ggplot2::after_stat(probability)),
+  default_aes = ggplot2::aes(y=ggplot2::after_stat(probability)),
   compute_group = function(data, scales, dist, log.p=FALSE, n=101, xlim=NULL, coverage=0.99) {
-    plot_lim <- if (!is.null(scales$x)) scales$x$get_limits() else NULL
+    plot_lim <- scale_limits(scales, dist, coverage)
 
     if ("x" %in% colnames(data)) {
       x_vals <- data$x
-    } else if ("xmin" %in% colnames(data) && "xmax" %in% colnames(data)) {
-      if (is.null(plot_lim)) cli::cli_abort("stat_cdf cannot itself determine plot limits")
-      xmin <- data[["xmin"]]
-      xmax <- data[["xmax"]]
-
-      # intervals that lie entirely outside of the plot are not drawn
-      if (xmin > plot_lim[2] || xmax < plot_lim[1]) return(data.frame())
-
-      # truncate the interval to the plotable area
-      if (xmin < plot_lim[1]) xmin <- plot_lim[1]
-      if (xmax > plot_lim[2]) xmax <- plot_lim[2]
-
-      x_vals <- seq(xmin, xmax, length.out = n)
-    } else if(!is.null(xlim)) {
-      x_vals = seq(xlim[1], xlim[2], length.out = n)
-    } else if (!is.null(plot_lim)) {
-      x_vals = seq(plot_lim[1], plot_lim[2], length.out = n)
     } else {
-      tail <- (1-coverage) / 2
-      xlim <- qf(dist, c(tail, 1-tail))
-      x_vals <- seq(xlim[1], xlim[2], length.out = n)
+      range <- stat_range(scales, xlim, dist, coverage)
+      if (is.null(range)) return(data.frame())
+      x_vals <- seq(range[1], range[2], length.out = n)
     }
-    probability = cdf(dist, x_vals, log.p=log.p)
-    xleft <- if (!is.null(plot_lim)) plot_lim[1] else min(x_vals)
-    data.frame(x=x_vals, probability=probability, xleft=xleft)
+
+    probability <- cdf(dist, x_vals, log.p=log.p)
+    data.frame(x=x_vals, probability=probability, xleft=plot_lim[1])
   }
 )
 
@@ -165,53 +129,29 @@ stat_cdf <- function(dist, mapping = NULL, data = NULL, geom = "point",
 StatCdfInterval <- ggplot2::ggproto(
   "StatCdfInterval", ggplot2::Stat,
   default_aes = ggplot2::aes(
-    xmin=NULL,xmax=NULL,
     x = ggplot2::after_stat(x_center), y = ggplot2::after_stat(y_center), label = ggplot2::after_stat(probability)),
-  compute_group = function(data, scales, dist, xlim=NULL, digits=3) {
-    if ("xmin" %in% colnames(data)) {
-      xmin <- data$xmin
-    } else if (!is.null(xlim)) {
-      xmin <- xlim[1]
-    } else {
-      xmin <- dist@support@min
+  compute_group = function(data, scales, dist, xlim=NULL, coverage=0.99) {
+    if (is.null(xlim)) {
+      s <- support(dist)
+      xlim <- c(s@min, s@max)
     }
+    if (xlim[1] > xlim[2]) cli::cli_abort("Minimum of an interval must be smaller than the maximum of an interval")
 
-    if ("xmax" %in% colnames(data)) {
-      xmax <- data$xmax
-    } else if (!is.null(xlim)) {
-      xmax <- xlim[2]
-    } else {
-      xmax <- dist@support@max
-    }
+    # the probability is computed from the untruncated interval
+    probability <- 1 - cdf(dist, xlim[1]) - cdf(dist, xlim[2], lower.tail=FALSE)
 
-    probability <- 1 - cdf(dist, xmin) - cdf(dist, xmax, lower.tail=FALSE)
+    # positions are truncated to the plotable area
+    range <- stat_range(scales, xlim, dist, coverage)
+    if (is.null(range)) return(data.frame())
+    plot_lim <- scale_limits(scales, dist, coverage)
+    xminplot <- range[1]
+    xmaxplot <- range[2]
 
-    if (!is.null(scales$x)) {
-      plot_lim <- scales$x$get_limits()
-    } else {
-      cli::cli_abort("stat_cdf_interval cannot itself determine plot limits")
-    }
-
-    if (any(xmin > xmax)) cli::cli_abort("Minimum of an interval must be smaller than the maximum of an interval")
-
-    # intervals that lie entirely outside of the plot are not drawn
-    visible <- xmin <= plot_lim[2] & xmax >= plot_lim[1]
-    if (!any(visible)) return(data.frame())
-    xmin <- xmin[visible]
-    xmax <- xmax[visible]
-    probability <- probability[visible]
-
-    # truncate the intervals to plotable area
-    xminplot <- ifelse(xmin < plot_lim[1], plot_lim[1], xmin)
-    xmaxplot <- ifelse(xmax > plot_lim[2], plot_lim[2], xmax)
-
-    # for each interval, calculate the center of the plottable area
-    # this is done by calculating the weighted density
-    x_vals <- mapply(seq, from=xminplot, to=xmaxplot, length.out=101, SIMPLIFY = TRUE)
-    y_vals <- apply(x_vals, 2, function(x) pdf(dist, x))
-
-    x_center <- colSums(x_vals * y_vals) / colSums(y_vals)
-    y_center <- colMeans(y_vals) / 2
+    # center of the area under the density
+    x_vals <- seq(xminplot, xmaxplot, length.out = 101)
+    y_vals <- pdf(dist, x_vals)
+    x_center <- sum(x_vals * y_vals) / sum(y_vals)
+    y_center <- mean(y_vals) / 2
 
     # on the cdf, the area spans vertically from pmin to pmax and horizontally from the left edge to the curve:
     # place the label in the middle of the rise, halfway between the left edge and the curve
@@ -228,8 +168,8 @@ StatCdfInterval <- ggplot2::ggproto(
       xminplot=xminplot, xmaxplot=xmaxplot,
       pmin=pmin, pmax=pmax,
       # boundaries of the interval that are visible in the plot (NA if truncated)
-      pmin_visible=ifelse(xmin < plot_lim[1], NA, pmin),
-      pmax_visible=ifelse(xmax > plot_lim[2], NA, pmax),
+      pmin_visible=if (xlim[1] < plot_lim[1]) NA_real_ else pmin,
+      pmax_visible=if (xlim[2] > plot_lim[2]) NA_real_ else pmax,
       xleft=xleft
     )
   }
@@ -247,6 +187,26 @@ stat_cdf_interval <- function(dist, mapping = NULL, data = NULL, geom = "label",
     position = position, inherit.aes = inherit.aes, show.legend = show.legend,
     params = list(dist = dist, ...)
   )
+}
+
+# limits of the x scale; if there is no trained x scale, the central `coverage` of the distribution
+scale_limits <- function(scales, dist, coverage) {
+  if (!is.null(scales$x) && !scales$x$is_empty()) return(scales$x$get_limits())
+
+  tail <- (1-coverage) / 2
+  qf(dist, c(tail, 1-tail))
+}
+
+# range over which to compute a stat: `xlim` (if supplied) intersected with the limits of the x scale;
+# NULL if `xlim` lies entirely outside of the x scale
+stat_range <- function(scales, xlim, dist, coverage) {
+  plot_lim <- scale_limits(scales, dist, coverage)
+  if (is.null(xlim)) return(plot_lim)
+
+  range <- c(max(xlim[1], plot_lim[1]), min(xlim[2], plot_lim[2]))
+  if (range[1] > range[2]) return(NULL)
+
+  range
 }
 
 ensure_nonempty_data <- function(data) {

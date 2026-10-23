@@ -42,7 +42,8 @@ The derived limits are then expanded by 5\% of their range on each side. Limits 
 
 \item{density}{Data frame with a numeric column \code{x} and an optional column \code{color}; points at which to show the
 density. In \code{plot_pdf()}, the density is shown as a label at the curve. In \code{plot_cdf()} and \code{plot_qf()}, the
-density is shown as the slope of a tangent, listed in the legend. A numeric vector is treated as column \code{x}.}
+density is shown as the slope of a tangent, listed in the legend. A numeric vector is treated as column \code{x}.
+Points outside of \code{xlim} are not drawn.}
 
 \item{probability}{Data frame with numeric columns \code{xmin} and \code{xmax} and an optional column \code{color}; intervals
 whose probability to show. Intervals are shown as shaded areas truncated to \code{xlim}, labelled with their
@@ -56,4 +57,8 @@ Plot the probability density, cumulative distribution, and quantile function of 
 }
 \details{
 Colors in the \code{color} columns are used as is. Missing colors are filled from the default ggplot2 hue palette.
+
+The plots do not set position scales: \code{xlim} is added as data (via \code{\link[ggplot2:expand_limits]{ggplot2::expand_limits()}}), and the curves are
+computed over the final limits of the x scale. Any position scale (e.g., \code{\link[ggplot2:scale_x_continuous]{ggplot2::scale_x_continuous()}}) can
+therefore be added to the plots; widening the limits of the x scale extends the curves.
 }

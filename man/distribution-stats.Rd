@@ -92,7 +92,7 @@ to use \code{position_jitter()}, give the position as \code{"jitter"}.
 \link[ggplot2:layer_positions]{layer position} documentation.
 }}
 
-\item{...}{Other arguments passed on to the stat (e.g., \code{n}, \code{xlim}, \code{coverage}, \code{log}, \code{log.p}) or to the geom.}
+\item{...}{Other arguments passed on to the stat (e.g., \code{xlim}, \code{n}, \code{log}, \code{log.p}) or to the geom.}
 
 \item{show.legend}{logical. Should this layer be included in the legends?
 \code{NA}, the default, includes if any aesthetics are mapped.
@@ -111,15 +111,18 @@ the default plot specification, e.g. \code{\link[ggplot2:annotation_borders]{ann
 ggplot2 layers that compute the density (\code{stat_pdf()}), the cumulative probability (\code{stat_cdf()}), and the
 probability of intervals (\code{stat_cdf_interval()}) of a \code{\link[=Distribution]{Distribution()}}.
 
-Positions are truncated to the limits of the x scale, but values (e.g., probabilities of intervals) are computed
-from the original inputs.
+Like \code{\link[ggplot2:stat_function]{ggplot2::stat_function()}}, the stats compute the distribution over the limits of the x scale, or over \code{xlim}
+if supplied. \code{xlim} is intersected with the limits of the x scale (\code{-Inf} and \code{Inf} extend to the edge of the plot),
+and layers whose \code{xlim} lies entirely outside of the x scale are not drawn. Because \code{xlim} is a parameter rather
+than an aesthetic, it neither trains nor is censored by the x scale. Values (e.g., probabilities of intervals) are
+computed from the original \code{xlim}.
 }
 \section{Aesthetics}{
 
 \code{stat_pdf()} and \code{stat_cdf()} evaluate the distribution at \code{x} if supplied. Otherwise they evaluate it on a grid
-of \code{n} points between \code{xmin} and \code{xmax} (if supplied), or across the x scale.
+of \code{n} points across \code{xlim} or the x scale.
 
-\code{stat_cdf_interval()} requires \code{xmin} and \code{xmax}; intervals that lie entirely outside of the x scale are dropped.
+\code{stat_cdf_interval()} takes the interval as \code{xlim} (default: the support of the distribution).
 }
 
 \section{Computed variables}{
