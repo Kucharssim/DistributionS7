@@ -95,9 +95,7 @@ S7::method(plot_pdf, DistributionContinuous) <- function(distribution, ..., xlim
     interval <- c(probability[["xmin"]][i], probability[["xmax"]][i])
     color <- probability[[".color"]][i]
     plot <- plot +
-      stat_pdf(distribution, xlim=interval, geom="ribbon", fill=color, alpha=0.8) +
-      stat_cdf_interval(distribution, xlim=interval, fill=color,
-                        mapping=ggplot2::aes(label=ggplot2::after_stat(sprintf("%.3f", probability))))
+      stat_pdf(distribution, xlim=interval, geom="ribbon", fill=color, alpha=0.8)
   }
 
   plot <- plot +
@@ -117,13 +115,24 @@ S7::method(plot_pdf, DistributionContinuous) <- function(distribution, ..., xlim
       stat_pdf(distribution, data=density,
                mapping = ggplot2::aes(x=x, group=.group, fill=.color),
                size = 3, shape = 21, colour = "black", alpha = NA, stroke = 0.5) +
-      stat_pdf(distribution, data=density,
-               mapping = ggplot2::aes(x=x, group=.group, colour=.color, hjust=.hjust,
-                                      label=ggplot2::after_stat(sprintf("%.3f", density))),
-               geom = "label", vjust = -0.4, fill = "white"
-               ) +
       # leave room for labels placed above the curve
       ggplot2::expand_limits(y = c(0, 1.15 * max(pdf(distribution, density[["x"]]))))
+  }
+
+  # labels are drawn last, so that no line or point is drawn over them
+  for (i in seq_len(NROW(probability))) {
+    interval <- c(probability[["xmin"]][i], probability[["xmax"]][i])
+    plot <- plot +
+      stat_cdf_interval(distribution, xlim=interval, fill=probability[[".color"]][i], size=label_size,
+                        mapping=ggplot2::aes(label=ggplot2::after_stat(sprintf("%.3f", probability))))
+  }
+
+  if (!is.null(density)) {
+    plot <- plot +
+      stat_pdf(distribution, data=density,
+               mapping = ggplot2::aes(x=x, group=.group, fill=.color, hjust=.hjust,
+                                      label=ggplot2::after_stat(sprintf("%.3f", density))),
+               geom = "label", vjust = -0.4, colour = "black", size = label_size)
   }
 
   plot <- plot + ggplot2::labs(x = gettext("X"), y = gettext("Density"))
@@ -162,28 +171,30 @@ S7::method(plot_cdf, DistributionContinuous) <- function(distribution, ..., xlim
                                                y=ggplot2::after_stat(pmin), yend=ggplot2::after_stat(pmax)))
   }
 
-  if (!is.null(density)) {
-    plot <- plot +
-      stat_pdf(distribution, data = density,
-               mapping = ggplot2::aes(x=x, group=.group, colour=.color), geom="abline", show.legend = TRUE)
-  }
-
   plot <- plot +
     stat_cdf(distribution, geom="line", linewidth=1.5)
 
+  if (!is.null(density)) {
+    # tangents are drawn after the curve, so that the curve does not cover them
+    plot <- plot +
+      stat_pdf(distribution, data = density,
+               mapping = ggplot2::aes(x=x, group=.group, colour=.color), geom="abline", show.legend = TRUE) +
+      stat_cdf(distribution, data=density,
+               mapping = ggplot2::aes(x=x, group=.group, fill=.color),
+               size = 3, shape = 21, colour = "black", alpha = NA, stroke = 0.5)
+  }
+
+  # labels are drawn last, so that no line or point is drawn over them
   for (i in seq_len(NROW(probability))) {
     interval <- c(probability[["xmin"]][i], probability[["xmax"]][i])
     plot <- plot +
-      stat_cdf_interval(distribution, xlim=interval, fill=probability[[".color"]][i],
+      stat_cdf_interval(distribution, xlim=interval, fill=probability[[".color"]][i], size=label_size,
                         mapping = ggplot2::aes(x=ggplot2::after_stat(x_center_cdf), y=ggplot2::after_stat(y_center_cdf),
                                                label=ggplot2::after_stat(sprintf("%.3f", probability))))
   }
 
   if (!is.null(density)) {
     plot <- plot +
-      stat_cdf(distribution, data=density,
-               mapping = ggplot2::aes(x=x, group=.group, fill=.color),
-               size = 3, shape = 21, colour = "black", alpha = NA, stroke = 0.5) +
       ggplot2::theme(
         legend.position = "inside",
         legend.position.inside = c(1, 0),
@@ -203,6 +214,9 @@ S7::method(plot_qf, DistributionContinuous) <- function(distribution, ..., xlim,
 
   return(plot)
 }
+
+# text size of the value labels (ggplot2 default is 3.88)
+label_size <- 4.5
 
 # colours are used as is; the legend lists only the tangents, labelled by their slope
 slope_scale <- function(distribution, density, inverse=FALSE) {

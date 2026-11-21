@@ -1,4 +1,13 @@
-# DitributionS7 0.1.5
+# DistributionS7 0.1.6
+
+## Changed
+* Labels in PDF/CDF/QF plots are drawn after everything else, so they are layed on top of all layers (and always visible)
+* Labels in PDF/CDF/QF are prettier (larger fontsize, unified style: colored background, black text and borders)
+* Tangent density lines in CDF/QF plots are drawn after the CDF/QF, so they are not overlayed by it
+
+
+
+# DistributionS7 0.1.5
 ## Added
 * Theoretical plots are now exported for continuous distributions.
 * Bootstrap parameter inference via `parameter_inference()` with `Bootstrap()`, which gains arguments `type` (`"parametric"` or `"nonparametric"`) and `ci_method` (`"percentile"` or `"basic"`). `gof_test()` always uses a parametric bootstrap.
