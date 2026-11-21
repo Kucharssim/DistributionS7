@@ -90,35 +90,96 @@ S7::method(parameter_estimates, list(Shifted, Mle)) <- function(distribution, es
   if (distribution@shift@fixed)
     return(parameter_estimates(distribution@distribution, estimator, data-distribution@shift@value))
 
-  distribution <- parameter_start(distribution, data)
-  start <- c(ushift = distribution@shift@uvalue)
+  base <- distribution@distribution
 
-  objective <- function(par, d, data) {
-    d@shift@uvalue <- par[["ushift"]]
-    # estimate parameters of the unshifted distribution
-    parameter_values(d@distribution) <- suppressMessages(
-      parameter_estimates(distribution@distribution, estimator, data - d@shift@value)
-    )
-    likelihood(d, data, log=TRUE, factor=-2)
+  # profile likelihood of the shift: the parameters of the unshifted distribution are estimated given the shift;
+  # trial shifts at which the estimation fails are rejected rather than aborting the search
+  objective <- function(shift) {
+    tryCatch({
+      x <- data - shift
+      parameter_values(base) <- suppressWarnings(suppressMessages(parameter_estimates(base, estimator, x)))
+      value <- suppressWarnings(likelihood(base, x, log=TRUE, factor=-2))
+      if (is.finite(value)) value else Inf
+    }, error = function(e) Inf)
   }
 
-  result <- try(
-    stats::optim(
-      par=start, fn=objective, d=distribution, data=data,
-      method="BFGS",
-      control=estimator@control, hessian=FALSE),
-    silent=TRUE
-  )
+  interval <- shift_interval(base, data)
+  scale <- interval[["scale"]]
+  tol <- 1e-8 * scale
 
-  if (inherits(result, "try-error")) rlang::abort("Could not estimate shift parameter")
+  # one-dimensional bounded search directly on the shift; the open ends of the interval are widened if the optimum
+  # runs into them
+  for (i in 0:3) {
+    lower <- interval[["lower"]] - is.infinite(interval[["min"]]) * 10^(1+i) * scale
+    upper <- interval[["upper"]] + is.infinite(interval[["max"]]) * 10^(1+i) * scale
+    lower <- max(lower, interval[["min"]] + tol)
+    upper <- min(upper, interval[["max"]] - tol)
 
-  distribution@shift@uvalue <- result[["par"]][["ushift"]]
+    result <- stats::optimize(objective, lower=lower, upper=upper, tol=tol)
+    if (!is.finite(result[["objective"]])) rlang::abort("Could not estimate shift parameter")
 
-  estimates <- parameter_estimates(distribution@distribution, estimator, data-distribution@shift@value)
+    at_open_end <- (is.infinite(interval[["min"]]) && result[["minimum"]] - lower < 1e3 * tol) ||
+                   (is.infinite(interval[["max"]]) && upper - result[["minimum"]] < 1e3 * tol)
+    if (!at_open_end) break
+  }
 
-  estimates[["shift"]] <- distribution@shift@value
+  if (at_open_end)
+    rlang::warn("The estimate of the shift parameter drifted to the limit of the search interval; the distribution may fit better without a finite shift.")
+
+  shift <- result[["minimum"]]
+
+  # the likelihood can increase without bounds as the support of the distribution approaches the data (e.g., gamma
+  # with shape below 1): the MLE does not exist, and the shift is placed one data spacing away from the data
+  if (is.finite(interval[["max"]]) && interval[["max"]] - shift < 0.01 * interval[["gap_max"]]) {
+    shift <- interval[["max"]] - interval[["gap_max"]]
+    warn_unbounded_likelihood()
+  } else if (is.finite(interval[["min"]]) && shift - interval[["min"]] < 0.01 * interval[["gap_min"]]) {
+    shift <- interval[["min"]] + interval[["gap_min"]]
+    warn_unbounded_likelihood()
+  }
+
+  estimates <- parameter_estimates(base, estimator, data - shift)
+  estimates[["shift"]] <- shift
 
   return(estimates)
+}
+
+# limits of the shift such that the support of the shifted distribution covers the data, and a search interval within
+shift_interval <- function(distribution, data) {
+  support_min <- distribution@support@min
+  support_max <- distribution@support@max
+
+  m <- min(data)
+  M <- max(data)
+  x <- sort(unique(data))
+  if (length(x) < 2) rlang::abort("Shift parameter cannot be estimated from data with fewer than two distinct values")
+
+  # the shifted support [support_min + shift, support_max + shift] must contain [m, M]
+  min <- M - support_max
+  max <- m - support_min
+  if (min > max)
+    rlang::abort("data has a larger range than the distribution support allows, distribution cannot be fitted to data")
+
+  scale <- stats::sd(data)
+
+  list(
+    min = min, max = max,
+    lower = if (is.finite(min)) min else if (is.finite(max)) max else m,
+    upper = if (is.finite(max)) max else if (is.finite(min)) min else M,
+    scale = scale,
+    # distance between the data and the shifted support in case of a boundary estimate: the spacing of the data at
+    # the respective end
+    gap_max = x[2] - x[1],
+    gap_min = x[length(x)] - x[length(x)-1]
+  )
+}
+
+warn_unbounded_likelihood <- function() {
+  rlang::warn(c(
+    "The likelihood increases without bounds as the shift approaches the data; the MLE of the shift does not exist.",
+    i = "The shift was set one data spacing away from the data.",
+    i = "Consider fixing the shift parameter, e.g., `shift = fixed(...)`."
+  ))
 }
 
 S7::method(parameter_start, Shifted) <- function(distribution, data) {
@@ -134,14 +195,14 @@ S7::method(parameter_start, Shifted) <- function(distribution, data) {
   } else if ((M-m) == len) {
     distribution@shift@value <- m
   } else if (is.finite(max) & is.finite(min)){
-    distribution@shift@value <- (M+m-l)/2
-    distribution@shift@support@min <- M - l
+    distribution@shift@value <- (M+m-len)/2
+    distribution@shift@support@min <- M - len
     distribution@shift@support@max <- m
   } else if (is.finite(min)) {
-    distribution@shift@value <- m - 1
+    distribution@shift@value <- m - stats::sd(data)
     distribution@shift@support@max <- m
   } else if (is.finite(max)) {
-    distribution@shift@value <- M + 1
+    distribution@shift@value <- M + stats::sd(data)
     distribution@shift@support@min <- M
   }
 

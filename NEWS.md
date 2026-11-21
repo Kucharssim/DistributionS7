@@ -1,9 +1,10 @@
 # DistributionS7 0.1.6
 
 ## Changed
-* Labels in PDF/CDF/QF plots are drawn after everything else, so they are layed on top of all layers (and always visible)
-* Labels in PDF/CDF/QF are prettier (larger fontsize, unified style: colored background, black text and borders)
-* Tangent density lines in CDF/QF plots are drawn after the CDF/QF, so they are not overlayed by it
+* Labels in PDF/CDF/QF plots are drawn after everything else, so they are layed on top of all layers (and always visible).
+* Labels in PDF/CDF/QF are prettier (larger fontsize, unified style: colored background, black text and borders).
+* Tangent density lines in CDF/QF plots are drawn after the CDF/QF, so they are not overlayed by it.
+* Improved fitting shifted distributions with MLE; including warnings if the MLE does not exist.
 
 
 
