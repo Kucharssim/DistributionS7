@@ -5,6 +5,7 @@
 \alias{Estimator}
 \alias{Mme}
 \alias{Mle}
+\alias{Mse}
 \alias{BiasCorrected}
 \title{Estimators of distribution parameters.}
 \usage{
@@ -14,6 +15,14 @@ Mme(silent = FALSE)
 
 Mle(
   optim = FALSE,
+  constrained = FALSE,
+  method = if (constrained) "L-BFGS-B" else "BFGS",
+  start = parameter_start,
+  control = list(),
+  silent = FALSE
+)
+
+Mse(
   constrained = FALSE,
   method = if (constrained) "L-BFGS-B" else "BFGS",
   start = parameter_start,
@@ -47,6 +56,14 @@ specifies maximum likelihood estimator, and \code{\link[=BiasCorrected]{BiasCorr
 (this is highly dependent on the type of distribution). For example, for \code{\link[=Normal]{Normal()}} the estimate of the variance is
 unbiased, but the estimates of the standard deviation and of the precision are its square root and reciprocal, and are
 therefore not unbiased. For \code{\link[=Exponential]{Exponential()}}, the estimates of both the rate and the scale are unbiased.
+
+\code{\link[=Mse]{Mse()}} specifies the maximum spacing estimator (also known as maximum product of spacings estimator, Cheng & Amin,
+1983; Ranneby, 1984), which maximizes the geometric mean of the spacings between the cumulative distribution function
+evaluated at the ordered data. It is available for continuous distributions and always uses numerical optimization.
+The estimator is consistent and asymptotically equivalent to the MLE where the MLE exists, and remains well
+defined where the likelihood is unbounded, e.g., for the shift parameter of \code{\link[=ShiftedGamma]{ShiftedGamma()}} or \code{\link[=ShiftedWeibull]{ShiftedWeibull()}}
+when the shape parameter is smaller than 1. Zero spacings due to ties in the data are replaced by the density at
+the tied value. Normal theory standard errors assume MLE; use \code{\link[=Bootstrap]{Bootstrap()}} for inference with \code{\link[=Mse]{Mse()}}.
 
 \code{\link[=Mle]{Mle()}} is the default method that is implemented for any distribution. If there are no closed-form solutions for the MLE,
 then numerical optimization of the log likelihood is used.

@@ -74,6 +74,17 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
   if (!estimator@optim && !estimator@silent)
     rlang::inform(message = "Using numerical optimization to find parameter estimates...")
 
+  objective <- function(d, data) likelihood(d, data, log=TRUE, factor=-2)
+  optimize_parameters(distribution, estimator, data, objective)
+}
+
+S7::method(parameter_estimates, list(DistributionContinuous, Mse)) <- function(distribution, estimator, data) {
+  optimize_parameters(distribution, estimator, data, spacings_objective)
+}
+
+# numerical minimization of `objective(distribution, data)` over the free parameters of the distribution;
+# `estimator` provides the start values and the settings of stats::optim
+optimize_parameters <- function(distribution, estimator, data, objective) {
   # try to set intelligent starting values
   if (S7::S7_inherits(estimator@start, Estimator)) {
     estimates <- try(parameter_estimates(distribution, estimator@start, data), silent = TRUE)
@@ -87,9 +98,9 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
   if (estimator@constrained) {
     start <- parameter_values(distribution, which="free")
 
-    objective <- function(par, d, data) {
+    fn <- function(par, d, data) {
       parameter_values(d) <- par
-      likelihood(d, data, log=TRUE, factor=-2)
+      objective(d, data)
     }
 
     # determine limits of optimization
@@ -99,7 +110,7 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
 
     result <- try(
       stats::optim(
-        par=start, fn=objective, d=distribution, data=data,
+        par=start, fn=fn, d=distribution, data=data,
         method=estimator@method, lower=lower, upper=upper,
         control=estimator@control, hessian=FALSE),
       silent=TRUE
@@ -107,14 +118,14 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
   } else {
     start <- parameter_uvalues(distribution, which="free")
 
-    objective <- function(par, d, data) {
+    fn <- function(par, d, data) {
       parameter_uvalues(d) <- par
-      likelihood(d, data, log=TRUE, factor=-2)
+      objective(d, data)
     }
 
     result <- try(
       stats::optim(
-        par=start, fn=objective, d=distribution, data=data,
+        par=start, fn=fn, d=distribution, data=data,
         method=estimator@method,
         control=estimator@control, hessian=FALSE),
       silent=TRUE
@@ -135,6 +146,25 @@ S7::method(parameter_estimates, list(Distribution, Mle)) <- function(distributio
   estimates <- parameter_values(distribution, which="free")
 
   return(estimates)
+}
+
+# -2 times the sum of log spacings of the cdf at the ordered data (objective of the maximum spacing estimator)
+spacings_objective <- function(distribution, data) {
+  x <- sort(data)
+
+  # spacings from the lower tail of the cdf where it is below 1/2 and from the upper tail otherwise, to avoid
+  # cancellation when the cdf is close to 1
+  lower <- c(0, cdf(distribution, x), 1)
+  upper <- c(1, cdf(distribution, x, lower.tail=FALSE), 0)
+  spacings <- ifelse(lower[-1] <= 0.5, diff(lower), -diff(upper))
+
+  # ties: zero spacings between equal observations are replaced by the density at the tied value
+  tied <- c(FALSE, diff(x) == 0, FALSE)
+  if (any(tied)) spacings[tied] <- pdf(distribution, x[which(tied)])
+
+  if (any(!is.finite(spacings)) || any(spacings <= 0)) return(Inf)
+
+  -2 * sum(log(spacings))
 }
 
 #' @rdname parameter-estimation
@@ -197,9 +227,10 @@ S7::method(parameter_inference, list(Distribution, NormalTheory)) <- function(di
   lower <- setNames(qnorm(inference_method@lower, uestimates, se), keys)
   upper <- setNames(qnorm(inference_method@upper, uestimates, se), keys)
 
-  # convert to constrained space
+  # convert to constrained space; parameters are looked up by key, as they may belong to a nested distribution
+  pars <- parameters(distribution)
   for (key in keys) {
-    par <- S7::prop(distribution, key)
+    par <- pars[[key]]
     lower[[key]] <- constrain(par, lower[[key]])
     upper[[key]] <- constrain(par, upper[[key]])
     # reverse limits when they are fliped (due to max-exp(uvalue) transform)
@@ -232,7 +263,7 @@ S7::method(parameter_inference, list(Distribution, Bootstrap)) <- function(distr
 
   # warm start optimization from the estimates on the full data
   warm_estimator <- estimator
-  if (S7::S7_inherits(estimator, Mle)) warm_estimator@start <- estimates
+  if (S7::prop_exists(estimator, "start")) warm_estimator@start <- estimates
 
   boot_fn <- function() {
     data_boot <- bootstrap_data(inference_method, fitted, data)

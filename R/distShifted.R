@@ -190,21 +190,46 @@ S7::method(parameter_start, Shifted) <- function(distribution, data) {
   M <- max(data)
   m <- min(data)
 
-  if ((M-m) > len) {
-    rlang::abort("data has a larger range than the distribution support allows, distribution cannot be fitted to data")
-  } else if ((M-m) == len) {
-    distribution@shift@value <- m
-  } else if (is.finite(max) & is.finite(min)){
-    distribution@shift@value <- (M+m-len)/2
-    distribution@shift@support@min <- M - len
-    distribution@shift@support@max <- m
-  } else if (is.finite(min)) {
-    distribution@shift@value <- m - stats::sd(data)
-    distribution@shift@support@max <- m
-  } else if (is.finite(max)) {
-    distribution@shift@value <- M + stats::sd(data)
-    distribution@shift@support@min <- M
+  if (!distribution@shift@fixed) {
+    # the shifted support [min + shift, max + shift] must contain [m, M]
+    if ((M-m) > len) {
+      rlang::abort("data has a larger range than the distribution support allows, distribution cannot be fitted to data")
+    } else if ((M-m) == len) {
+      distribution@shift@value <- m - min
+    } else if (is.finite(max) & is.finite(min)){
+      distribution@shift@value <- (M - max + m - min)/2
+      distribution@shift@support@min <- M - max
+      distribution@shift@support@max <- m - min
+    } else if (is.finite(min)) {
+      distribution@shift@value <- m - min - stats::sd(data)
+      distribution@shift@support@max <- m - min
+    } else if (is.finite(max)) {
+      distribution@shift@value <- M - max + stats::sd(data)
+      distribution@shift@support@min <- M - max
+    }
   }
+
+  # start the parameters of the unshifted distribution at the shifted data
+  distribution@distribution <- parameter_start(distribution@distribution, data - distribution@shift@value)
+
+  return(distribution)
+}
+
+# the shift is a property of the shifted distribution, the remaining parameters belong to the unshifted distribution
+S7::method(`parameter_values<-`, Shifted) <- function(distribution, value) {
+  value <- as.list(value)
+  if (!is.null(value[["shift"]])) distribution@shift@value <- value[["shift"]]
+  value[["shift"]] <- NULL
+  if (length(value) > 0) parameter_values(distribution@distribution) <- value
+
+  return(distribution)
+}
+
+S7::method(`parameter_uvalues<-`, Shifted) <- function(distribution, value) {
+  value <- as.list(value)
+  if (!is.null(value[["shift"]])) distribution@shift@uvalue <- value[["shift"]]
+  value[["shift"]] <- NULL
+  if (length(value) > 0) parameter_uvalues(distribution@distribution) <- value
 
   return(distribution)
 }
@@ -218,7 +243,7 @@ S7::method(parameters, Shifted) <- function(distribution, which = c("all", "free
   return(c(pars, shift))
 }
 
-S7::method(fit_distribution, list(Shifted, Mle)) <- function(distribution, estimator, data) {
+S7::method(fit_distribution, list(Shifted, Estimator)) <- function(distribution, estimator, data) {
   estimates <- parameter_estimates(distribution, estimator, data)
   if(!is.null(estimates[["shift"]])) {
     shift <- estimates["shift"]

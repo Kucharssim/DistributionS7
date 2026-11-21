@@ -55,3 +55,18 @@ testthat::test_that("fixed shift is not estimated", {
   testthat::expect_equal(fitted@shift@value, 4)
   testthat::expect_true(fitted@shift@fixed)
 })
+
+testthat::test_that("normal theory inference works for shifted distributions", {
+  x <- withr::with_seed(5729, stats::rgamma(200, shape=3, scale=2) + 5)
+  dist <- ShiftedGamma(2, 1)
+
+  result <- suppressMessages(parameter_inference(dist, DefaultMethod(), data=x))
+  fitted <- fit(dist, data=x)
+
+  testthat::expect_equal(result[["key"]], c("alpha", "theta", "shift"))
+  testthat::expect_equal(result[["estimate"]][3], fitted@shift@value)
+  testthat::expect_true(all(is.finite(result[["se"]])))
+  testthat::expect_true(all(result[["lower"]] < result[["estimate"]] & result[["estimate"]] < result[["upper"]]))
+  # the interval of the shift respects its support
+  testthat::expect_lte(result[["upper"]][3], min(x))
+})

@@ -1,5 +1,11 @@
 # DistributionS7 0.1.6
 
+## Added
+* Maximum spacing estimator `Mse()` for continuous distributions. Unlike the MLE, it remains well defined when the likelihood is unbounded, e.g., for the shift of shifted distributions with shape parameter below 1.
+
+## Fixed
+* Setting parameter values of shifted distributions (`parameter_values<-`, `parameter_uvalues<-`) now also sets the parameters of the unshifted distribution. Previously, generic numerical optimization (e.g., `Mle(optim = TRUE)`) only estimated the shift.
+
 ## Changed
 * Labels in PDF/CDF/QF plots are drawn after everything else, so they are layed on top of all layers (and always visible).
 * Labels in PDF/CDF/QF are prettier (larger fontsize, unified style: colored background, black text and borders).
