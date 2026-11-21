@@ -27,10 +27,8 @@ NoncentralChiSquared <- S7::new_class(
   properties = list(kappa = Parameter),
   constructor = function(nu, kappa) {
     S7::new_object(
-      S7::S7_object(),
+      ChiSquared(nu),
       name = "Noncentral chi-squared",
-      support = Real(min=0),
-      nu = Parameter("nu", "degrees of freedom", "\\nu", nu, Real(min=0)),
       kappa = Parameter("kappa", "noncentrality parameter", "\\kappa", kappa, Real(min=0))
     )
   }

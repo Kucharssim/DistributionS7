@@ -7,6 +7,7 @@
 * Setting parameter values of shifted distributions (`parameter_values<-`, `parameter_uvalues<-`) now also sets the parameters of the unshifted distribution. Previously, generic numerical optimization (e.g., `Mle(optim = TRUE)`) only estimated the shift.
 
 ## Changed
+* Upgraded to be compatible with S7 1.0.0.
 * Labels in PDF/CDF/QF plots are drawn after everything else, so they are layed on top of all layers (and always visible).
 * Labels in PDF/CDF/QF are prettier (larger fontsize, unified style: colored background, black text and borders).
 * Tangent density lines in CDF/QF plots are drawn after the CDF/QF, so they are not overlayed by it.

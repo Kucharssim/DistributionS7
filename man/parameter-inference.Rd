@@ -23,7 +23,9 @@ NormalTheory(
 ProfileLikelihood(estimator=Mle(), ci_level=0.95)
 
 Bootstrap(estimator=Mle(), ci_level=0.95, samples=1000L,
-  type=c("parametric", "nonparametric"), ci_method=c("percentile", "basic"), callback=function() {})
+  type=c("parametric", "nonparametric"),
+  ci_method=c("percentile", "basic"),
+  callback=function() {})
 }
 \arguments{
 \item{estimator}{Object of class \code{\link[=Estimator]{Estimator()}}.}

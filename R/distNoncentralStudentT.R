@@ -30,10 +30,8 @@ StudentT <- S7::new_class(
   properties = list(mu = Parameter, sigma = Parameter),
   constructor = function(nu, mu, sigma) {
     S7::new_object(
-      S7::S7_object(),
+      StandardT(nu),
       name = "Student t",
-      support = Real(),
-      nu = Parameter("nu", "degrees of freedom", "\\nu", nu, Real(min=0)),
       mu = Parameter("mu", "location", "\\mu", mu, Real()),
       sigma = Parameter("sigma", "scale", "\\sigma", sigma, Real(min=0))
     )
@@ -48,10 +46,8 @@ NoncentralT <- S7::new_class(
   properties = list(kappa = Parameter),
   constructor = function(nu, kappa) {
     S7::new_object(
-      S7::S7_object(),
+      StandardT(nu),
       name = "Noncentral t",
-      support = Real(),
-      nu = Parameter("nu", "degrees of freedom", "\\nu", nu, Real(min=0)),
       kappa = Parameter("kappa", "noncentrality", "\\kappa", kappa, Real())
     )
   }
@@ -66,13 +62,9 @@ NoncentralStudentT <- S7::new_class(
   properties = list(kappa = Parameter),
   constructor = function(nu, kappa, mu, sigma) {
     S7::new_object(
-      S7::S7_object(),
+      StudentT(nu, mu, sigma),
       name = "Noncentral Student t",
-      support = Real(),
-      nu = Parameter("nu", "degrees of freedom", "\\nu", nu, Real(min=0)),
-      kappa = Parameter("kappa", "noncentrality", "\\kappa", kappa, Real()),
-      mu = Parameter("mu", "location", "\\mu", mu, Real()),
-      sigma = Parameter("sigma", "scale", "\\sigma", sigma, Real(min=0))
+      kappa = Parameter("kappa", "noncentrality", "\\kappa", kappa, Real())
     )
   }
 )

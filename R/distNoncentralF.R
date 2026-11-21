@@ -35,11 +35,8 @@ NoncentralF <- S7::new_class(
   ),
   constructor = function(nu1, nu2, kappa) {
     S7::new_object(
-      S7::S7_object(),
+      CentralF(nu1, nu2),
       name = "Noncentral F",
-      support = Real(min=0),
-      nu1 = Parameter("nu1", "degrees of freedom", "\\nu_1", nu1, Real(min=0)),
-      nu2 = Parameter("nu2", "degrees of freedom", "\\nu_2", nu2, Real(min=0)),
       kappa = Parameter("kappa", "noncentrality parameter", "\\kappa", kappa, Real(min=0))
     )
   }

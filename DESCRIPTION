@@ -55,7 +55,7 @@ Collate:
   'zzz.R'
 Roxygen: list(markdown=TRUE)
 Imports:
-  S7,
+  S7 (>= 1.0.0),
   assertthat,
   rlang,
   cli,

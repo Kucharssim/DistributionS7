@@ -47,10 +47,9 @@ Bernoulli <- S7::new_class(
   parent = Binomial,
   constructor = function(prob) {
     S7::new_object(
-      S7::S7_object(),
+      Binomial(prob, fixed(1L)),
       name = "Bernoulli",
       support = Int(min=0, max=1),
-      prob = Parameter("prob", "probability of success", "p", prob, Real(min=0, max=1)),
       size = Parameter("size", "sample size", "n", fixed(1L), Int(min=1, max=1), fixed=TRUE)
     )
   }

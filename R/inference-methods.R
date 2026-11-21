@@ -72,9 +72,7 @@ DefaultMethod <- S7::new_class(
   ),
   constructor = function(estimator = Mle(), ci_level = 0.95, args = list()) {
     S7::new_object(
-      S7::S7_object(),
-      estimator = estimator,
-      ci_level = ci_level,
+      InferenceMethod(estimator, ci_level),
       args = args
     )
   }
@@ -91,9 +89,7 @@ NormalTheory <- S7::new_class(
   ),
   constructor = function(estimator = Mle(), ci_level = 0.95, constrained = FALSE, control = list()) {
     S7::new_object(
-      S7::S7_object(),
-      estimator = estimator,
-      ci_level = ci_level,
+      InferenceMethod(estimator, ci_level),
       constrained = constrained,
       control = control
     )
@@ -107,17 +103,15 @@ ProfileLikelihood <- S7::new_class(
   name = "ProfileLikelihood",
   parent = InferenceMethod,
   constructor = function(estimator = Mle(), ci_level = 0.95) {
-    S7::new_object(
-      S7::S7_object(),
-      estimator = estimator,
-      ci_level = ci_level
-    )
+    S7::new_object(InferenceMethod(estimator, ci_level))
   }
 )
 
 #' @rdname parameter-inference
 #' @usage Bootstrap(estimator=Mle(), ci_level=0.95, samples=1000L,
-#'   type=c("parametric", "nonparametric"), ci_method=c("percentile", "basic"), callback=function() {})
+#'   type=c("parametric", "nonparametric"),
+#'   ci_method=c("percentile", "basic"),
+#'   callback=function() {})
 #' @export
 Bootstrap <- S7::new_class(
   name = "Bootstrap",
@@ -143,14 +137,13 @@ Bootstrap <- S7::new_class(
     callback = S7::class_function
   ),
   constructor = function(estimator = Mle(), ci_level = 0.95, samples = 1000L,
-                         type = c("parametric", "nonparametric"), ci_method = c("percentile", "basic"),
+                         type = c("parametric", "nonparametric"), 
+                         ci_method = c("percentile", "basic"),
                          callback = function() {}) {
     type <- rlang::arg_match(type)
     ci_method <- rlang::arg_match(ci_method)
     S7::new_object(
-      S7::S7_object(),
-      estimator = estimator,
-      ci_level = ci_level,
+      InferenceMethod(estimator, ci_level),
       samples = samples,
       type = type,
       ci_method = ci_method,
